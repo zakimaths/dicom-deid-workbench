@@ -262,7 +262,8 @@ try {
           await page.locator("#exercise-ocr-status").textContent(),
           /stopped|failed/,
         );
-        await page.waitForTimeout(100);
+        await Promise.all(page.workers().map((worker) =>
+          worker.waitForEvent("close", { timeout: 5000 })));
         assert.equal(page.workers().length, 0, "Cancelled OCR worker leaked");
         await click("ocr");
         assert.match(
@@ -275,6 +276,8 @@ try {
           "Non-local request",
         );
         await audit("ocr-review");
+        await Promise.all(page.workers().map((worker) =>
+          worker.waitForEvent("close", { timeout: 5000 })));
         assert.equal(page.workers().length, 0, "Completed OCR worker leaked");
         const timeoutResult = await page.evaluate(async () => {
           const { suggestText } = await import("./ocr.js");

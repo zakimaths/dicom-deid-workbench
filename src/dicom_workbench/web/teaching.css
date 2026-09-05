@@ -370,4 +370,16 @@
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* GTK's native menu decoration can contribute its intrinsic text width to
+     page overflow at enlarged font sizes, despite the select's bounded box. */
+  appearance: none;
+  padding-right: 30px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text) 50%),
+    linear-gradient(135deg, var(--text) 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) 50%,
+    calc(100% - 10px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
 }
