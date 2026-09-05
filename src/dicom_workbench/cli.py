@@ -7,6 +7,7 @@ from pathlib import Path
 from .selection import load_selection
 from .core import MAX_BYTES, Unsupported, transform
 from .fixtures import synthetic_dicom
+from .collection import transform_collection
 from .server import serve
 
 
@@ -31,6 +32,12 @@ def main():
     scrub.add_argument(
         "--regions", type=Path, help="JSON array of rectangular pixel regions to erase"
     )
+    collection = commands.add_parser(
+        "scrub-collection",
+        help="Scrub up to 16 supported files from one study with consistent identifiers",
+    )
+    collection.add_argument("output_directory", type=Path)
+    collection.add_argument("inputs", type=Path, nargs="+")
     args = parser.parse_args()
     try:
         if args.command == "serve":
@@ -38,6 +45,31 @@ def main():
         elif args.command == "fixture":
             write_new(args.output, synthetic_dicom(with_text=args.with_text))
             print("Synthetic fixture created.")
+        elif args.command == "scrub-collection":
+            if args.output_directory.exists() or not 1 <= len(args.inputs) <= 16:
+                raise Unsupported("Choose a new output directory and 1 to 16 source files.")
+            files = []
+            for path in args.inputs:
+                with path.open("rb") as source:
+                    files.append(source.read(MAX_BYTES + 1))
+            results = transform_collection(files)
+            args.output_directory.mkdir()
+            for index, result in enumerate(results, 1):
+                write_new(args.output_directory / f"image-{index:04d}.dcm", result.dicom)
+            write_new(
+                args.output_directory / "report.json",
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "files": [r.report for r in results],
+                        "notice": "Metadata subset only; sequence references unsupported; pixels unassessed.",
+                    },
+                    indent=2,
+                ).encode(),
+            )
+            print(
+                "Collection written with consistent study, series and frame identifiers. Pixels remain unassessed."
+            )
         else:
             if args.output.exists() or (args.report and args.report.exists()):
                 raise Unsupported("An output already exists. Choose new output paths.")

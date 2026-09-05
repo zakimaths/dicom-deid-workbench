@@ -505,6 +505,7 @@ for (const [id, text] of Object.entries(helpText)) {
   function syncHelpFocus() {
     wrapper.tabIndex = control.disabled ? 0 : -1;
     if (control.disabled) {
+      wrapper.setAttribute("role", "group");
       wrapper.setAttribute(
         "aria-label",
         `${id === "file" ? "Choose DICOM file" : control.textContent.trim()} · unavailable`,
@@ -512,6 +513,7 @@ for (const [id, text] of Object.entries(helpText)) {
       wrapper.setAttribute("aria-describedby", description.id);
     } else {
       wrapper.removeAttribute("aria-label");
+      wrapper.removeAttribute("role");
       wrapper.removeAttribute("aria-describedby");
     }
   }

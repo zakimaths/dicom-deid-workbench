@@ -319,3 +319,48 @@
     padding: 16px;
   }
 }
+
+.exercise-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.exercise-options input,
+.exercise-options select {
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--boundary, #63785d);
+  font: inherit;
+}
+.exercise-stage {
+  max-height: 75vh;
+  overflow: auto;
+}
+.exercise-stage canvas {
+  max-height: none;
+  object-fit: initial;
+  touch-action: none;
+}
+.exercise-stage.zoomed canvas {
+  width: 200%;
+  max-width: none;
+}
+.exercise summary {
+  min-height: 44px;
+  padding-block: 10px;
+}
+#exercise-selections {
+  padding-left: 20px;
+}
+#exercise-selections button {
+  margin: 4px;
+}
+.exercise-stage:focus-visible,
+#exercise-canvas:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+}

@@ -65,7 +65,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cross-Origin-Resource-Policy", "same-origin")
         self.send_header(
             "Content-Security-Policy",
-            "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
+            "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
         )
         if filename:
             self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
@@ -112,6 +112,10 @@ class Handler(BaseHTTPRequestHandler):
             "/style.css": ("style.css", "text/css; charset=utf-8"),
             "/teaching.css": ("teaching.css", "text/css; charset=utf-8"),
             "/exercise.js": ("exercise.js", "text/javascript; charset=utf-8"),
+            "/challenge.js": ("challenge.js", "text/javascript; charset=utf-8"),
+            "/challenge-score.js": ("challenge-score.js", "text/javascript; charset=utf-8"),
+            "/ocr.js": ("ocr.js", "text/javascript; charset=utf-8"),
+            "/build-info.js": ("build-info.js", "text/javascript; charset=utf-8"),
             "/exercise-core.js": ("exercise-core.js", "text/javascript; charset=utf-8"),
             "/exercise-png.js": ("exercise-png.js", "text/javascript; charset=utf-8"),
             "/teaching.js": ("teaching.js", "text/javascript; charset=utf-8"),
@@ -121,6 +125,16 @@ class Handler(BaseHTTPRequestHandler):
             "/fonts/press-start-2p.ttf": ("fonts/press-start-2p.ttf", "font/ttf"),
         }
         assets.update(self.server.teaching_assets)
+        ocr_manifest = json.loads((STATIC / "ocr-assets/manifest.json").read_text())
+        assets.update(
+            {
+                "/ocr-assets/" + n: (
+                    "ocr-assets/" + n,
+                    "text/javascript" if n.endswith(".js") else "application/octet-stream",
+                )
+                for n in ocr_manifest
+            }
+        )
         if self.path in assets:
             name, mime = assets[self.path]
             return self.respond(200, (STATIC / name).read_bytes(), mime)

@@ -1,3 +1,11 @@
+import { challenge, GENERATOR_VERSION } from "./challenge.js";
+import { scoreChallenge } from "./challenge-score.js";
+import { suggestText, cancelOCR } from "./ocr.js";
+import { BUILD } from "./build-info.js";
+let history = [],
+  scored = false,
+  assisted = false,
+  zoomed = false;
 import {
   FAKE_DETAILS,
   nonymise,
@@ -90,6 +98,17 @@ async function verify(s) {
     throw new Error("Unexpected hidden PNG information. Export blocked.");
   const fakeKeys = Object.keys(meta).filter((k) => k !== "Source");
   return {
+    report_schema: 3,
+    app: BUILD,
+    generator: s.generator || "guided-1",
+    seed: s.seed ?? null,
+    challenge_score: s.challenge ? scoreChallenge(actual.pixels, s) : null,
+    assisted,
+    human_review: $("ack").checked
+      ? "limits_acknowledged_not_clinical_review"
+      : "not_recorded",
+    anatomy_review: "not_assessed",
+    ocr: s.ocr || { status: "not_run" },
     scope:
       "Only identifiers deliberately injected by this exercise are checked. Source labels and recognisable anatomy remain unassessed.",
     format: "PNG (not DICOM)",
@@ -135,9 +154,14 @@ function render() {
     dirty = !!state.ink;
   const allowed = {
     close: !busy,
+    ocr: dirty && !before,
+    score: dirty && !before,
+    reveal: dirty && state.challenge && !before,
+    zoom: true,
+    undo: history.length > 0 && !before,
     nonymise: !dirty,
     metadata: dirty && Object.keys(state.metadata).length > 1,
-    select: dirty,
+    select: dirty && !state.challenge,
     erase: dirty && regions.length > 0,
     add: dirty,
     discard: regions.length > 0,
@@ -165,10 +189,51 @@ function render() {
   ])
     if (before) $(id).disabled = true;
   $("ack").disabled = busy;
+  $("mode").disabled = busy || dirty;
+  $("seed").disabled = busy || dirty || $("mode").value !== "challenge";
+  $("human-status").textContent = $("ack").checked
+    ? "limits acknowledged; no clinical review"
+    : "not recorded";
+  $("select").hidden = !!state.challenge;
+  $("reveal").hidden = !state.challenge;
+  $("score-result").textContent =
+    scored && r?.challenge_score
+      ? `${assisted ? "Assisted practice. " : ""}Fake labels missed: ${r.challenge_score.missed_identifiers} / ${r.challenge_score.identifier_count}. Pixels changed outside fake letters: ${r.challenge_score.changed_pixels_outside_labels}. Innocent orientation-label pixels changed: ${r.challenge_score.innocent_label_pixels_changed}. Source text and anatomy remain unassessed.`
+      : state.challenge
+        ? "Answer positions are hidden. Check your attempt when ready."
+        : "Guided practice uses known label positions.";
+  $("selections").replaceChildren();
+  regions.forEach((box, index) => {
+    const li = document.createElement("li"),
+      edit = document.createElement("button"),
+      remove = document.createElement("button");
+    edit.className = remove.className = "report-button";
+    edit.textContent = `Edit box ${index + 1}: left ${box.x}, top ${box.y}, width ${box.width}, height ${box.height}`;
+    edit.disabled = remove.disabled = busy || before;
+    edit.onclick = () => {
+      ["x", "y", "w", "h"].forEach(
+        (id, i) => ($(id).value = Object.values(box)[i]),
+      );
+      regions.splice(index, 1);
+      $("x").closest("details").open = true;
+      render();
+      $("x").focus();
+    };
+    remove.textContent = `Remove box ${index + 1}`;
+    remove.onclick = () => {
+      regions.splice(index, 1);
+      render();
+      canvas.focus();
+    };
+    li.append(edit, remove);
+    $("selections").append(li);
+  });
   $("before").textContent = before ? "Show current" : "Show before";
   $("before").setAttribute("aria-pressed", String(before));
   $("fields").replaceChildren();
-  for (const [key, value] of Object.entries(FAKE_DETAILS)) {
+  for (const [key, value] of Object.entries(
+    state.fakeDetails || FAKE_DETAILS,
+  )) {
     const names = {
       PatientName: "Patient name",
       PatientID: "Patient number",
@@ -192,7 +257,7 @@ function render() {
     ? `Saved PNG reopened: pixels match. Fake metadata fields remaining: ${r.remaining_fake_fields.length}. Injected label pixels remaining: ${r.remaining_injected_label_pixels}. Source credit is retained.`
     : "Preparing file checks…";
 }
-async function transaction(action, message) {
+async function transaction(action, message, remember = false) {
   if (busy || !state) return;
   busy = true;
   render();
@@ -200,6 +265,10 @@ async function transaction(action, message) {
   try {
     const next = await action(state);
     next.verification = await verify(next);
+    if (remember) {
+      history.push(state);
+      if (history.length > 3) history.shift();
+    }
     state = next;
     $("status").textContent = message;
   } catch (error) {
@@ -274,6 +343,9 @@ export async function openExercise(item, img, stillCurrent = () => true) {
     if (!stillCurrent()) throw new Error("Image opening cancelled.");
     document.dispatchEvent(new Event("exercise-enter"));
     state = next;
+    history = [];
+    scored = false;
+    assisted = false;
     before = false;
     regions = [];
     $("ack").checked = false;
@@ -296,8 +368,22 @@ export async function openExercise(item, img, stillCurrent = () => true) {
 }
 $("nonymise").onclick = () =>
   transaction(async (s) => {
-    const added = nonymise(s.original, s.originalWidth, s.originalHeight),
-      metadata = { Source: s.source, ...FAKE_DETAILS };
+    const seedValue = $("seed").value.trim();
+    if ($("mode").value === "challenge" && !seedValue)
+      throw new Error("Enter a challenge number.");
+    const added =
+        $("mode").value === "challenge"
+          ? challenge(
+              s.original,
+              s.originalWidth,
+              s.originalHeight,
+              Number(seedValue),
+            )
+          : nonymise(s.original, s.originalWidth, s.originalHeight),
+      metadata = { Source: s.source, ...(added.fakeDetails || FAKE_DETAILS) };
+    history = [];
+    scored = false;
+    assisted = false;
     const png = await encode(added.pixels, added.width, added.height, metadata);
     regions = [];
     before = false;
@@ -315,7 +401,7 @@ $("nonymise").onclick = () =>
       },
       edits: [],
     };
-  }, "Fake details added to seven PNG metadata fields and four visible labels. Both channels now need scrubbing.");
+  }, "Fake details added. Inspect the picture and file information; some challenges contain no fake pixel labels.");
 $("metadata").onclick = () =>
   transaction(
     async (s) => ({
@@ -332,6 +418,7 @@ $("metadata").onclick = () =>
       ],
     }),
     "Fake metadata removed. Visible letters are separate pixels: select and erase them too.",
+    true,
   );
 $("select").onclick = () => {
   regions = state.labels.map((r) => ({ ...r }));
@@ -360,23 +447,27 @@ $("discard").onclick = () => {
   render();
 };
 $("erase").onclick = () =>
-  transaction(async (s) => {
-    const boxes = regions.map((r) => ({ ...r })),
-      pixels = erase(s.pixels, s.width, s.height, boxes),
-      checks = verifyErase(s.pixels, pixels, s.width, s.height, boxes);
-    const png = await encode(pixels, s.width, s.height, s.metadata);
-    const next = {
-      ...s,
-      pixels,
-      png,
-      edits: [
-        ...s.edits,
-        { action: "erase_pixels", rectangles: boxes, ...checks },
-      ],
-    };
-    regions = [];
-    return next;
-  }, "Selected pixels replaced with solid black. Check the remaining-field and remaining-label counts below.");
+  transaction(
+    async (s) => {
+      const boxes = regions.map((r) => ({ ...r })),
+        pixels = erase(s.pixels, s.width, s.height, boxes),
+        checks = verifyErase(s.pixels, pixels, s.width, s.height, boxes);
+      const png = await encode(pixels, s.width, s.height, s.metadata);
+      const next = {
+        ...s,
+        pixels,
+        png,
+        edits: [
+          ...s.edits,
+          { action: "erase_pixels", rectangles: boxes, ...checks },
+        ],
+      };
+      regions = [];
+      return next;
+    },
+    "Selected pixels replaced with solid black. Check the remaining-field and remaining-label counts below.",
+    true,
+  );
 $("before").onclick = () => {
   before = !before;
   render();
@@ -392,6 +483,10 @@ $("restart").onclick = () =>
       );
     before = false;
     regions = [];
+    history = [];
+    scored = false;
+    assisted = false;
+    $("ocr-status").textContent = "Text search has not run.";
     $("ack").checked = false;
     return {
       original: s.original,
@@ -407,6 +502,132 @@ $("restart").onclick = () =>
     };
   }, "Restarted from the published picture. Fake details have not been added yet.");
 $("ack").onchange = render;
+$("mode").onchange = render;
+$("cancel").onclick = cancelOCR;
+$("zoom").onclick = () => {
+  zoomed = !zoomed;
+  canvas.parentElement.classList.toggle("zoomed", zoomed);
+  $("zoom").textContent = zoomed ? "Fit picture" : "Zoom in";
+  $("zoom").setAttribute("aria-pressed", String(zoomed));
+};
+$("undo").onclick = () =>
+  transaction(async () => {
+    const previous = history.at(-1);
+    if (!previous) throw new Error("No edit to undo.");
+    history.pop();
+    regions = [];
+    return previous;
+  }, "Last edit undone and saved file checked again.");
+$("score").onclick = () =>
+  transaction(async (s) => {
+    scored = true;
+    return s;
+  }, "Attempt checked against the injected labels. Review missed labels and unnecessary changes.");
+$("reveal").onclick = () => {
+  assisted = true;
+  scored = true;
+  regions = state.labels.map((b) => ({ ...b }));
+  render();
+  $("status").textContent =
+    "Answer boxes revealed. This attempt is now assisted practice.";
+};
+$("ocr").onclick = async () => {
+  if (busy || !state?.ink || before) return;
+  busy = true;
+  render();
+  $("cancel").disabled = false;
+  $("ocr-status").textContent =
+    "Looking for text locally. No image is uploaded. This can take up to 30 seconds.";
+  try {
+    const result = await suggestText(
+      surface(state.pixels, state.width, state.height),
+    );
+    regions = result.boxes;
+    state.ocr = { ...result, boxes: result.boxes.length };
+    $("ocr-status").textContent =
+      `${result.boxes.length} possible text boxes. ${result.truncated ? "Only the first 32 are shown. " : ""}Review and remove wrong boxes before erasing. A missed label remains possible; an empty result is unresolved.`;
+  } catch (e) {
+    state.ocr = { status: "failed_or_cancelled_unresolved" };
+    $("ocr-status").textContent = e.message;
+  } finally {
+    busy = false;
+    $("cancel").disabled = true;
+    render();
+  }
+};
+let pointerStart = null;
+const position = (e) => {
+  const b = canvas.getBoundingClientRect();
+  return {
+    x: Math.max(
+      0,
+      Math.min(
+        state.width - 1,
+        Math.floor(((e.clientX - b.left) * state.width) / b.width),
+      ),
+    ),
+    y: Math.max(
+      0,
+      Math.min(
+        state.height - 1,
+        Math.floor(((e.clientY - b.top) * state.height) / b.height),
+      ),
+    ),
+  };
+};
+canvas.onpointerdown = (e) => {
+  if (busy || !state?.ink || before || e.button !== 0) return;
+  pointerStart = position(e);
+  canvas.setPointerCapture(e.pointerId);
+};
+canvas.onpointercancel = () => {
+  pointerStart = null;
+};
+canvas.onpointerup = (e) => {
+  if (!pointerStart) return;
+  const end = position(e),
+    start = pointerStart;
+  pointerStart = null;
+  const b = {
+    x: Math.min(start.x, end.x),
+    y: Math.min(start.y, end.y),
+    width: Math.abs(end.x - start.x) + 1,
+    height: Math.abs(end.y - start.y) + 1,
+  };
+  try {
+    validateRegions([...regions, b], state.width, state.height);
+    regions.push(b);
+    render();
+  } catch (error) {
+    $("status").textContent = error.message;
+  }
+};
+canvas.onkeydown = (e) => {
+  if (busy || !state?.ink || before) return;
+  if (e.key === "Enter") {
+    e.preventDefault();
+    $("add").click();
+    return;
+  }
+  const delta = {
+    ArrowLeft: [-1, 0],
+    ArrowRight: [1, 0],
+    ArrowUp: [0, -1],
+    ArrowDown: [0, 1],
+  }[e.key];
+  if (!delta) return;
+  e.preventDefault();
+  const ids = e.shiftKey ? ["w", "h"] : ["x", "y"];
+  ids.forEach(
+    (id, i) =>
+      ($(id).value = Math.max(
+        e.shiftKey ? 1 : 0,
+        Number($(id).value) + delta[i],
+      )),
+  );
+  $("view-label").textContent =
+    `Box: left ${$("x").value}, top ${$("y").value}, width ${$("w").value}, height ${$("h").value}. Enter adds it.`;
+};
 $("save").onclick = () =>
   transaction(async (s) => {
     const r = await verify(s);
@@ -441,6 +662,9 @@ $("close").onclick = () => {
   state = null;
   regions = [];
   before = false;
+  history = [];
+  scored = false;
+  assisted = false;
   canvas.width = canvas.height = 0;
   panel.hidden = true;
   panel.parentElement.classList.remove("exercise-active");
@@ -450,6 +674,7 @@ $("close").onclick = () => {
 // Choosing a legacy sample deliberately returns to that controller's own view.
 for (const id of [
   "demo",
+  "text-exercise",
   "file",
   "sample-ct",
   "sample-mr",
@@ -480,8 +705,13 @@ for (const button of panel.querySelectorAll("button[title]")) {
   desc.hidden = true;
   desc.textContent = button.title;
   button.after(desc);
+  const term = document.createElement("dt"),
+    definition = document.createElement("dd");
+  term.textContent = button.textContent;
+  definition.textContent = button.title;
+  $("all-help").append(term, definition);
   button.setAttribute("aria-describedby", desc.id);
-  for (const event of ["pointerenter", "focus"])
+  for (const event of ["pointerenter", "focus", "pointerdown"])
     button.addEventListener(event, () => {
       $("help").textContent = button.title;
     });

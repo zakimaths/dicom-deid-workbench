@@ -2,6 +2,7 @@
 
 from pydicom.datadict import dictionary_VR
 from pydicom.uid import ExplicitVRLittleEndian
+from .iod import EMPTY_NUMERIC, coded_keys, image_type, validate_iod_inputs
 
 NUMERIC_VRS = {"DS", "IS", "US", "SS", "UL", "SL", "FL", "FD"}
 
@@ -18,6 +19,8 @@ def verify_metadata(output, source):
 
     allowed = (
         KEEP_NUMERIC
+        | coded_keys(source)
+        | {"PositionReferenceIndicator"}
         | set(EMPTY_FIELDS)
         | set(UID_FIELDS)
         | {
@@ -45,6 +48,16 @@ def verify_metadata(output, source):
             "DeidentificationMethod",
         }
     )
+    required |= coded_keys(source) | {"PositionReferenceIndicator"}
+    required |= {"SliceThickness", "SeriesNumber", "InstanceNumber"}
+    if source.Modality == "MR":
+        required |= {"EchoTime", "EchoTrainLength", "RepetitionTime"}
+        if "IR" in source.ScanningSequence:
+            required.add("InversionTime")
+        if any(code in source.get("ScanOptions", []) for code in ("CG", "PPG")):
+            required.add("TriggerTime")
+    else:
+        required |= {"KVP", "AcquisitionNumber"}
     if source.Modality == "CT":
         required.add("RescaleType")
     if any(key not in output for key in required):
@@ -58,14 +71,26 @@ def verify_metadata(output, source):
         if element.keyword in KEEP_NUMERIC:
             if element.VR not in NUMERIC_VRS or element.VR != dictionary_VR(element.tag):
                 raise Unsupported("Metadata verification failed: invalid numeric representation.")
+            if (
+                element.keyword in EMPTY_NUMERIC
+                and element.is_empty
+                and (element.tag not in source or source[element.tag].is_empty)
+            ):
+                continue
             if element.tag not in source or element != source[element.tag]:
                 raise Unsupported("Metadata verification failed: an imaging field changed.")
+    validate_iod_inputs(output)
+    for key in coded_keys(source):
+        if key in source and output[key] != source[key]:
+            raise Unsupported("Metadata verification failed: an acquisition code changed.")
+    if output.PositionReferenceIndicator not in (None, ""):
+        raise Unsupported("Metadata verification failed: position reference is not empty.")
     for key in EMPTY_FIELDS:
         if key not in output or output[key].value not in ("", None):
             raise Unsupported("Metadata verification failed: an identity placeholder is not empty.")
     if (
-        list(output.ImageType) != ["DERIVED", "SECONDARY"]
-        or output.DeidentificationMethod != "single-frame-metadata-v1; no PS3.15 conformance claim"
+        list(output.ImageType) != image_type(source)
+        or output.DeidentificationMethod != "single-frame-metadata-v2; no PS3.15 conformance claim"
     ):
         raise Unsupported("Metadata verification failed: unexpected method description.")
     if output.DerivationDescription not in (

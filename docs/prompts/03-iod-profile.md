@@ -2,7 +2,7 @@
 
 Roadmap references: A012-A016, A065-A067.
 
-Status: Next priority; depends on a reviewed custom policy and external validator baseline.
+Status: Implemented for the limited v2 contract in 0.3.0; full profile review remains outstanding. See ../iod-coverage.md.
 
 ## Prompt
 

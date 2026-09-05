@@ -1,3 +1,9 @@
+# Current release validation
+
+See [0.3.0 checks and limits](validation-0.3.0.md) for current results, [accessibility](accessibility.md), [OCR/corpus benchmarks](benchmarks.md) and [independent DICOM validation](iod-coverage.md). The dated records below are historical; their counts are not current totals.
+
+---
+
 # What has been tested
 
 This page records checks that were actually run. Passing them supports the behaviours listed here; it does not certify anonymity, clinical suitability or compatibility with every DICOM viewer.

@@ -1,3 +1,13 @@
+# 0.3.0 - 5 September 2026
+
+- Added seeded NONYMISE challenges, independent scoring, innocent-text and blank controls, answer reveal, zoom, keyboard rectangles and undo.
+- Added self-hosted OCR suggestions with cancellation and explicit unresolved outcomes; published measured synthetic misses.
+- Repaired required classic MR/CT fields, separated UID roles and added bounded single-study mapping.
+- Added an independent DICOM-validator gate, local hash-pinned corpus runner, accessibility checks, contribution/review templates and versioned reports.
+- Public demo remains frontend-only and sample-only. No clinical anonymity claim.
+
+---
+
 # Changelog
 
 ## Unreleased — teaching PNG exercises

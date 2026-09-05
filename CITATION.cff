@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "Please cite the release and commit used in your experiment."
+title: "DICOM Workbench"
+version: 0.3.0
+date-released: 2026-09-05
+type: software
+authors:
+  - family-names: Alkaseem
+    given-names: Alhasan
+repository-code: "https://github.com/zakimaths/dicom-deid-workbench"
+license: MIT
+abstract: "A local DICOM metadata tool and browser-based teaching lab with synthetic identifier exercises. Not a clinical anonymisation system."

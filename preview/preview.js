@@ -537,6 +537,7 @@ for (const [id, text] of Object.entries(help)) {
   const focus = () => {
     wrap.tabIndex = button.disabled ? 0 : -1;
     if (button.disabled) {
+      wrap.setAttribute("role", "group");
       wrap.setAttribute(
         "aria-label",
         button.textContent.trim() + " · unavailable",
@@ -544,6 +545,7 @@ for (const [id, text] of Object.entries(help)) {
       wrap.setAttribute("aria-describedby", description.id);
     } else {
       wrap.removeAttribute("aria-label");
+      wrap.removeAttribute("role");
       wrap.removeAttribute("aria-describedby");
     }
   };

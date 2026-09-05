@@ -21,9 +21,9 @@ SAMPLES = {
         "file": "MR_small.dcm",
         "title": "Public MRI teaching slice",
         "source": "pydicom / NEMA",
-        "remove": "EchoTrainLength",
+        "remove": None,
         "sha256": "3f27d1c22f1a66e80d7bb7c911e8610fd0bb70325a76746a7adb1c0ddefcf2bb",
-        "preparation": "Removed an empty Echo Train Length field. Pixels unchanged.",
+        "preparation": "Empty Type 2 Echo Train Length is retained. Pixels unchanged.",
     },
     "ct-a": {
         "file": "dicomdirtests/77654033/CT2/17106",

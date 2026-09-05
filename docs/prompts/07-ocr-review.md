@@ -2,7 +2,7 @@
 
 Roadmap references: A037-A040, A043-A048.
 
-Status: Depends on accepted OCR evaluation and the verified redaction backend.
+Status: Browser suggestions, explicit review, cancellation and unresolved states delivered in 0.3.0. Real-world sensitivity remains unestablished.
 
 ## Prompt
 

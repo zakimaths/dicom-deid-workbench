@@ -1,3 +1,13 @@
+# Policy update for 0.3.0
+
+The current identifier is `single-frame-metadata-v2`. The numerical allowlist now has a narrowly checked coded-field layer and required classic CT/MR placeholders. See [the current rule matrix](iod-coverage.md) and [supported formats](supported-formats.md). Empty Type 2 MR fields are accepted. Essential MR sequence fields and geometry must be present; unknown coded terms are rejected. Acquisition facts are never guessed.
+
+UIDs are mapped by role as well as source value. The optional collection command shares that mapping for one study, up to 16 files. Single-file processing still uses a fresh context. All sequence trees remain excluded; no complete confidentiality-profile or clinical-conformance claim is made.
+
+The sections below document the original v1 contract and its rationale. Where v1 differs from the current matrix above, the v2 matrix and implementation apply.
+
+---
+
 # Policy: single-frame-metadata-v1
 
 The local tool keeps a short list of imaging fields and removes or replaces the rest. The rules live in `src/dicom_workbench/core.py`. They cover a limited teaching workflow, not the full DICOM confidentiality profile or every requirement of a CT/MR object. The public browser demo shows reports prepared with these rules; it does not run them on uploads.

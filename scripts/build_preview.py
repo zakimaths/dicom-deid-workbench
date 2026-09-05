@@ -40,7 +40,7 @@ def build():
     html = html.replace(
         '<meta charset="UTF-8" />',
         """<meta charset="UTF-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
     <meta name="referrer" content="no-referrer" />""",
     )
     html = html.replace(
@@ -79,7 +79,7 @@ def build():
     )
     html = re.sub(
         r"<strong>Metadata scrubbing is only one step\.</strong>.*?anonymiser\.",
-        "<strong>This is a sample-only browser demo.</strong> Metadata changes were prepared with the local tool before publication. You can edit the displayed samples and save a PNG. This demo does not process your DICOM files or establish anonymity.",
+        "<strong>This is a sample-only browser demo.</strong> The teaching PNG exercise adds and removes fake metadata live. DICOM sample reports were prepared with the local tool before publication. You can edit samples and save a PNG. This demo does not process your DICOM files or establish anonymity.",
         html,
         count=1,
         flags=re.S,
@@ -131,8 +131,45 @@ def build():
     (OUT / "style.css").write_text(
         (WEB / "style.css").read_text().replace('url("/fonts/', 'url("./fonts/')
     )
-    for name in ("pixels.js", "favicon.svg", "exercise.js", "exercise-core.js", "exercise-png.js"):
+    for name in (
+        "pixels.js",
+        "favicon.svg",
+        "exercise.js",
+        "exercise-core.js",
+        "exercise-png.js",
+        "challenge.js",
+        "challenge-score.js",
+        "ocr.js",
+        "build-info.js",
+    ):
         shutil.copyfile(WEB / name, OUT / name)
+    ocr = json.loads((WEB / "ocr-assets/manifest.json").read_text())
+    (OUT / "ocr-assets").mkdir()
+    for name, digest in ocr.items():
+        raw = (WEB / "ocr-assets" / name).read_bytes()
+        assert sha256(raw).hexdigest() == digest, "OCR asset hash mismatch"
+        (OUT / "ocr-assets" / name).write_bytes(raw)
+    shutil.copyfile(WEB / "ocr-assets/manifest.json", OUT / "ocr-assets/manifest.json")
+    code_hash = sha256(
+        b"".join(
+            (WEB / name).read_bytes()
+            for name in (
+                "exercise.js",
+                "exercise-core.js",
+                "challenge.js",
+                "challenge-score.js",
+                "ocr.js",
+            )
+        )
+    ).hexdigest()
+    (OUT / "build-info.js").write_text(
+        "export const BUILD = Object.freeze("
+        + json.dumps(
+            {"version": "0.3.0", "revision": "sha256:" + code_hash, "report_schema": 3},
+            sort_keys=True,
+        )
+        + ");\n"
+    )
     library = teaching_assets()
     (OUT / "teaching").mkdir()
     for name in ("teaching.js", "teaching.css", *library):
@@ -183,8 +220,20 @@ def build():
     (OUT / ".nojekyll").touch()
     allowed = {"index.html", "style.css", "pixels.js", "preview.js", "favicon.svg", ".nojekyll"}
     allowed |= {f"samples/{key}.json" for key in cases}
-    allowed |= {"teaching.js", "teaching.css", "exercise.js", "exercise-core.js", "exercise-png.js", *library}
+    allowed |= {
+        "teaching.js",
+        "teaching.css",
+        "exercise.js",
+        "exercise-core.js",
+        "exercise-png.js",
+        "challenge.js",
+        "challenge-score.js",
+        "ocr.js",
+        "build-info.js",
+        *library,
+    }
     allowed |= {f"fonts/{p.name}" for p in (OUT / "fonts").iterdir()}
+    allowed |= {"ocr-assets/" + n for n in [*ocr, "manifest.json"]}
     files = {str(p.relative_to(OUT)) for p in OUT.rglob("*") if p.is_file()}
     assert files == allowed and not any(p.is_symlink() for p in OUT.rglob("*"))
     print(f"Built {len(files)} allowlisted frontend assets in output/pages")

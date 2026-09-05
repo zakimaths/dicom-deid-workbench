@@ -25,7 +25,7 @@ Let a learner inspect an image, distinguish information stored in a file from te
 
 ## Capabilities and Constraints
 
-**Teaching PNG workflow.** A learner chooses a teaching picture, opens it in the workbench, and uses **NONYMISE** to add seven explicitly fake PNG text metadata fields and four visible labels. The labels occupy added black margins, preserving the original image area during injection. Scrubbing metadata and erasing selected pixels are separate actions. The label-selection shortcut uses the positions recorded during injection; it does not detect text in arbitrary images. Custom numeric rectangles can erase image content.
+**Teaching PNG workflow.** A learner chooses a teaching picture, opens it in the workbench, and uses **NONYMISE** to add seven explicitly fake PNG text metadata fields and four visible labels. In guided mode the labels occupy added black margins, preserving the original image area during injection. Challenge mode is described in the 0.3.0 additions below. Scrubbing metadata and erasing selected pixels are separate actions. The label-selection shortcut uses the positions recorded during injection; it does not detect text in arbitrary images. Custom numeric rectangles can erase image content.
 
 The exercise can save the fake example, a scrubbed PNG and a verification report. It reopens the encoded output, compares its pixels with the expected image, checks its metadata, and counts remaining injected label pixels. Clean export requires both injected channels to be cleared, the current view, no pending selections, and acknowledgment of the limits. Source attribution remains in the output. Before/current comparison and restart support repeated practice.
 
@@ -52,3 +52,9 @@ Use plain language when describing controls and outcomes. Preserve the user's **
 - Preserve the distinction between browser teaching images and supported local DICOM processing.
 - Keep public-image provenance and licence information attached to the exercise.
 - Describe verification within its actual scope, without implying clinical certification.
+
+## 0.3.0 additions
+
+Seeded challenge mode adds varied synthetic text, including over anatomy, and scores missed injected identifiers and unnecessary pixel changes from the reopened PNG. Its answer reveal marks an attempt as assisted. Local English OCR suggests boxes without access to the answer key; zero detections remain unresolved. The exercise supports zoom, keyboard rectangles and three-step undo. Reports record the generator, seed, content-addressed build and review scope.
+
+The local v2 DICOM policy retains strictly validated acquisition codes and handles required classic CT/MR placeholders. A bounded single-study collection command shares UID mappings by role. Independent validator fixtures and accessibility checks are release gates; neither establishes clinical anonymity. See docs/implementation-status.md for outstanding external dataset, expert and assistive-technology work.

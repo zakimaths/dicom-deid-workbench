@@ -3,13 +3,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/pixels.test.mjs tests/exercise.test.mjs",
+    "test": "node --test tests/pixels.test.mjs tests/exercise.test.mjs tests/challenge.test.mjs",
     "test:browser": "node tests/browser.mjs",
     "build:preview": "PYTHONPATH=src .venv/bin/python scripts/build_preview.py",
     "test:preview": "node tests/preview.mjs",
-    "test:exercise": "node tests/exercise-browser.mjs"
+    "test:exercise": "node tests/exercise-browser.mjs",
+    "test:accessibility": "node tests/challenge-browser.mjs",
+    "benchmark:ocr": "node scripts/benchmark_ocr.mjs",
+    "sbom": ".venv/bin/python scripts/sbom.py"
   },
   "devDependencies": {
-    "playwright": "1.62.1"
-  }
+    "@tesseract.js-data/eng": "1.0.0",
+    "axe-core": "4.13.0",
+    "playwright": "1.62.1",
+    "tesseract.js": "7.0.0"
+  },
+  "version": "0.3.0"
 }

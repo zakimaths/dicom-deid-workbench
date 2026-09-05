@@ -2,7 +2,7 @@
 
 Roadmap references: A041-A048.
 
-Status: Planned; detector choice must follow evaluation, not precede it.
+Status: Initial synthetic baseline delivered in 0.3.0 with measured misses. A second independent detector and external annotations remain outstanding. See ../benchmarks.md.
 
 ## Prompt
 

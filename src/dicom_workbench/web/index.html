@@ -211,9 +211,33 @@
           <p id="exercise-source"></p>
           <p>
             Practise on this published scan. NONYMISE adds made-up patient
-            details inside the file and writes fake labels into new black
-            margins. NONYMISE leaves the original scan intact. Your own
-            rectangles can erase anatomy.
+            details inside the file and writes fake labels into the picture.
+            Guided mode uses added margins. Challenge mode can cover anatomy;
+            restart always restores the published picture.
+          </p>
+          <div class="exercise-options">
+            <label for="exercise-mode">Practice mode</label>
+            <select id="exercise-mode">
+              <option value="guided">Guided: find the added margins</option>
+              <option value="challenge">
+                Challenge: find unfamiliar labels
+              </option>
+            </select>
+            <label for="exercise-seed">Challenge number (seed)</label>
+            <input
+              id="exercise-seed"
+              type="number"
+              min="0"
+              max="4294967295"
+              step="1"
+              value="11"
+              aria-describedby="exercise-mode-help"
+            />
+          </div>
+          <p id="exercise-mode-help">
+            The same number recreates the same fake labels. Challenges include
+            labels over anatomy, rotated or faint text, and cases with no fake
+            text. Restart to change mode. Source labels are not scored.
           </p>
           <div class="exercise-layout">
             <div>
@@ -221,7 +245,7 @@
                 <button
                   id="exercise-nonymise"
                   class="primary"
-                  title="Add seven fake information fields and four visible fake labels. These are real changes to the practice PNG, so you can test removing them."
+                  title="Add seven fake information fields. Guided mode adds four visible labels; challenges vary and can contain no fake text. These are real changes to the practice PNG, so you can test removing them."
                 >
                   1. NONYMISE
                 </button>
@@ -247,13 +271,83 @@
                   4. Erase selected pixels
                 </button>
               </div>
-              <div class="exercise-stage">
+              <div class="exercise-actions">
+                <button
+                  id="exercise-ocr"
+                  class="report-button"
+                  title="Look for possible text in this picture using a local English text reader. It can miss labels or select innocent text. Review every suggested box before erasing."
+                >
+                  Suggest text boxes
+                </button>
+                <button
+                  id="exercise-cancel"
+                  class="report-button"
+                  title="Stop the text search. Stopping leaves the image unassessed; it does not mean no text is present."
+                  disabled
+                >
+                  Stop text search
+                </button>
+                <button
+                  id="exercise-score"
+                  class="report-button"
+                  title="Check the saved picture against the hidden fake-label answer key. See both missed labels and useful pixels changed."
+                >
+                  Check my attempt
+                </button>
+                <button
+                  id="exercise-reveal"
+                  class="report-button"
+                  title="Reveal where we added the fake labels. This turns the challenge into an assisted practice attempt."
+                >
+                  Reveal answer boxes
+                </button>
+              </div>
+              <p id="exercise-ocr-status" role="status">
+                Text search has not run. Suggestions never erase pixels
+                automatically.
+              </p>
+              <div class="exercise-actions">
+                <button
+                  id="exercise-zoom"
+                  class="report-button"
+                  aria-pressed="false"
+                  title="Enlarge the picture to select small letters. Scroll the picture to see other areas."
+                >
+                  Zoom in
+                </button>
+                <button
+                  id="exercise-undo"
+                  class="report-button"
+                  title="Undo the last pixel or metadata edit. Up to three recent edits can be restored."
+                >
+                  Undo last edit
+                </button>
+              </div>
+              <p id="exercise-selection-help">
+                Drag to mark a box, or use the rectangle numbers below. On the
+                picture, arrow keys move the box, Shift + arrows resize it, and
+                Enter adds it. Use Tab to leave the picture. Zoomed pictures can
+                be scrolled.
+              </p>
+              <div
+                class="exercise-stage"
+                tabindex="0"
+                role="region"
+                aria-label="Scrollable teaching picture"
+              >
                 <canvas
                   id="exercise-canvas"
-                  aria-label="Teaching image; fake labels appear in the added margins"
+                  aria-label="Teaching picture selection: arrow keys move, Shift and arrows resize, Enter adds a box"
+                  tabindex="0"
+                  aria-describedby="exercise-selection-help"
+                  role="img"
                 ></canvas>
               </div>
-              <p id="exercise-view-label">Current image</p>
+              <p id="exercise-view-label" role="status">Current image</p>
+              <ul
+                id="exercise-selections"
+                aria-label="Selected rectangles"
+              ></ul>
               <details>
                 <summary>Select your own rectangle</summary>
                 <p>
@@ -326,6 +420,14 @@
               <p id="exercise-status" role="status" aria-live="polite"></p>
               <dl id="exercise-fields"></dl>
               <p id="exercise-checks"></p>
+              <p id="exercise-score-result" role="status">
+                Challenge scoring has not run.
+              </p>
+              <p>
+                Human review:
+                <strong id="exercise-human-status">not recorded</strong>.
+                Anatomy and source identifiers: <strong>unassessed</strong>.
+              </p>
               <p>
                 Checks cover the fake details added here. Existing source
                 labels, recognisable anatomy and identifying features are not
@@ -357,8 +459,13 @@
                   Save verification report
                 </button>
               </div>
+              <details>
+                <summary>What do the buttons do?</summary>
+                <dl id="exercise-all-help"></dl>
+              </details>
               <p id="exercise-help" class="teaching-help">
-                Hover over a button for a plain-language explanation.
+                Focus, tap or hover over a button for a plain-language
+                explanation. You can also open the help below.
               </p>
             </aside>
           </div>
@@ -555,7 +662,7 @@
           One image at a time. Temporary results expire after 10 minutes or when
           cleared. Teaching PNG exercises stay in memory until you close them.
         </p>
-        <span class="version">v0.2.1</span>
+        <span class="version">v0.3.0</span>
         <nav class="social-links" aria-label="Social profiles · footer">
           <a
             class="social-link"

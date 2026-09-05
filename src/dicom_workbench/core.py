@@ -13,13 +13,14 @@ from pydicom.datadict import dictionary_VR, dictionary_VM
 
 from .redaction import replace_pixels, verify_pixels
 from .structure import preflight
+from .iod import EMPTY_NUMERIC, coded_keys, validate_iod_inputs, complete_iod
 from .verification import NUMERIC_VRS, verify_metadata
 from pydicom.uid import CTImageStorage, MRImageStorage, ExplicitVRLittleEndian, generate_uid
 
-POLICY = "single-frame-metadata-v1"
+POLICY = "single-frame-metadata-v2"
 MAX_BYTES = 8 * 1024 * 1024
 MAX_DIMENSION = 1024
-IMPLEMENTATION_VERSION = "DEID_WB_021"
+IMPLEMENTATION_VERSION = "DEID_WB_030"
 IMPLEMENTATION_UID = "2.25.188025864089722936239435475126635725439"
 DISCLAIMER = (
     "Metadata only. Pixels and recognisable anatomy have not been assessed. Not for clinical use."
@@ -29,6 +30,8 @@ DISCLAIMER = (
 # This is intentionally not a complete implementation of DICOM PS3.15 or every CT/MR IOD.
 KEEP_NUMERIC = frozenset(
     {
+        "AcquisitionNumber",
+        "TriggerTime",
         "SamplesPerPixel",
         "Rows",
         "Columns",
@@ -186,6 +189,8 @@ def validate(ds):
             element = ds[key]
             if element.VR not in NUMERIC_VRS or element.VR != dictionary_VR(element.tag):
                 raise Unsupported("An imaging field has an unsupported value representation.")
+            if element.is_empty and key in EMPTY_NUMERIC:
+                continue
             vm = dictionary_VM(element.tag)
             if not (element.VM >= 1 if vm == "1-n" else str(element.VM) == vm):
                 raise Unsupported("An imaging field has an unsupported number of values.")
@@ -208,6 +213,7 @@ def validate(ds):
             raise Unsupported("The file is missing a valid study, series or image identifier.")
     if ds.get("Modality") != ("CT" if sop == str(CTImageStorage) else "MR"):
         raise Unsupported("The modality does not match the image type.")
+    validate_iod_inputs(ds)
     if int(ds.get("NumberOfFrames", 1)) != 1:
         raise Unsupported("Multiframe files are not supported. Choose a single-frame CT or MR.")
     if ds.get("PhotometricInterpretation") not in ("MONOCHROME1", "MONOCHROME2"):
@@ -256,11 +262,11 @@ def validate(ds):
             raise Unsupported("Every window width must be at least one.")
 
 
-def transform(data: bytes, regions=None) -> Result:
+def transform(data: bytes, regions=None, *, _uid_context=None) -> Result:
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            return _transform(data, regions)
+            return _transform(data, regions, _uid_context)
     except Unsupported:
         raise
     except Exception:
@@ -269,13 +275,13 @@ def transform(data: bytes, regions=None) -> Result:
         ) from None
 
 
-def _transform(data: bytes, regions=None) -> Result:
+def _transform(data: bytes, regions=None, uid_context=None) -> Result:
     source = read(data)
     output = FileDataset(None, {}, file_meta=FileMetaDataset(), preamble=b"\0" * 128)
     actions = []
     # Dropping a sequence drops its entire tree, including identifiers in its items.
     for element in source:
-        if element.keyword in KEEP_NUMERIC or element.keyword in (
+        if element.keyword in KEEP_NUMERIC | coded_keys(source) or element.keyword in (
             "PixelData",
             "SOPClassUID",
             "Modality",
@@ -305,16 +311,17 @@ def _transform(data: bytes, regions=None) -> Result:
         )
     for key in EMPTY_FIELDS:
         setattr(output, key, "")
-    # One-file scope: no cross-file continuity is promised; all source references are dropped.
-    uid_map = {}
+    # Fresh context per file unless the bounded collection runner supplies one.
+    # UID roles stay distinct even when a legacy source reuses one value.
+    uid_map = {} if uid_context is None else uid_context
     for key in UID_FIELDS:
         if key in source or key != "FrameOfReferenceUID":
             old = str(source.get(key, ""))
-            uid_map.setdefault(old, generate_uid())
-            setattr(output, key, uid_map[old])
-    output.ImageType = ["DERIVED", "SECONDARY"]
+            uid_map.setdefault((key, old), generate_uid())
+            setattr(output, key, uid_map[(key, old)])
+    complete_iod(output, source)
     output.DerivationDescription = "Experimental metadata scrub; pixels unchanged and not assessed."
-    output.DeidentificationMethod = "single-frame-metadata-v1; no PS3.15 conformance claim"
+    output.DeidentificationMethod = "single-frame-metadata-v2; no PS3.15 conformance claim"
     if source.Modality == "CT":
         # Do not retain arbitrary source text in RescaleType.
         if source.get("RescaleType", "HU") != "HU":

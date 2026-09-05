@@ -11,6 +11,10 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -27,6 +31,23 @@ jobs:
       - run: npm run build:preview
       - run: npm run test:preview
       - run: npm run test:exercise
+      - run: npm run test:accessibility
+      - run: npm run sbom
+      - name: Package the tested allowlisted frontend
+        run: tar -czf output/frontend.tar.gz -C output/pages .
+      - uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661 # v3
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        with:
+          subject-path: |
+            output/frontend.tar.gz
+            output/sbom.spdx.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: frontend-evidence
+          path: |
+            output/frontend.tar.gz
+            output/sbom.spdx.json
+            output/accessibility/results.json
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:

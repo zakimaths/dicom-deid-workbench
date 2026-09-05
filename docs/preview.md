@@ -16,10 +16,11 @@ There is no upload control, API endpoint, account, analytics code, browser stora
 
 `scripts/build_preview.py` writes an explicit set of files to `output/pages/`:
 
-- The HTML page, two stylesheets, three JavaScript modules and favicon.
+- The HTML page, stylesheets, viewer/exercise modules and favicon.
 - The 50 teaching pictures, their thumbnails and the source/credit catalogue. See [the teaching library](teaching-library.md).
 - Three local fonts and their licence notices.
 - Two synthetic examples and six public-sample JSON assets containing pixel bytes, safe display settings and metadata action names without original values.
+- Hash-pinned local OCR worker, engine and English model assets with their licence notices.
 - `.nojekyll`, which tells GitHub Pages to serve the files directly.
 
 No repository-wide copy is used. Python files, package environments, tests, DICOM containers, source metadata, credentials and local outputs are excluded. GitHub Actions runs Python to prepare the assets, but the deployed site is entirely static.
@@ -44,14 +45,14 @@ A PNG preview is not an anonymised medical image. Manual rectangles can miss tex
 
 ## Security review for this publication
 
-The original demo publication produced 19 allowlisted assets; adding the teaching library and the PNG teaching exercise brings this to 125 assets, and a repeat-build check produced identical hashes. A scan of the current source and 125 historical Git blobs found no common credential or private-key patterns. This is a limited pattern check, not proof that every possible secret or defect has been found.
+The 0.3.0 build contains 136 allowlisted frontend assets, including OCR files. Historical builds had 19 and then 125 assets. A repeat-build check compares all current hashes. A scan of the current source and 125 historical Git blobs found no common credential or private-key patterns. This is a limited pattern check, not proof that every possible secret or defect has been found.
 
 The npm advisory scan returned no known vulnerabilities. The Python scan identified PYSEC-2026-1845 in the development test runner, pytest 8.4.2; it was upgraded to the advisory's fixed version, 9.0.3. The locked dependency scan is repeated in CI, so later advisories can still fail a future run. Test tools are not part of the deployed frontend.
 
-The workflow actions are pinned to verified commit IDs. Build jobs have read-only repository access; only the deployment job receives Pages and short-lived identity-token permissions. Private vulnerability reporting is enabled on the repository.
+The workflow actions are pinned to verified commit IDs. Build jobs cannot write repository contents. The trusted main-branch Pages build can issue short-lived build attestations; only deployment receives Pages-write permissions. Private vulnerability reporting is enabled on the repository.
 
 ## NONYMISE teaching exercise
 
-Each teaching image can open in the workbench as a PNG exercise. Fake fields are embedded in PNG metadata and fake letters are drawn into added margins. Removing metadata and erasing the labels are separate operations. Both happen entirely in browser memory, with reopened-file checks before a clean download. Source attribution is retained. [Steps, limits and repeatable checks](teaching-library.md#practise-adding-and-removing-identifiers).
+Each teaching image can open in the workbench as a PNG exercise. Fake fields are embedded in PNG metadata. Guided mode draws fake letters in added margins; seeded challenge mode varies their layout and can cover anatomy. Removing metadata and erasing the labels are separate operations. Both happen entirely in browser memory, with reopened-file checks before a clean download. Source attribution is retained. [Steps, limits and repeatable checks](teaching-library.md#practise-adding-and-removing-identifiers).
 
 Closing the exercise releases its working image references. It has no timed expiry; use **Return to DICOM** or close the page to discard it. The original DICOM exercise retains its separate ten-minute expiry.

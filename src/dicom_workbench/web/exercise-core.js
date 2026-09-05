@@ -10,7 +10,7 @@ export const FAKE_DETAILS = Object.freeze({
 });
 export const HEADER = 64,
   FOOTER = 40;
-const glyphs = {
+export const glyphs = {
   A: [14, 17, 17, 31, 17, 17, 17],
   B: [30, 17, 17, 30, 17, 17, 30],
   C: [14, 17, 16, 16, 16, 17, 14],

@@ -134,6 +134,9 @@ def test_mr_unsigned_and_inversion_metadata():
     ds = read(synthetic_dicom())
     ds.Modality = "MR"
     ds.SOPClassUID = ds.file_meta.MediaStorageSOPClassUID = pydicom.uid.MRImageStorage
+    ds.ScanningSequence = "SE"
+    ds.SequenceVariant = "NONE"
+    ds.ImageType = ["ORIGINAL", "PRIMARY", "OTHER"]
     ds.PhotometricInterpretation = "MONOCHROME1"
     ds.PixelRepresentation = 0
     result = transform(encode(ds))

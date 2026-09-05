@@ -2,7 +2,7 @@
 
 A small workbench for learning how medical images are stored, displayed and de-identified.
 
-**[Try the browser demo →](https://zakimaths.github.io/dicom-deid-workbench/)** · [Run the local tool](#run-the-local-tool) · [What has been tested](docs/validation.md)
+**[Try the browser demo →](https://zakimaths.github.io/dicom-deid-workbench/)** · [Run the local tool](#run-the-local-tool) · [What has been tested](docs/validation.md) · [Research implementation status](docs/implementation-status.md)
 
 Browse 50 larger, labelled MRI, CT and X-ray images. Choose **Open in workbench**, then **NONYMISE** to add fake patient details and practise removing hidden metadata and visible labels. The teaching exercise saves PNGs; the small DICOM examples have their own workflow. The demo needs no installation. [About the teaching collection](docs/teaching-library.md).
 
@@ -14,7 +14,7 @@ Browse 50 larger, labelled MRI, CT and X-ray images. Choose **Open in workbench*
 | --- | --- | --- |
 | Where it runs | Static frontend on GitHub Pages | On your computer; macOS setup below |
 | Images | 50 teaching pictures, two synthetic examples and six DICOM test fixtures | The same collection, plus supported DICOM files |
-| Metadata | Shows changes prepared before the demo was published | Scrubs the supported metadata fields when you open a file |
+| Metadata | Live fake PNG metadata scrubbing; DICOM sample reports are prepared during build | Same PNG exercise, plus live supported DICOM metadata scrubbing |
 | Editing | Replaces selected sample pixels in the browser | Replaces selected pixels in a new DICOM file |
 | Downloads | PNG preview and exercise report | DICOM file and processing report |
 
@@ -37,7 +37,15 @@ Open [localhost:8765](http://127.0.0.1:8765) and choose **Try synthetic example*
 
 The setup installs the pinned Python version and dependencies. Normal use needs no Docker, Node.js or cloud account. After installation, the local tool uses local assets and loopback requests only. Button explanations are available on hover, keyboard focus and in the expandable guide.
 
-## Try the erasing exercise
+## Try a challenge
+
+Open a teaching picture in the workbench. Choose **Challenge** and enter a challenge number, then press **NONYMISE**. The number recreates the same fake labels, including faint or rotated text, labels over anatomy and blank controls. Guided mode still uses easy-to-find margins.
+
+Draw boxes or use keyboard/numeric selection. **Suggest text boxes** runs a local English text reader; review its boxes before erasing. **Check my attempt** reports missed fake labels and unnecessary pixel changes. **Reveal answer boxes** marks the attempt as assisted. Undo restores up to three recent edits; zoom helps with small text. Button help is available without hover.
+
+OCR misses are measured and published, not hidden. The small synthetic held-out test missed 8 of 20 injected identifiers; this is not a clinical accuracy estimate. Source text and recognisable anatomy remain unassessed even when all injected details are removed. [Benchmark method and results](docs/benchmarks.md).
+
+## Try the original DICOM erasing exercise
 
 1. Select **Try a fake-text exercise**.
 2. Add the suggested rectangle: left **16**, top **12**, width **132**, height **14**.
@@ -52,7 +60,7 @@ One classic CT or MR Part 10 file, up to 8 MiB and 1024 × 1024 pixels. It suppo
 
 Compressed images, enhanced multiframe objects, colour, LUT sequences, padding and other unsupported presentation features are rejected. So are files that declare identifying text or recognisable features in their pixels. Missing flags or a `NO` value do not prove that the pixels are clear.
 
-The metadata policy retains selected numeric imaging fields, empties specified identity fields, replaces instance identifiers, and removes other source fields, private data and sequences. That can remove useful or required acquisition information. Some required MR fields are still missing from the output, and processing files separately does not preserve a study's relationships. The output is unsuitable for clinical exchange. [Full policy and limits](docs/policy.md).
+The metadata policy retains selected numeric imaging fields and strictly checked acquisition codes, empties specified identity fields, remaps identifiers, and drops private data and sequences. Required classic MR fields are now handled explicitly. A bounded collection command preserves study, series and frame continuity; sequence references and date shifting remain unsupported. [Supported formats](docs/supported-formats.md) · [IOD rule coverage](docs/iod-coverage.md) · [Policy limits](docs/policy.md).
 
 ## Run the checks
 
@@ -74,6 +82,8 @@ npm run test:browser
 npm run build:preview
 npm run test:preview
 npm run test:exercise
+npm run test:accessibility
+npm run benchmark:ocr
 ```
 
 The browser suites start their own temporary local servers. On Linux, Playwright may need `npx playwright install --with-deps chromium firefox webkit` to install browser dependencies. Generated files stay under ignored `output/`.
@@ -89,13 +99,23 @@ uv run --locked dicom-workbench scrub /tmp/synthetic.dcm /tmp/scrubbed.dcm --rep
 
 Add `--with-text` when generating a fixture to include the fake text. Pass a JSON array of `{x, y, width, height}` rectangles with `scrub --regions /path/to/regions.json` to erase selected pixels. Choose new output paths each time: existing files are never overwritten.
 
+For a supported single study (up to 16 files), choose a new output directory:
+
+```sh
+uv run --locked dicom-workbench scrub-collection /tmp/new-study /path/to/slice1.dcm /path/to/slice2.dcm
+```
+
+Mappings stay in memory and never appear in reports. This preserves UID continuity within the supported subset; it is not full study reconstruction.
+
 ## How it is built
 
 The local tool uses Python and [pydicom](https://pydicom.github.io/) for DICOM parsing and writing. Plain JavaScript and Canvas handle the viewer. For this small, uncompressed, single-frame scope, that keeps the setup manageable.
 
+Text suggestions use pinned, self-hosted Tesseract.js 7 and English model assets. Images and recognised strings never go to a cloud OCR service. The worker is terminated after each run; no recognised strings enter reports or persistent storage.
+
 The public demo shares the visual design and pixel-display functions. A build step prepares the known examples, then publishes only HTML, CSS, JavaScript, fonts, sample JSON and the teaching pictures. Python runs during the build and in the optional local tool; it is not deployed as a web service.
 
-A broader viewer would need a different support plan. Full object validation, related-file processing, evaluated text detection and volume-level privacy work come before clinical use. The [research roadmap](docs/anonymisation-roadmap.md) and [implementation prompts](docs/prompts/README.md) break that work into smaller tasks.
+The next support decisions are native X-ray/compressed DICOM, reference-bearing collections and independently reviewed real-world text datasets. Full-volume defacing remains a separate research task. The [research roadmap](docs/anonymisation-roadmap.md) and [implementation prompts](docs/prompts/README.md) break that work into smaller tasks.
 
 ## Sources and contributing
 
@@ -103,6 +123,6 @@ The [50 teaching pictures](docs/teaching-image-credits.md) come from individuall
 
 The six small DICOM CT/MRI examples come from pydicom's existing NEMA and PCIR test collections. Four are only 16 × 16 pixels and are useful for edge-case testing, not anatomical detail. [Sources, hashes and preparation](docs/public-samples.md).
 
-Code is MIT licensed. Teaching images and thumbnails retain their individual licences, including ShareAlike where applicable. The bundled fonts have their own SIL Open Font Licences. Please use synthetic examples in bug reports and never attach patient data. Read the [security notes](SECURITY.md) before reporting a sensitive issue.
+Project code is MIT licensed. Vendored OCR software and model data retain their own licences; see [third-party notes](docs/third-party.md). Teaching images and thumbnails retain their individual licences, including ShareAlike where applicable. The bundled fonts have their own SIL Open Font Licences. Please use synthetic examples in bug reports and never attach patient data. Read the [security notes](SECURITY.md) before reporting a sensitive issue.
 
-[Changelog](CHANGELOG.md) · [Sharing drafts](docs/share.md) · [LinkedIn](https://www.linkedin.com/in/alhasan-alkaseem/) · [X](https://x.com/vesperlemma) · [GitHub](https://github.com/zakimaths)
+[Contributing](CONTRIBUTING.md) · [Release checklist](docs/release-checklist.md) · [Changelog](CHANGELOG.md) · [Sharing drafts](docs/share.md) · [LinkedIn](https://www.linkedin.com/in/alhasan-alkaseem/) · [X](https://x.com/vesperlemma) · [GitHub](https://github.com/zakimaths)

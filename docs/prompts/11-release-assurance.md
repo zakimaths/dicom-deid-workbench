@@ -2,7 +2,7 @@
 
 Roadmap references: A078-A080, A089-A096.
 
-Status: Can proceed independently after defining exact release artifacts.
+Status: Contribution/review templates, versioned reports, SBOM and CI provenance added in 0.3.0. Expert and clinical reviews remain outstanding.
 
 ## Prompt
 

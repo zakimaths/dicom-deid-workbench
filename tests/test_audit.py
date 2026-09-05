@@ -147,7 +147,6 @@ def test_valid_sequence_length_encodings_remain_supported(undefined_sequence, un
         "MR_small_RLE.dcm",
         "MR_truncated.dcm",
         "CT_small.dcm",
-        "MR_small.dcm",
         "examples_overlay.dcm",
         "image_dfl.dcm",
     ],

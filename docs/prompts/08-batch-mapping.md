@@ -2,7 +2,7 @@
 
 Roadmap references: A057-A059, A064, A070.
 
-Status: Depends on supported IOD validity and reference-graph tests.
+Status: Bounded single-study mapping delivered in 0.3.0. Reference-bearing collections and wider batch semantics remain unsupported.
 
 ## Prompt
 
