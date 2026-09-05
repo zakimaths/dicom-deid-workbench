@@ -5,6 +5,7 @@ from hashlib import sha256
 import json
 import math
 import platform
+from pathlib import Path
 import time
 import tracemalloc
 from importlib.metadata import version
@@ -223,9 +224,8 @@ def evaluate(corpus, predictor=detect):
         "policy": POLICY,
         "app_version": version("dicom-deid-workbench"),
         "python": platform.python_version(),
-        "detector_sha256": sha256(
-            __import__("pathlib").Path(__file__).with_name("records.py").read_bytes()
-        ).hexdigest(),
+        "detector_sha256": sha256(Path(__file__).with_name("records.py").read_bytes()).hexdigest(),
+        "scorer_sha256": sha256(Path(__file__).read_bytes()).hexdigest(),
         "corpus_sha256": sha256(
             json.dumps(corpus, sort_keys=True, ensure_ascii=True).encode()
         ).hexdigest(),

@@ -33,7 +33,7 @@ The separate evaluator accepts an independently annotated local text corpus. It 
 - All 18 identifier categories, with absent categories reported as untested (`null`).
 - Suggestion overlap precision, non-whitespace PHI character recall/precision/F1, and unnecessary changes to non-PHI characters.
 - Negative-record false positives, processing errors, complete denominators, latency and peak traced Python allocation for each case. Traced allocation is not total process memory.
-- Descriptive 95% Wilson intervals, declared source provenance, software version, detector fingerprint and corpus fingerprint.
+- Descriptive 95% Wilson intervals, declared source provenance, software version, detector/scorer fingerprints and corpus fingerprint.
 
 The detector receives only text. It does not receive the answer spans, subject keys or optional known-identifier list. Failed processing stays in the denominator and counts as a failed record. Duplicate text and a subject crossing validation/test splits are rejected. Group names and source text are never returned in the report.
 

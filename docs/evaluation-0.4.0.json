@@ -3,7 +3,8 @@
   "policy": "hospital-text-review-v1",
   "app_version": "0.4.0",
   "python": "3.12.11",
-  "detector_sha256": "99f2c8b30ff5e2402efdf14ff0c7a90b19d7045cc56d3a2e2ca9e0840bad3510",
+  "detector_sha256": "34214e9e372af13767aa740393fc8386c3633ed9d7302df6f772ae1415022746",
+  "scorer_sha256": "e48347c20e425f0dfef5abf35af18957e0373521438943dc28c266d43d78144b",
   "corpus_sha256": "2208e04e664db5712ef1dd81a7be8c88beb5d3da24e9c972e5a7251d20850381",
   "assistance": "none",
   "reports": [
@@ -253,8 +254,8 @@
         }
       },
       "latency_ms": {
-        "median": 1.031,
-        "p95": 1.126
+        "median": 1.07,
+        "p95": 1.191
       }
     },
     {
@@ -503,8 +504,8 @@
         }
       },
       "latency_ms": {
-        "median": 1.044,
-        "p95": 1.111
+        "median": 1.042,
+        "p95": 1.108
       }
     }
   ],

@@ -122,6 +122,14 @@ def detect(text, known=()):
     if not isinstance(known, (list, tuple)) or len(known) > 200:
         raise Unsupported("Provide at most 200 known identifiers.")
     spans = []
+
+    def add_span(start, end, category):
+        # Enforce the bound while collecting, before a repeated known value can
+        # allocate millions of candidate spans in a long record.
+        if len(spans) >= 10000:
+            raise Unsupported("Too many possible identifiers. Review a smaller text section.")
+        spans.append({"start": start, "end": end, "category": category})
+
     for category, pattern in [*LABEL_PATTERNS, *PATTERNS]:
         for match in pattern.finditer(text):
             start, end = (
@@ -133,7 +141,7 @@ def detect(text, known=()):
             while end > start and text[end - 1].isspace():
                 end -= 1
             if end > start:
-                spans.append({"start": start, "end": end, "category": category})
+                add_span(start, end, category)
     # Case-insensitive exact matching, with length-preserving normalization mapping.
     normalized, positions = [], []
     for index, char in enumerate(text):
@@ -154,13 +162,7 @@ def detect(text, known=()):
         if not query:
             raise Unsupported("A known identifier contains no visible text.")
         for match in re.finditer(re.escape(query), normalized):
-            spans.append(
-                {
-                    "start": positions[match.start()],
-                    "end": positions[match.end() - 1] + 1,
-                    "category": "other_identifier",
-                }
-            )
+            add_span(positions[match.start()], positions[match.end() - 1] + 1, "other_identifier")
     # Keep category distinctions for auditing; remove exact duplicates only.
     return validate_spans(
         [

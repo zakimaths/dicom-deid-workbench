@@ -264,3 +264,8 @@ def test_jpeg_orientation_and_exif_are_normalised_without_metadata():
     assert (result["width"], result["height"]) == (20, 10)
     raw = base64.b64decode(result["png"])
     assert b"PRIVATE_ARTIST" not in raw and not Image.open(BytesIO(raw)).info
+
+
+def test_dense_repeated_known_values_stop_at_candidate_bound():
+    with pytest.raises(Unsupported, match="Too many possible identifiers"):
+        detect("a" * 200_000, ["aa"] * 200)
