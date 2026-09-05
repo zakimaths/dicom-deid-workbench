@@ -1094,3 +1094,13 @@ footer p {
     width: 100%;
   }
 }
+
+/* Keep the records entry usable beside the existing import controls. */
+#records-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--boundary);
+}
