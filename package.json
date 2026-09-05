@@ -12,7 +12,8 @@
     "benchmark:ocr": "node scripts/benchmark_ocr.mjs",
     "sbom": ".venv/bin/python scripts/sbom.py",
     "test:records": "node tests/records-browser.mjs",
-    "benchmark:records": "PYTHONPATH=src .venv/bin/python scripts/build_record_corpus.py && PYTHONPATH=src .venv/bin/python scripts/evaluate_records.py --corpus output/records-corpus.json --report output/records-evaluation.json"
+    "benchmark:records": "PYTHONPATH=src .venv/bin/python scripts/build_record_corpus.py && PYTHONPATH=src .venv/bin/python scripts/evaluate_records.py --corpus output/records-corpus.json --report output/records-evaluation.json",
+    "test:mobile": "node tests/mobile-browser.mjs"
   },
   "devDependencies": {
     "@tesseract.js-data/eng": "1.0.0",

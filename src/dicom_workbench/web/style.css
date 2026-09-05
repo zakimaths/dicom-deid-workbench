@@ -122,7 +122,10 @@ button:not(:disabled):active,
 }
 .skip-link {
   position: absolute;
-  top: -100px;
+  top: 0;
+  transform: translateY(-150%);
+  max-width: calc(100% - 48px);
+  overflow-wrap: anywhere;
   left: var(--space-6);
   z-index: 2;
   padding: var(--space-3) var(--space-4);
@@ -130,7 +133,13 @@ button:not(:disabled):active,
   color: var(--background);
 }
 .skip-link:focus {
-  top: var(--space-3);
+  position: relative;
+  display: block;
+  top: auto;
+  left: auto;
+  width: fit-content;
+  margin: var(--space-3) var(--space-6);
+  transform: none;
   color: var(--background);
 }
 .topbar {
@@ -215,6 +224,7 @@ main {
   color: var(--accent);
 }
 h1 {
+  overflow-wrap: anywhere;
   margin: 0 0 var(--space-4);
   font: 400 clamp(16px, 1.6vw, 24px) / 1.7 var(--font-display);
   letter-spacing: -0.5px;
@@ -796,13 +806,13 @@ footer p {
 }
 @media (max-width: 850px) {
   .intro {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   h1 {
     font-size: 20px;
   }
   .workbench {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .viewer {
     border-right: 0;
@@ -829,6 +839,7 @@ footer p {
     padding: var(--space-4);
   }
   .topbar {
+    flex-wrap: wrap;
     padding: var(--space-3) var(--space-4);
     gap: var(--space-3);
   }

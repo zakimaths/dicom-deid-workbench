@@ -1,4 +1,4 @@
-# Accessibility checks for 0.3.0
+# Accessibility checks for 0.4.0
 
 The automated pass uses axe-core 4.13.0 with WCAG 2 A/AA, 2.1 A/AA and 2.2 AA rule tags. It covers the home page, library, challenge, scored/zoomed exercise, zoomed-out exercise and OCR review. Chromium, Firefox and WebKit run at desktop (1440px) and phone (390px) widths with reduced motion: 33 scans in total. These are tested states, not a WCAG certification.
 
@@ -22,8 +22,23 @@ npm run build:preview
 npm run test:accessibility
 ```
 
-Results and screenshots are saved under `output/accessibility/`. Remaining work: actual VoiceOver/screen-reader listening, installed Safari and physical touch-device testing, 200–400% text/zoom review, and sessions with disabled learners. Browser-engine tests do not substitute for those. Use the scoped review template in GitHub to record actual findings; do not mark them completed in advance.
+Results and screenshots are saved under `output/accessibility/`. Remaining work: actual VoiceOver/screen-reader listening, installed Safari and physical touch-device testing, actual browser/OS zoom and text-spacing review, and sessions with disabled learners. Browser-engine tests do not substitute for those. Use the scoped review template in GitHub to record actual findings; do not mark them completed in advance.
 
 ## Local hospital-record workspace (0.4.0)
 
-The new `/records` route was tested in Chromium, Firefox and WebKit at 1440 px and 390 px, with reduced motion. Eighteen automated axe states (empty, reviewed text and reviewed image) produced no WCAG A/AA violations. Full flows cover file import, manual text selection retained after re-suggesting, actual downloaded TXT/PNG contents, full-size image inspection, OCR worker termination, acknowledgement invalidation and malformed-import recovery. Numbered outlines distinguish proposed image selections from applied erasure. No new screen-reader/VoiceOver or physical-touch testing is claimed.
+The new `/records` route was tested in Chromium, Firefox and WebKit at 1440 px, 390 px and 320 px, with reduced motion. Twenty-seven automated axe states (empty, reviewed text and reviewed image) produced no WCAG A/AA violations. Full flows cover file import, manual text selection retained after re-suggesting, actual downloaded TXT/PNG contents, full-size image inspection, OCR worker termination, acknowledgement invalidation and malformed-import recovery. Numbered outlines distinguish proposed image selections from applied erasure. No new screen-reader/VoiceOver or physical-touch testing is claimed.
+
+
+## Extended mobile pass — 5 September 2026
+
+`npm run test:mobile` adds 64 automated states in touch-enabled Chromium and WebKit at 320 × 740, 390 × 844, 844 × 390 (landscape), and 768 × 1024 (tablet). It covers the home page, library, numbered selections, zoom in/out, actual scrubbed PNG downloads, doubled computed text sizes, and focused skip navigation. Together with the 33 standard states and 27 local-record states, this pass covers 124 automated accessibility states. These are observations of the tested states, not a claim that all accessibility barriers have been eliminated.
+
+The pass corrected narrow-grid/header wrapping, the hidden and focused skip-link layout, and WebKit overflow from long native practice-mode options. It also corrected a test race by waiting for the browser's worker-close notification before checking OCR cleanup. The application already called worker termination.
+
+The mobile suite runs in both the main checks and the public-demo deployment workflow. Results and viewport screenshots are under `output/mobile-audit/`; see [the scoped mobile report](mobile-accessibility-2026-09-05.md) for coverage and limitations.
+
+```sh
+npm run build:preview
+npm run test:mobile
+npm run test:records
+```

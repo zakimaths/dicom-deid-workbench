@@ -364,3 +364,10 @@
   outline: 3px solid var(--accent);
   outline-offset: -3px;
 }
+
+/* Keep long native option labels inside a narrow or enlarged-text layout. */
+.exercise-options select {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

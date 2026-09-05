@@ -60,6 +60,7 @@ jobs:
       - run: npm run build:preview
       - run: npm run test:exercise
       - run: npm run test:accessibility
+      - run: npm run test:mobile
       - run: npm run benchmark:ocr
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
@@ -69,6 +70,7 @@ jobs:
             output/browser/results.json
             output/browser/*.png
             output/accessibility/
+            output/mobile-audit/
             output/benchmarks/
             output/records-browser/
             output/records-evaluation.json

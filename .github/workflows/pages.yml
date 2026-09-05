@@ -32,6 +32,7 @@ jobs:
       - run: npm run test:preview
       - run: npm run test:exercise
       - run: npm run test:accessibility
+      - run: npm run test:mobile
       - run: npm run sbom
       - name: Package the tested allowlisted frontend
         run: tar -czf output/frontend.tar.gz -C output/pages .

@@ -122,7 +122,7 @@ Depth is mainly conveyed by surface changes and one-pixel borders. A small hard 
 
 ## Shapes
 
-Buttons have square corners. Panels, input boundaries, slider thumbs and status markers use straight edges. Main controls provide 44px or larger touch targets; primary buttons have a 48px minimum height. Visible keyboard focus uses a bright two-pixel outline with an offset from the target.
+Buttons have square corners. Panels, input boundaries, slider thumbs and status markers use straight edges. Main controls provide 44px or larger touch targets; primary buttons have a 48px minimum height. Visible keyboard focus uses a bright two-pixel outline with an offset from the target. The skip link occupies its own row above the header when focused, so enlarged text does not cover navigation. Narrow headers and grids wrap within the viewport.
 
 ## Components
 

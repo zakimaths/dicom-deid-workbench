@@ -32,7 +32,7 @@ try {
   const axe = await readFile("node_modules/axe-core/axe.min.js", "utf8");
   for (const [name, engine] of Object.entries({ chromium, firefox, webkit })) {
     browser = await engine.launch();
-    for (const width of [1440, 390]) {
+    for (const width of [1440, 390, 320]) {
       const page = await browser.newPage({
         viewport: { width, height: 1000 },
         acceptDownloads: true,
@@ -208,6 +208,10 @@ try {
       });
       if (width === 1440) {
         await page.locator("#image-reset").click();
+        // Browser notification of termination can arrive after the UI is ready.
+        const workerClosed = page.waitForEvent("worker").then(worker =>
+          worker.waitForEvent("close", { timeout: 45000 }),
+        );
         await page.locator("#image-ocr").click();
         await page.waitForFunction(
           () => !document.getElementById("image-ocr").disabled,
@@ -219,6 +223,7 @@ try {
             "proposed text boxes",
           ),
         );
+        await workerClosed;
         assert.equal(page.workers().length, 0);
       }
       if(name === "chromium" && width === 1440) {
@@ -256,7 +261,7 @@ try {
     JSON.stringify(audits, null, 2),
   );
   console.log(
-    `${audits.length} accessibility states and six complete local record/image flows passed.`,
+    `${audits.length} accessibility states and nine complete local record/image flows passed.`,
   );
 } finally {
   await browser?.close();
