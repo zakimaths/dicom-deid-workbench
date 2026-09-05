@@ -56,11 +56,45 @@
                 accept=".dcm,application/dicom"
             /></label>
           </div>
+          <button
+            id="browse-samples"
+            class="report-button"
+            aria-expanded="false"
+            aria-controls="sample-library"
+          >
+            Browse public scans
+          </button>
           <p class="drop-note">
             or drop a file here. Use synthetic or already-public data.
           </p>
         </div>
       </section>
+      <div id="sample-library" class="sample-library" hidden>
+        <p><strong>Two small scans to learn with</strong></p>
+        <p>
+          Public test images from pydicom, originally from NEMA. These are
+          low-resolution teaching slices, not full scans for diagnosis. They
+          load from your computer without an internet request.
+        </p>
+        <div class="sample-options">
+          <button id="sample-ct" class="report-button">
+            Load CT slice · 128 × 128
+          </button>
+          <button id="sample-mr" class="report-button">
+            Load MRI slice · 64 × 64
+          </button>
+        </div>
+        <p>
+          We prepare two small metadata adjustments for this viewer; the image
+          pixels stay unchanged.
+          <a
+            href="https://github.com/zakimaths/dicom-deid-workbench/blob/main/docs/public-samples.md"
+            target="_blank"
+            rel="noreferrer"
+            >Sources and preparation ↗</a
+          >
+        </p>
+      </div>
       <p class="notice">
         <span class="notice-icon" aria-hidden="true">!</span
         ><span
@@ -126,6 +160,7 @@
             </div>
             <button id="reset" class="reset" disabled>Reset</button>
           </div>
+          <p class="viewer-note" id="sample-details" hidden></p>
           <p class="viewer-note" id="image-details">
             Contrast controls affect the preview. Exported pixels stay
             unchanged.
@@ -194,6 +229,7 @@
         <span>v0.1.0</span>
       </footer>
     </main>
+    <div id="button-help" class="button-help" role="tooltip" hidden></div>
     <script type="module" src="/app.js"></script>
   </body>
 </html>

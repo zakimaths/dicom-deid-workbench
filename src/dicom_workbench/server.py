@@ -8,6 +8,7 @@ import time
 
 from .core import MAX_BYTES, Unsupported, transform
 from .fixtures import synthetic_dicom
+from .samples import SAMPLES, sample_dicom
 
 STATIC = Path(__file__).parent / "web"
 TTL_SECONDS = 600
@@ -126,7 +127,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.trusted(token=True):
             return
-        if self.path not in ("/api/demo", "/api/process", "/api/clear"):
+        sample_key = self.path.removeprefix("/api/samples/")
+        if self.path not in ("/api/demo", "/api/process", "/api/clear") and not (
+            self.path.startswith("/api/samples/") and sample_key in SAMPLES
+        ):
             return self.respond(404, {"error": "Not found."})
         # Every new import invalidates the previous result, even when import fails.
         self.server.clear()
@@ -140,6 +144,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.respond(200, {"cleared": True})
             if self.path == "/api/demo":
                 data = synthetic_dicom()
+            elif self.path.startswith("/api/samples/"):
+                data = sample_dicom(sample_key)
             else:
                 if self.headers.get("Content-Type") != "application/dicom":
                     raise Unsupported("Upload a DICOM file as application/dicom.")
@@ -157,6 +163,9 @@ class Handler(BaseHTTPRequestHandler):
                     "image": result.image,
                     "report": result.report,
                     "synthetic": self.path == "/api/demo",
+                    "sample": SAMPLES[sample_key]
+                    if self.path.startswith("/api/samples/")
+                    else None,
                 },
             )
         except Unsupported as error:

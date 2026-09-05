@@ -22,3 +22,9 @@ No real patient data, external clinical datasets, MIDI benchmark run, full IOD v
 ## Reproducing an issue
 
 Use `dicom-workbench fixture` and modify only fake fields. State the source commit, operating system, architecture, Python/browser version, command and expected behaviour. Never attach patient data to an issue.
+
+## Public samples and student help (September 2026)
+
+37 Python tests and 7 JavaScript pixel tests pass locally on macOS. New tests pin the two upstream scan hashes, compare prepared metadata element by element, preserve original pixel bytes through scrubbing, and check sample endpoint authentication, invalid identifiers, downloads and clearing. The source and wheel builds pass.
+
+Chromium checks cover opening both samples, switching back to the synthetic example, resetting acknowledgement on a new image, and downloading/reopening the CT output. Hover help, keyboard focus, Escape dismissal, moving the pointer onto a help bubble, disabled-control help and the touch-friendly guide were exercised. Screens at 320, 390, 768 and 1440 pixels have no page-wide horizontal overflow. No external requests or browser JavaScript errors occurred. Safari, Firefox and a screen reader were not tested.

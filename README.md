@@ -1,6 +1,6 @@
 # DICOM Workbench
 
-A small **local DICOM metadata scrubber and 2D viewer**. Load a synthetic example, adjust window/level, inspect the metadata actions and download the transformed file.
+A small **local DICOM metadata scrubber and 2D viewer**. Load a synthetic example or a public CT/MRI teaching slice, adjust window/level, inspect the metadata actions and download the transformed file.
 
 Built for a straightforward macOS setup. One runtime dependency, no frontend build, no cloud service.
 
@@ -19,7 +19,7 @@ uv sync --locked
 uv run --locked dicom-workbench serve
 ```
 
-Open **[http://127.0.0.1:8765](http://127.0.0.1:8765)** and select **Try synthetic example**. No DICOM download is needed. Stop with `Ctrl+C`.
+Open **[http://127.0.0.1:8765](http://127.0.0.1:8765)** and select **Try synthetic example**. Or select **Browse public scans** for two local teaching slices from pydicom/NEMA. No separate DICOM download is needed. Hover over or focus on a button for a plain-language explanation; the **Button guide** also works on touch screens. See [sample sources and preparation](docs/public-samples.md). Stop with `Ctrl+C`.
 
 uv installs the Python version specified in `.python-version`. The service runs natively; Docker and Node.js are not needed to use the app. Installation needs network access; the app itself uses only local assets and loopback requests. If port 8765 is occupied, use `serve --port 8766`.
 
@@ -84,7 +84,7 @@ Python + [pydicom](https://pydicom.github.io/) handles file parsing and writing.
 This intentionally simplifies the original React/Cornerstone proposal. For one uncompressed frame, a small, tested display pipeline avoids a build system, WebGL setup and codec workers. A future broader viewer should adopt Cornerstone3D rather than accumulate custom image-format handling.
 
 ```text
-local file / synthetic generator
+local file / synthetic generator / pinned public samples
              ↓
       Python metadata policy ← CLI
              ↓
@@ -109,4 +109,4 @@ The design is informed by [DICOM PS3.15](https://dicom.nema.org/medical/dicom/cu
 
 Pixel redaction, facial de-identification, DICOMweb and clinical workflows are outside this release. Suggestions and synthetic reproductions are welcome.
 
-Code is MIT licensed. Bundled fonts use the SIL Open Font License; see [font attribution](src/dicom_workbench/web/fonts/README.md). Generated demo geometry is original; no external patient dataset is redistributed. [Shareable post drafts](docs/share.md).
+Code is MIT licensed. Bundled fonts use the SIL Open Font License; see [font attribution](src/dicom_workbench/web/fonts/README.md). Generated demo geometry is original. Public teaching slices are read from the existing pydicom dependency; see [provenance and preparation](docs/public-samples.md). [Shareable post drafts](docs/share.md).

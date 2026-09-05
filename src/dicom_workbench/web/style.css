@@ -940,3 +940,89 @@ footer p {
     appearance: auto;
   }
 }
+
+/* Public teaching scans and explanations share the existing panel language. */
+.sample-library {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--divider);
+}
+.sample-library p {
+  margin: 0 0 12px;
+}
+.sample-library a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.sample-options {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.help-anchor {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+}
+.help-anchor > button,
+.help-anchor > .file-label {
+  width: 100%;
+}
+.help-anchor:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.exports > .help-anchor,
+.sample-options > .help-anchor {
+  display: flex;
+  width: 100%;
+}
+.button-help {
+  position: fixed;
+  z-index: 20;
+  width: min(350px, calc(100vw - 16px));
+  padding: 14px;
+  border: 1px solid var(--accent);
+  background: #192019;
+  color: #e8ebdd;
+  box-shadow: 3px 3px #000;
+  font-size: 14px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.button-guide {
+  margin-top: 16px;
+  border-top: 1px solid var(--divider);
+  padding-top: 12px;
+}
+.button-guide summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 10px 0;
+  font-size: 13px;
+}
+.button-guide p {
+  margin: 12px 0;
+  font-size: 14px;
+}
+@media (max-width: 480px) {
+  .import-actions > .help-anchor {
+    width: 100%;
+  }
+  .controls > .help-anchor {
+    grid-column: 1 / -1;
+  }
+}
+.sample-library {
+  margin: 0 0 24px;
+  background: var(--panel);
+  font-size: 14px;
+}
+.sample-options {
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 600px) {
+  .sample-options {
+    grid-template-columns: 1fr;
+  }
+}

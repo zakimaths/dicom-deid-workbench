@@ -90,3 +90,22 @@ def test_expiry_and_oversized_request(local):
     local.service_actions()
     assert local.result is None
     assert req(local, "/api/process", "POST", {**headers, "Content-Length": "99999999"})[0] == 422
+
+
+@pytest.mark.parametrize("kind", ["ct", "mr"])
+def test_public_sample_routes(local, kind):
+    path = f"/api/samples/{kind}"
+    assert req(local, path, "POST")[0] == 403
+    headers = {"X-Workbench-Token": local.token}
+    assert req(local, path, "POST", {**headers, "Origin": "https://attacker.example"})[0] == 403
+    status, data, _ = req(local, path, "POST", headers)
+    assert status == 200
+    result = json.loads(data)
+    assert result["sample"]["file"] == f"{kind.upper()}_small.dcm"
+    assert not result["synthetic"]
+    assert result["image"]["modality"] == kind.upper()
+    assert req(local, f"/api/jobs/{result['job']}/dicom", headers=headers)[0] == 200
+    assert req(local, "/api/samples/unknown", "POST", headers)[0] == 404
+    assert req(local, "/api/samples/../../secret", "POST", headers)[0] == 404
+    req(local, "/api/clear", "POST", headers)
+    assert local.result is None
