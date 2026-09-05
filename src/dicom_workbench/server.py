@@ -128,10 +128,16 @@ class Handler(BaseHTTPRequestHandler):
         if not self.trusted(token=True):
             return
         sample_key = self.path.removeprefix("/api/samples/")
-        if self.path not in ("/api/demo", "/api/process", "/api/clear") and not (
-            self.path.startswith("/api/samples/") and sample_key in SAMPLES
-        ):
+        if self.path not in (
+            "/api/demo",
+            "/api/demo-text",
+            "/api/process",
+            "/api/clear",
+            "/api/redact",
+        ) and not (self.path.startswith("/api/samples/") and sample_key in SAMPLES):
             return self.respond(404, {"error": "Not found."})
+        if self.path == "/api/redact":
+            return self.redact()
         # Every new import invalidates the previous result, even when import fails.
         self.server.clear()
         try:
@@ -142,8 +148,8 @@ class Handler(BaseHTTPRequestHandler):
                 raise Unsupported("This version accepts files up to 8 MiB.")
             if self.path == "/api/clear":
                 return self.respond(200, {"cleared": True})
-            if self.path == "/api/demo":
-                data = synthetic_dicom()
+            if self.path in ("/api/demo", "/api/demo-text"):
+                data = synthetic_dicom(with_text=self.path == "/api/demo-text")
             elif self.path.startswith("/api/samples/"):
                 data = sample_dicom(sample_key)
             else:
@@ -162,7 +168,8 @@ class Handler(BaseHTTPRequestHandler):
                     "job": self.server.job,
                     "image": result.image,
                     "report": result.report,
-                    "synthetic": self.path == "/api/demo",
+                    "synthetic": self.path in ("/api/demo", "/api/demo-text"),
+                    "text_exercise": self.path == "/api/demo-text",
                     "sample": SAMPLES[sample_key]
                     if self.path.startswith("/api/samples/")
                     else None,
@@ -173,6 +180,58 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             self.respond(
                 422, {"error": "The file could not be processed. Try the synthetic example."}
+            )
+
+    def redact(self):
+        previous, previous_job = self.server.result, self.server.job
+        expired = time.monotonic() - self.server.created > TTL_SECONDS
+        # Failed edits also invalidate the old download. Never return a stale export.
+        self.server.clear()
+        try:
+            if previous is None or expired:
+                return self.respond(404, {"error": "This image has expired. Import it again."})
+            if (
+                self.headers.get("Transfer-Encoding")
+                or self.headers.get("Content-Type") != "application/json"
+            ):
+                raise Unsupported("Send a small JSON selection for the current image.")
+            length = int(self.headers.get("Content-Length", "0"))
+            if not 0 < length <= 8192:
+                raise Unsupported("The region selection is too large or empty.")
+            raw = self.rfile.read(length)
+            if len(raw) != length:
+                raise Unsupported("The region selection was incomplete.")
+            selection = json.loads(raw)
+            if not isinstance(selection, dict) or set(selection) != {"job", "regions"}:
+                raise Unsupported("Choose regions for the current image.")
+            if not isinstance(selection["regions"], list) or not selection["regions"]:
+                raise Unsupported("Select at least one rectangle before applying an edit.")
+            if selection["job"] != previous_job:
+                raise Unsupported("The selected image is no longer current. Import it again.")
+            if previous.report["redaction"]["regions"]:
+                raise Unsupported(
+                    "This image has already been edited. Import it again to change the selection."
+                )
+            result = transform(previous.dicom, regions=selection["regions"])
+            # Preserve the original metadata action report; add the pixel operation.
+            result.report["actions"] = [
+                dict(a, action="replaced") if a["tag"] == "(7FE0,0010)" else dict(a)
+                for a in previous.report["actions"]
+            ]
+            result.report["counts"] = {
+                action: sum(a["action"] == action for a in result.report["actions"])
+                for action in ("removed", "emptied", "replaced", "kept")
+            }
+            self.server.result, self.server.job = result, secrets.token_urlsafe(18)
+            self.server.created = time.monotonic()
+            self.respond(
+                200, {"job": self.server.job, "image": result.image, "report": result.report}
+            )
+        except Unsupported as error:
+            self.respond(422, {"error": str(error)})
+        except Exception:
+            self.respond(
+                422, {"error": "The selection could not be verified. Import the image again."}
             )
 
 

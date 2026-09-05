@@ -1026,3 +1026,56 @@ footer p {
     grid-template-columns: 1fr;
   }
 }
+.redaction-panel {
+  padding: 20px 24px;
+  border-top: 1px solid var(--divider);
+}
+.redaction-panel h2 {
+  font:
+    600 16px "JetBrains Mono",
+    monospace;
+  margin: 0 0 12px;
+}
+.redaction-panel p {
+  font-size: 13px;
+  color: var(--secondary);
+}
+.redaction-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0;
+}
+.region-inputs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.region-inputs label {
+  font-size: 13px;
+}
+.region-inputs input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--boundary);
+}
+#canvas.marking {
+  cursor: crosshair;
+  touch-action: none;
+}
+@media (max-width: 480px) {
+  .region-inputs {
+    grid-template-columns: 1fr 1fr;
+  }
+  .redaction-panel {
+    padding: 16px;
+  }
+  .redaction-actions > .help-anchor {
+    width: 100%;
+  }
+}

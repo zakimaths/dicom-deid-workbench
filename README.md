@@ -1,12 +1,12 @@
 # DICOM Workbench
 
-A small **local DICOM metadata scrubber and 2D viewer**. Load a synthetic example or a public CT/MRI teaching slice, adjust window/level, inspect the metadata actions and download the transformed file.
+A small **local DICOM metadata scrubber and 2D viewer**. Load a synthetic example or a public CT/MRI teaching slice, adjust window/level, inspect metadata actions, optionally erase selected pixel regions, and download the transformed file.
 
 Built for a straightforward macOS setup. One runtime dependency, no frontend build, no cloud service.
 
-> **Educational prototype.** This is a limited metadata policy, not a complete anonymiser, a HIPAA compliance tool or a diagnostic viewer. Pixels and recognisable anatomy are not assessed. Use synthetic or already-public data. The export is not automatically safe to publish.
+> **Educational prototype.** This is a limited metadata policy, not a complete anonymiser, a HIPAA compliance tool or a diagnostic viewer. Pixels and recognisable anatomy are not assessed. Use synthetic or already-public data. The export is not automatically safe to publish. Manual redaction verifies only the selected regions; remaining pixels and anatomy stay unassessed.
 
-![DICOM Workbench displaying a generated synthetic phantom](docs/screenshot.png)
+![DICOM Workbench after erasing fake text from a synthetic phantom](docs/screenshot.png)
 
 ## Run locally
 
@@ -110,3 +110,21 @@ The design is informed by [DICOM PS3.15](https://dicom.nema.org/medical/dicom/cu
 Pixel redaction, facial de-identification, DICOMweb and clinical workflows are outside this release. Suggestions and synthetic reproductions are welcome.
 
 Code is MIT licensed. Bundled fonts use the SIL Open Font License; see [font attribution](src/dicom_workbench/web/fonts/README.md). Generated demo geometry is original. Public teaching slices are read from the existing pydicom dependency; see [provenance and preparation](docs/public-samples.md). [Shareable post drafts](docs/share.md).
+
+## Stronger cleaning: version 0.2.0
+
+Open **Try a fake-text exercise**, add the suggested rectangle (left 16, top 12, width 132, height 14), then select **Erase selected pixels**. You can also mark a rectangle by dragging over the image or enter source-pixel coordinates. Pending selections pause downloads. After applying, inspect the actual saved-image preview and acknowledge its limits again before downloading. Reimport to start over; one set of up to 32 rectangles is supported per load.
+
+The server permanently changes selected stored samples and reopens the file to check every selected and unselected pixel. It also checks the custom metadata contract. This is not an automatic search for identifying content. Inputs declaring burned-in identifying annotations or recognisable features still fail the existing validation gate.
+
+For a repeatable command-line exercise:
+
+```sh
+uv run --locked dicom-workbench fixture /tmp/text-exercise.dcm --with-text
+printf '[{"x":16,"y":12,"width":132,"height":14}]' > /tmp/regions.json
+uv run --locked dicom-workbench scrub /tmp/text-exercise.dcm /tmp/redacted.dcm --regions /tmp/regions.json --report /tmp/redaction-report.json
+```
+
+Report schema 2 binds the report to `output_sha256` and separates `selected_regions_only` from complete assessment. The metadata policy remains `single-frame-metadata-v1`; applied pixel erasure is `stored-rectangles-v1`. Semantic reproducibility excludes the output digest because output UIDs intentionally change.
+
+See the [research PDF](docs/anonymisation-strength-roadmap.pdf), [96-action research roadmap](docs/anonymisation-roadmap.md), [agent prompts](docs/prompts/README.md), [assurance and risk register](docs/assurance.md), and [changelog](CHANGELOG.md). The next major correctness milestone is independent IOD validation and required CT/MR field handling.

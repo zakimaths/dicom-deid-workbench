@@ -98,9 +98,10 @@
       <p class="notice">
         <span class="notice-icon" aria-hidden="true">!</span
         ><span
-          ><strong>Metadata scrubbing is only one step.</strong> Pixels and
-          recognisable anatomy are not assessed. This is an educational
-          prototype, not a clinical anonymiser.</span
+          ><strong>Metadata scrubbing is only one step.</strong> Selected areas
+          can be erased. Remaining pixels and recognisable anatomy are not
+          assessed. This is an educational prototype, not a clinical
+          anonymiser.</span
         >
       </p>
       <div class="status-line">
@@ -160,6 +161,82 @@
             </div>
             <button id="reset" class="reset" disabled>Reset</button>
           </div>
+          <section
+            class="redaction-panel"
+            aria-label="Erase selected image areas"
+          >
+            <h2>Erase text from the picture</h2>
+            <p>
+              This changes the saved image. Mark a rectangle or enter its
+              position in image pixels. Unselected areas are not assessed.
+            </p>
+            <div class="redaction-actions">
+              <button id="text-exercise" class="report-button">
+                Try a fake-text exercise
+              </button>
+              <button
+                id="mark-region"
+                class="report-button"
+                aria-pressed="false"
+                disabled
+              >
+                Mark an area
+              </button>
+            </div>
+            <div class="region-inputs">
+              <label
+                >Left (x)<input
+                  id="region-x"
+                  type="number"
+                  min="0"
+                  value="16"
+                  step="1"
+                  disabled
+              /></label>
+              <label
+                >Top (y)<input
+                  id="region-y"
+                  type="number"
+                  min="0"
+                  value="12"
+                  step="1"
+                  disabled
+              /></label>
+              <label
+                >Width<input
+                  id="region-width"
+                  type="number"
+                  min="1"
+                  value="132"
+                  step="1"
+                  disabled
+              /></label>
+              <label
+                >Height<input
+                  id="region-height"
+                  type="number"
+                  min="1"
+                  value="14"
+                  step="1"
+                  disabled
+              /></label>
+            </div>
+            <div class="redaction-actions">
+              <button id="add-region" class="report-button" disabled>
+                Add rectangle
+              </button>
+              <button id="undo-regions" class="report-button" disabled>
+                Discard selection
+              </button>
+              <button id="apply-regions" class="primary" disabled>
+                Erase selected pixels
+              </button>
+            </div>
+            <p id="region-status" role="status">
+              Open an image to select areas. The exercise has made-up text at x
+              16, y 12, width 132, height 14.
+            </p>
+          </section>
           <p class="viewer-note" id="sample-details" hidden></p>
           <p class="viewer-note" id="image-details">
             Contrast controls affect the preview. Exported pixels stay
@@ -206,8 +283,8 @@
           <div class="exports">
             <label class="ack"
               ><input id="ack" type="checkbox" disabled /><span
-                >I understand this export only scrubs metadata; its pixels have
-                not been assessed.</span
+                >I understand that unselected pixels and recognisable anatomy
+                remain unassessed.</span
               ></label
             ><button class="primary download" id="download" disabled>
               Download scrubbed DICOM <span aria-hidden="true">↓</span></button
@@ -226,7 +303,7 @@
           One image at a time. Temporary results expire after 10 minutes or when
           cleared.
         </p>
-        <span>v0.1.0</span>
+        <span>v0.2.0</span>
       </footer>
     </main>
     <div id="button-help" class="button-help" role="tooltip" hidden></div>

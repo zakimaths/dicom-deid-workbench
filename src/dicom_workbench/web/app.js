@@ -2,6 +2,11 @@ import { decode, rgba } from "./pixels.js";
 
 const $ = (id) => document.getElementById(id);
 let token, job, pixels, image, defaultCenter, defaultWidth;
+let regions = [],
+  marking = false,
+  dragStart = null,
+  edited = false,
+  sourceLabel = {};
 let busy = false;
 let generation = 0;
 let expiry;
@@ -31,7 +36,12 @@ async function request(path, options = {}) {
 
 function clearView() {
   clearTimeout(expiry);
+  regions = [];
+  dragStart = null;
+  marking = false;
+  edited = false;
   job = pixels = image = null;
+  syncRegions();
   $("canvas").hidden = true;
   $("canvas").width = $("canvas").height = 1;
   $("empty").hidden = false;
@@ -84,10 +94,29 @@ function render() {
     );
   $("center-value").textContent = String(center);
   $("width-value").textContent = String(width);
+  const ctx = canvas.getContext("2d");
+  ctx.strokeStyle = "#ffb000";
+  ctx.lineWidth = 1;
+  for (const r of regions)
+    ctx.strokeRect(
+      r.x + 0.5,
+      r.y + 0.5,
+      Math.max(0, r.width - 1),
+      Math.max(0, r.height - 1),
+    );
 }
 
 function present(result, buffer) {
   job = result.job;
+  regions = [];
+  dragStart = null;
+  marking = false;
+  edited = Boolean(result.report.redaction?.regions.length);
+  sourceLabel = {
+    synthetic: result.synthetic,
+    sample: result.sample,
+    text_exercise: result.text_exercise,
+  };
   image = result.image;
   pixels = decode(buffer, image);
   let low = Infinity,
@@ -124,7 +153,9 @@ function present(result, buffer) {
     ? `Source: pydicom / NEMA · ${result.sample.file}. ${result.sample.preparation}`
     : "";
   $("image-title").textContent = result.synthetic
-    ? "Geometric CT phantom"
+    ? result.text_exercise
+      ? "Fake-text redaction exercise"
+      : "Geometric CT phantom"
     : (result.sample?.title ?? `${image.modality} · imported image`);
   $("image-details").textContent =
     `${image.columns} × ${image.rows} · 16-bit ${image.signed ? "signed" : "unsigned"} · ${image.modality} · ${result.synthetic ? "Generated geometry. No patient data." : "Pixels and anatomy not assessed."}`;
@@ -156,12 +187,21 @@ function present(result, buffer) {
     row.append(left, badge);
     $("changes").append(row);
   }
-  $("integrity-title").textContent = "Pixel bytes preserved";
-  $("integrity-copy").textContent =
-    "Export reopened successfully. File metadata rebuilt; preamble cleared. Pixels not assessed for identity.";
+  $("integrity-title").textContent = edited
+    ? "Selected pixels erased and checked"
+    : "Pixel bytes preserved";
+  $("viewport-caption").textContent = edited
+    ? "Selected areas erased · remaining areas unassessed"
+    : "Pixels unchanged · single frame";
+  $("integrity-copy").textContent = edited
+    ? "Export reopened. Selected pixels match the replacement; all pixels outside your selection are unchanged. Complete anonymity is not established."
+    : "Export reopened successfully. Metadata contract checked; pixels not assessed for identity.";
   $("integrity-icon").textContent = "✓";
   for (const id of ["center", "width", "reset", "clear", "ack", "report"])
     $(id).disabled = false;
+  $("ack").checked = false;
+  $("download").disabled = true;
+  syncRegions();
   render();
   expiry = setTimeout(() => {
     clearView();
@@ -187,7 +227,7 @@ async function load(file, sample = null) {
   document.querySelector(".workbench").setAttribute("aria-busy", "true");
   const current = ++generation;
   clearView();
-  for (const id of ["demo", "file", "sample-ct", "sample-mr"])
+  for (const id of ["demo", "file", "sample-ct", "sample-mr", "text-exercise"])
     $(id).disabled = true;
   status(
     sample
@@ -202,7 +242,13 @@ async function load(file, sample = null) {
       throw new Error("This version accepts files up to 8 MiB.");
     }
     const response = await request(
-      sample ? `/api/samples/${sample}` : file ? "/api/process" : "/api/demo",
+      sample === "text"
+        ? "/api/demo-text"
+        : sample
+          ? `/api/samples/${sample}`
+          : file
+            ? "/api/process"
+            : "/api/demo",
       {
         method: "POST",
         ...(file
@@ -225,14 +271,21 @@ async function load(file, sample = null) {
   } finally {
     busy = false;
     document.querySelector(".workbench").setAttribute("aria-busy", "false");
-    for (const id of ["demo", "file", "sample-ct", "sample-mr"])
+    for (const id of [
+      "demo",
+      "file",
+      "sample-ct",
+      "sample-mr",
+      "text-exercise",
+    ])
       $(id).disabled = false;
     $("file").value = "";
+    syncRegions();
   }
 }
 
 async function download(kind, name) {
-  if (!job) return;
+  if (!job || regions.length || busy) return;
   try {
     const blob = await (await request(`/api/jobs/${job}/${kind}`)).blob();
     const url = URL.createObjectURL(blob),
@@ -247,6 +300,7 @@ async function download(kind, name) {
 }
 
 $("demo").addEventListener("click", () => load());
+$("text-exercise").addEventListener("click", () => load(null, "text"));
 $("file").addEventListener("change", (event) => {
   if (event.target.files[0]) load(event.target.files[0]);
 });
@@ -257,7 +311,8 @@ $("reset").addEventListener("click", () => {
   render();
 });
 $("ack").addEventListener("change", () => {
-  $("download").disabled = !$("ack").checked || !job;
+  $("download").disabled =
+    !$("ack").checked || !job || busy || regions.length > 0;
 });
 $("download").addEventListener("click", () =>
   download("dicom", "metadata-scrubbed.dcm"),
@@ -293,7 +348,7 @@ $("dropzone").addEventListener("drop", (e) => {
 });
 window.addEventListener("dragover", (e) => e.preventDefault());
 window.addEventListener("drop", (e) => e.preventDefault());
-for (const id of ["demo", "file", "sample-ct", "sample-mr"])
+for (const id of ["demo", "file", "sample-ct", "sample-mr", "text-exercise"])
   $(id).disabled = true;
 fetch("/api/session")
   .then((r) => {
@@ -302,7 +357,13 @@ fetch("/api/session")
   })
   .then((session) => {
     token = session.token;
-    for (const id of ["demo", "file", "sample-ct", "sample-mr"])
+    for (const id of [
+      "demo",
+      "file",
+      "sample-ct",
+      "sample-mr",
+      "text-exercise",
+    ])
       $(id).disabled = false;
   })
   .catch(() =>
@@ -322,6 +383,16 @@ for (const kind of ["ct", "mr"])
 
 // The same explanations are available on hover, keyboard focus and in a touch-friendly guide.
 const helpText = {
+  "text-exercise":
+    "Opens a made-up image with FAKE ID 123 printed in its pixels. Use the suggested rectangle to practise permanently erasing it.",
+  "mark-region":
+    "Switches on drawing. Drag across text in the picture to select a rectangle. Nothing is erased until you press Erase selected pixels.",
+  "add-region":
+    "Adds the rectangle described by the four numbers. Left and top start at zero at the upper-left image corner. This is also a keyboard-friendly way to select an area.",
+  "undo-regions":
+    "Removes all rectangles you have selected but have not yet applied. The image stays as it was.",
+  "apply-regions":
+    "Permanently replaces the selected pixels in a new file. The app reopens it to check that those pixels were replaced and all other pixels stayed the same. Reimport the original to start again.",
   demo: "Creates a made-up scan using simple shapes. Start here to practise changing contrast and see which personal details the app removes.",
   "browse-samples":
     "Opens a small collection of public CT and MRI teaching images. Choose one to practise with a scan instead of the made-up shapes.",
@@ -335,7 +406,7 @@ const helpText = {
   clear:
     "Closes the current image and removes its temporary result from the app. It does not delete the original file on your computer.",
   download:
-    "Saves a new DICOM file with the supported personal details removed from its attached information. The picture itself is unchanged. Load an image and tick the acknowledgement first.",
+    "Saves a new DICOM file with the supported personal details removed from its attached information. Selected pixel regions are erased only after you apply them. Unselected areas remain unassessed. Load an image and tick the acknowledgement first.",
   report:
     "Saves a list of which information fields were removed, emptied or replaced. It leaves out the original values, so you can review the changes without copying those details.",
 };
@@ -435,3 +506,167 @@ window.addEventListener(
   },
   true,
 );
+
+function syncRegions() {
+  const ready = Boolean(job) && !busy && !edited;
+  for (const id of [
+    "mark-region",
+    "add-region",
+    "region-x",
+    "region-y",
+    "region-width",
+    "region-height",
+  ])
+    $(id).disabled = !ready;
+  $("apply-regions").disabled = !ready || !regions.length;
+  $("undo-regions").disabled = !ready || !regions.length;
+  $("mark-region").setAttribute("aria-pressed", String(marking));
+  $("canvas").classList.toggle("marking", marking);
+  $("region-status").textContent = edited
+    ? "Selected regions erased and verified. Reimport the image to make a different selection."
+    : regions.length
+      ? `${regions.length} rectangle(s) selected. Exports are paused until you erase these pixels or discard the selection.`
+      : "Select an area. Exercise coordinates: left 16, top 12, width 132, height 14.";
+  if (regions.length) {
+    $("ack").checked = false;
+    $("download").disabled = $("report").disabled = true;
+  } else if (job && !busy) $("report").disabled = false;
+}
+function addRegion(box) {
+  if (!job || busy || edited) return;
+  if (
+    regions.length >= 32 ||
+    Object.values(box).some((v) => !Number.isInteger(v)) ||
+    box.x < 0 ||
+    box.y < 0 ||
+    box.width < 1 ||
+    box.height < 1 ||
+    box.x + box.width > image.columns ||
+    box.y + box.height > image.rows
+  ) {
+    status(
+      "Choose a rectangle inside the image using whole numbers. Up to 32 rectangles are supported.",
+      true,
+    );
+    return;
+  }
+  regions.push(box);
+  syncRegions();
+  render();
+}
+$("mark-region").addEventListener("click", () => {
+  marking = !marking;
+  syncRegions();
+});
+$("add-region").addEventListener("click", () =>
+  addRegion(
+    Object.fromEntries(
+      ["x", "y", "width", "height"].map((k) => [
+        k,
+        Number($("region-" + k).value),
+      ]),
+    ),
+  ),
+);
+$("undo-regions").addEventListener("click", () => {
+  regions = [];
+  syncRegions();
+  render();
+});
+function imagePoint(event) {
+  const rect = $("canvas").getBoundingClientRect();
+  return {
+    x: Math.max(
+      0,
+      Math.min(
+        image.columns - 1,
+        Math.floor(((event.clientX - rect.left) * image.columns) / rect.width),
+      ),
+    ),
+    y: Math.max(
+      0,
+      Math.min(
+        image.rows - 1,
+        Math.floor(((event.clientY - rect.top) * image.rows) / rect.height),
+      ),
+    ),
+  };
+}
+$("canvas").addEventListener("pointerdown", (event) => {
+  if (!marking || busy || !image || event.button !== 0) return;
+  dragStart = imagePoint(event);
+  $("canvas").setPointerCapture(event.pointerId);
+  event.preventDefault();
+});
+$("canvas").addEventListener("pointerup", (event) => {
+  if (!dragStart || !image) return;
+  const end = imagePoint(event),
+    start = dragStart;
+  dragStart = null;
+  addRegion({
+    x: Math.min(start.x, end.x),
+    y: Math.min(start.y, end.y),
+    width: Math.abs(start.x - end.x) + 1,
+    height: Math.abs(start.y - end.y) + 1,
+  });
+});
+$("canvas").addEventListener("pointercancel", () => {
+  dragStart = null;
+});
+$("apply-regions").addEventListener("click", async () => {
+  if (busy || !job || !regions.length) return;
+  const selection = { job, regions },
+    label = { ...sourceLabel };
+  busy = true;
+  $("ack").checked = false;
+  syncRegions();
+  for (const id of [
+    "demo",
+    "file",
+    "sample-ct",
+    "sample-mr",
+    "text-exercise",
+    "clear",
+    "download",
+    "report",
+    "ack",
+  ])
+    $(id).disabled = true;
+  document.querySelector(".workbench").setAttribute("aria-busy", "true");
+  status("Erasing selected pixels and checking the saved result…");
+  try {
+    const result = await (
+      await request("/api/redact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(selection),
+      })
+    ).json();
+    const raw = await (
+      await request(`/api/jobs/${result.job}/pixels`)
+    ).arrayBuffer();
+    present({ ...result, ...label }, raw);
+    status(
+      "Selected regions erased and verified. Review the result, then acknowledge the remaining limitations before downloading.",
+    );
+  } catch (error) {
+    clearView();
+    status(
+      error.message ||
+        "The edit could not be verified. Import the image again.",
+      true,
+    );
+  } finally {
+    busy = false;
+    syncRegions();
+    document.querySelector(".workbench").setAttribute("aria-busy", "false");
+    for (const id of [
+      "demo",
+      "file",
+      "sample-ct",
+      "sample-mr",
+      "text-exercise",
+    ])
+      $(id).disabled = false;
+  }
+});

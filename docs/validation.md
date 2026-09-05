@@ -28,3 +28,11 @@ Use `dicom-workbench fixture` and modify only fake fields. State the source comm
 37 Python tests and 7 JavaScript pixel tests pass locally on macOS. New tests pin the two upstream scan hashes, compare prepared metadata element by element, preserve original pixel bytes through scrubbing, and check sample endpoint authentication, invalid identifiers, downloads and clearing. The source and wheel builds pass.
 
 Chromium checks cover opening both samples, switching back to the synthetic example, resetting acknowledgement on a new image, and downloading/reopening the CT output. Hover help, keyboard focus, Escape dismissal, moving the pointer onto a help bubble, disabled-control help and the touch-friendly guide were exercised. Screens at 320, 390, 768 and 1440 pixels have no page-wide horizontal overflow. No external requests or browser JavaScript errors occurred. Safari, Firefox and a screen reader were not tested.
+
+## Stored-pixel redaction and assurance (version 0.2.0)
+
+70 Python tests and 7 JavaScript pixel tests pass locally on macOS ARM, with Ruff and packaging checks. The new tests cover both pixel signednesses, MONOCHROME1/2, rescale polarity, independent NumPy masks, invalid selections, metadata/output corruption, stale jobs, null/empty edit rejection, CLI operation and complete removal of the fake text fixture. Semantic reproduction now also records the fake-text fixture and redacted pixel digests.
+
+Chromium end-to-end checks exercised numeric and pointer selection, pending export gating, discard, new acknowledgement after apply, actual DICOM/report downloads, clear and 320/390/768/1440px layouts with no external requests or JavaScript errors. Reopening the final downloaded exercise output confirms that all 1,848 selected samples have the replacement value, all outside samples match the original, and its SHA-256 matches the report. These are local browser checks, not yet a checked-in cross-browser automation suite. Safari, Firefox, screen readers, real-patient privacy risk and external IOD validators were not assessed.
+
+The research PDF was structurally checked for all 96 action IDs and hyperlinks, and all ten rendered pages were visually inspected. The companion roadmap, agent prompts and assurance matrix identify implemented scope and remaining work.

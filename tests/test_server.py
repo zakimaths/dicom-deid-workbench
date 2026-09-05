@@ -109,3 +109,31 @@ def test_public_sample_routes(local, kind):
     assert req(local, "/api/samples/../../secret", "POST", headers)[0] == 404
     req(local, "/api/clear", "POST", headers)
     assert local.result is None
+
+
+def test_redaction_replaces_job_and_rejects_stale_export(local):
+    headers = {"X-Workbench-Token": local.token, "Content-Type": "application/json"}
+    assert req(local, "/api/redact", "POST")[0] == 403
+    old = json.loads(req(local, "/api/demo", "POST", headers)[1])["job"]
+    body = json.dumps({"job": old, "regions": [{"x": 0, "y": 0, "width": 10, "height": 10}]})
+    status, data, _ = req(local, "/api/redact", "POST", headers, body)
+    assert status == 200
+    result = json.loads(data)
+    assert result["job"] != old
+    assert result["report"]["redaction"]["selected_pixels"] == 100
+    assert req(local, f"/api/jobs/{old}/dicom", headers=headers)[0] == 404
+    assert req(local, f"/api/jobs/{result['job']}/dicom", headers=headers)[0] == 200
+    # Stale edits invalidate the current export too.
+    assert req(local, "/api/redact", "POST", headers, body)[0] == 422
+    assert local.result is None
+
+
+@pytest.mark.parametrize("regions", [None, [], {}, [{"x": 0, "y": 0, "width": 99999, "height": 1}]])
+def test_invalid_redaction_discards_export(local, regions):
+    headers = {"X-Workbench-Token": local.token, "Content-Type": "application/json"}
+    old = json.loads(req(local, "/api/demo", "POST", headers)[1])["job"]
+    assert (
+        req(local, "/api/redact", "POST", headers, json.dumps({"job": old, "regions": regions}))[0]
+        == 422
+    )
+    assert local.result is None

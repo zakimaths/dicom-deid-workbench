@@ -25,6 +25,11 @@ def main():
     assert source.SOPInstanceUID != exported.SOPInstanceUID
     assert exported.SOPInstanceUID == exported.file_meta.MediaStorageSOPInstanceUID
     assert original == synthetic_dicom()
+    semantic_report = {k: v for k, v in result.report.items() if k != "output_sha256"}
+    challenge = synthetic_dicom(with_text=True)
+    erased = transform(challenge, regions=[{"x": 16, "y": 12, "width": 132, "height": 14}])
+    assert erased.report["redaction"]["selected_pixels"] == 1848
+    assert erased.report["redaction"]["outside_regions_unchanged"]
     manifest = {
         "app_version": __version__,
         "python": platform.python_version(),
@@ -32,9 +37,11 @@ def main():
         "machine": platform.machine(),
         "pydicom": pydicom.__version__,
         "policy": result.report["policy"],
+        "text_fixture_sha256": sha256(challenge).hexdigest(),
+        "redacted_pixel_sha256": sha256(erased.pixels).hexdigest(),
         "fixture_sha256": sha256(original).hexdigest(),
         "pixel_sha256": sha256(result.pixels).hexdigest(),
-        "report_sha256": sha256(json.dumps(result.report, sort_keys=True).encode()).hexdigest(),
+        "report_sha256": sha256(json.dumps(semantic_report, sort_keys=True).encode()).hexdigest(),
         "checks": {
             "pixel_bytes_preserved": True,
             "output_reopened": True,

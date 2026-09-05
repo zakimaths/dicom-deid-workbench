@@ -13,7 +13,7 @@ from pydicom.uid import CTImageStorage, ExplicitVRLittleEndian
 from .core import IMPLEMENTATION_UID
 
 
-def synthetic_dicom() -> bytes:
+def synthetic_dicom(with_text=False) -> bytes:
     meta = FileMetaDataset()
     meta.TransferSyntaxUID = ExplicitVRLittleEndian
     meta.MediaStorageSOPClassUID = CTImageStorage
@@ -84,6 +84,31 @@ def synthetic_dicom() -> bytes:
             if abs(dx) < 18 and abs(dy) < 18:
                 value = 40 + int(dx // 4) * 30
             pixels.append(value)
+    if with_text:
+        # Original 5x7 glyphs, deliberately fake identifier for the redaction exercise.
+        glyphs = {
+            "F": [31, 16, 16, 30, 16, 16, 16],
+            "A": [14, 17, 17, 31, 17, 17, 17],
+            "K": [17, 18, 20, 24, 20, 18, 17],
+            "E": [31, 16, 16, 30, 16, 16, 31],
+            "I": [31, 4, 4, 4, 4, 4, 31],
+            "D": [30, 17, 17, 17, 17, 17, 30],
+            "1": [4, 12, 4, 4, 4, 4, 14],
+            "2": [14, 17, 1, 2, 4, 8, 31],
+            "3": [30, 1, 1, 14, 1, 1, 30],
+            " ": [0] * 7,
+        }
+        for letter, char in enumerate("FAKE ID 123"):
+            for row, bits in enumerate(glyphs[char]):
+                for col in range(5):
+                    for dy in range(2):
+                        for dx in range(2):
+                            pixels[(12 + row * 2 + dy) * 256 + 16 + letter * 12 + col * 2 + dx] = (
+                                2000 if bits & (1 << (4 - col)) else -1000
+                            )
+        # Missing annotation status remains unassessed; do not claim the pixels are clean.
+        del ds.BurnedInAnnotation
+        ds.StudyDescription = "Synthetic text-redaction exercise"
     if sys.byteorder != "little":
         pixels.byteswap()
     ds.PixelData = pixels.tobytes()

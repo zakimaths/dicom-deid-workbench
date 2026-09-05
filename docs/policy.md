@@ -30,3 +30,9 @@ Processing each file separately creates separate study/series pseudonyms. This v
 - [DICOM PS3.15 Annex E](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html): distinction between attribute transformation and full-object confidentiality; consulted 5 September 2026 (live edition 2026c).
 - [DICOM Clean Pixel Data](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.html): pixel identity needs separate treatment.
 - [DICOM VOI LINEAR function](https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.11.2.html): numerical reference for the browser's window/level function.
+
+## Version 0.2.0 pixel and verification extension
+
+The metadata subset itself remains v1. Retained numeric fields now require their expected dictionary VR, and a post-write assertion layer checks that the custom output contract held. This layer uses pydicom and the declared policy; it is not independent IOD certification.
+
+Optional `stored-rectangles-v1` replaces a bounded set of source-coordinate rectangles with a constant stored endpoint selected for pixel polarity and rescale sign. It independently decodes the saved samples and checks every inside/outside pixel. Report schema 2 records the selection, fill value, selected/changed counts, output digest and residual assessment. No whole-image-clean DICOM marker is added. Existing positive identifying-pixel flags still cause rejection.

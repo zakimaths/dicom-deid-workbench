@@ -82,7 +82,9 @@ def test_unknown_standard_text_is_not_retained():
 def test_random_ids_do_not_change_semantic_results():
     first, second = transform(synthetic_dicom()), transform(synthetic_dicom())
     assert first.dicom != second.dicom
-    assert first.report == second.report
+    assert {k: v for k, v in first.report.items() if k != "output_sha256"} == {
+        k: v for k, v in second.report.items() if k != "output_sha256"
+    }
     assert first.pixels == second.pixels
 
 

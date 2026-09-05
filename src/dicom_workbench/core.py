@@ -2,12 +2,17 @@
 
 from dataclasses import dataclass
 from io import BytesIO
+from hashlib import sha256
 import math
 import warnings
 
 import pydicom
 from pydicom.dataset import FileDataset, FileMetaDataset
 from pydicom.multival import MultiValue
+from pydicom.datadict import dictionary_VR
+
+from .redaction import replace_pixels, verify_pixels
+from .verification import NUMERIC_VRS, verify_metadata
 from pydicom.uid import CTImageStorage, MRImageStorage, ExplicitVRLittleEndian, generate_uid
 
 POLICY = "single-frame-metadata-v1"
@@ -200,6 +205,8 @@ def validate(ds):
         raise Unsupported("Rescale slope must not be zero.")
     for key in KEEP_NUMERIC:
         if key in ds:
+            if ds[key].VR not in NUMERIC_VRS or ds[key].VR != dictionary_VR(ds[key].tag):
+                raise Unsupported("An imaging field has an unsupported value representation.")
             values = ds[key].value
             for value in values if isinstance(values, (list, MultiValue)) else [values]:
                 number(value)
@@ -212,11 +219,11 @@ def validate(ds):
         raise Unsupported("Window width must be at least one.")
 
 
-def transform(data: bytes) -> Result:
+def transform(data: bytes, regions=None) -> Result:
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            return _transform(data)
+            return _transform(data, regions)
     except Unsupported:
         raise
     except Exception:
@@ -225,7 +232,7 @@ def transform(data: bytes) -> Result:
         ) from None
 
 
-def _transform(data: bytes) -> Result:
+def _transform(data: bytes, regions=None) -> Result:
     source = read(data)
     output = FileDataset(None, {}, file_meta=FileMetaDataset(), preamble=b"\0" * 128)
     actions = []
@@ -238,7 +245,9 @@ def _transform(data: bytes) -> Result:
             "PhotometricInterpretation",
         ):
             output.add(element)
-            action = "kept"
+            action = (
+                "replaced" if element.keyword == "PixelData" and regions is not None else "kept"
+            )
         elif element.keyword in EMPTY_FIELDS:
             action = "emptied"
         elif element.keyword in (
@@ -274,6 +283,14 @@ def _transform(data: bytes) -> Result:
         if source.get("RescaleType", "HU") != "HU":
             raise Unsupported("Only CT rescale values declared as HU are supported.")
         output.RescaleType = "HU"
+    boxes, fill = [], None
+    if regions is not None:
+        redacted, boxes, fill = replace_pixels(source, regions)
+        # Replace the element rather than mutate the element shared with source.
+        output.add_new(0x7FE00010, "OW", redacted)
+        output.DerivationDescription = (
+            "Selected pixel rectangles erased; remaining pixels and anatomy not assessed."
+        )
     output.file_meta.MediaStorageSOPClassUID = output.SOPClassUID
     output.file_meta.MediaStorageSOPInstanceUID = output.SOPInstanceUID
     output.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
@@ -283,7 +300,19 @@ def _transform(data: bytes) -> Result:
     pydicom.dcmwrite(buffer, output, enforce_file_format=True)
     encoded = buffer.getvalue()
     checked = read(encoded)
-    if checked.PixelData != source.PixelData:
+    metadata_checks = verify_metadata(checked, source)
+    selected = changed = 0
+    if boxes:
+        selected, changed = verify_pixels(
+            source.PixelData,
+            checked.PixelData,
+            source.Rows,
+            source.Columns,
+            boxes,
+            fill,
+            bool(source.PixelRepresentation),
+        )
+    elif checked.PixelData != source.PixelData:
         raise Unsupported("Output verification failed: pixel data changed.")
     spacing = [float(x) for x in checked.get("PixelSpacing", [1, 1])]
     image = {
@@ -299,11 +328,25 @@ def _transform(data: bytes) -> Result:
         "modality": checked.Modality,
     }
     report = {
+        "report_schema": 2,
+        "output_sha256": sha256(encoded).hexdigest(),
+        "pixel_policy": "stored-rectangles-v1" if boxes else "preserve-v1",
         "policy": POLICY,
         "scope": "Single-file metadata subset; not PS3.15 conformant",
-        "pixel_review": "not_assessed",
-        "notice": DISCLAIMER,
-        "pixel_bytes_unchanged": True,
+        "pixel_review": "selected_regions_only" if boxes else "not_assessed",
+        "verification": metadata_checks,
+        "redaction": {
+            "regions": boxes,
+            "fill_stored_value": fill,
+            "selected_pixels": selected,
+            "changed_pixels": changed,
+            "outside_regions_unchanged": True,
+            "all_identifiers_removed": "not_established",
+        },
+        "notice": "Selected regions erased. Remaining pixels and anatomy are not assessed. Not for clinical use."
+        if boxes
+        else DISCLAIMER,
+        "pixel_bytes_unchanged": checked.PixelData == source.PixelData,
         "output_reopened": True,
         "file_metadata": "rebuilt",
         "preamble": "zeroed",
