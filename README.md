@@ -8,6 +8,10 @@ Browse 50 larger, labelled MRI, CT and X-ray images. Choose **Open in workbench*
 
 [![DICOM Workbench showing the synthetic image exercise](docs/screenshot.png)](https://zakimaths.github.io/dicom-deid-workbench/)
 
+## NIfTI volumes
+
+[Open the volume viewer](https://zakimaths.github.io/dicom-deid-workbench/nifti.html) to explore a real 3D brain MRI or an orientation test. The local tool also opens supported `.nii` and `.nii.gz` files and removes header text and extensions while verifying voxel values and orientation. This is header cleaning, not defacing. [Supported files, credits and repeatable checks](docs/nifti.md).
+
 ## Two ways to try it
 
 | | Browser demo | Local tool |
@@ -122,11 +126,11 @@ Mappings stay in memory and never appear in reports. This preserves UID continui
 
 ## How it is built
 
-The local tool uses Python and [pydicom](https://pydicom.github.io/) for DICOM parsing and writing. Plain JavaScript and Canvas handle the viewer. For this small, uncompressed, single-frame scope, that keeps the setup manageable.
+The local tool uses Python and [pydicom](https://pydicom.github.io/) for DICOM parsing and writing. Plain JavaScript and Canvas handle the DICOM viewer. The separate NIfTI workspace uses pinned NiiVue for volume viewing and NiBabel for local file checks. For this small, uncompressed, single-frame scope, that keeps the setup manageable.
 
 Text suggestions use pinned, self-hosted Tesseract.js 7 and English model assets. Images and recognised strings never go to a cloud OCR service. The worker is terminated after each run; no recognised strings enter reports or persistent storage.
 
-The public demo shares the visual design and pixel-display functions. A build step prepares the known examples, then publishes only HTML, CSS, JavaScript, fonts, sample JSON and the teaching pictures. Python runs during the build and in the optional local tool; it is not deployed as a web service.
+The public demo shares the visual design and pixel-display functions. A build step prepares the known examples, then publishes only HTML, CSS, JavaScript, fonts, sample JSON, two curated NIfTI volumes and the teaching pictures. Python runs during the build and in the optional local tool; it is not deployed as a web service.
 
 The next support decisions are native X-ray/compressed DICOM, reference-bearing collections and independently reviewed real-world text datasets. Full-volume defacing remains a separate research task. The [research roadmap](docs/anonymisation-roadmap.md) and [implementation prompts](docs/prompts/README.md) break that work into smaller tasks.
 

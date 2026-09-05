@@ -13,7 +13,9 @@
     "sbom": ".venv/bin/python scripts/sbom.py",
     "test:records": "node tests/records-browser.mjs",
     "benchmark:records": "PYTHONPATH=src .venv/bin/python scripts/build_record_corpus.py && PYTHONPATH=src .venv/bin/python scripts/evaluate_records.py --corpus output/records-corpus.json --report output/records-evaluation.json",
-    "test:mobile": "node tests/mobile-browser.mjs"
+    "test:mobile": "node tests/mobile-browser.mjs",
+    "test:nifti": "node tests/nifti-browser.mjs && PYTHONPATH=src .venv/bin/python scripts/verify_nifti_exports.py",
+    "test:nifti-preview": "node tests/nifti-preview.mjs"
   },
   "devDependencies": {
     "@tesseract.js-data/eng": "1.0.0",
@@ -21,5 +23,8 @@
     "playwright": "1.62.1",
     "tesseract.js": "7.0.0"
   },
-  "version": "0.4.0"
+  "version": "0.5.0",
+  "dependencies": {
+    "@niivue/niivue": "0.69.0"
+  }
 }

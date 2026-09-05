@@ -248,3 +248,24 @@ def test_records_bad_inputs_cannot_become_an_export(local):
     for body in ("null", "[]", "{}", '{"text":"PRIVATE_NAME","spans":[{}]}'):
         status, raw, _ = req(local, "/api/records/scrub", "POST", headers, body)
         assert status == 422 and b"PRIVATE_NAME" not in raw
+
+
+def test_nifti_routes_are_local_bounded_and_stateless(local):
+    from dicom_workbench.nifti_fixtures import phantom
+    from dicom_workbench.nifti import inspect
+
+    raw = phantom()
+    headers = {"X-Workbench-Token": local.token, "Content-Type": "application/octet-stream"}
+    assert req(local, "/nifti")[0] == 200
+    assert req(local, "/api/nifti/inspect", "POST", body=raw)[0] == 403
+    for path in ("/api/nifti/inspect", "/api/nifti/clean"):
+        assert req(local, path, "POST", {**headers, "Origin": "https://example.org"}, raw)[0] == 403
+        assert req(local, path, "POST", headers, b"broken")[0] == 422
+    code, report, _ = req(local, "/api/nifti/inspect", "POST", headers, raw)
+    assert code == 200 and b"FAKE NAME" not in report
+    assert json.loads(report)["report"]["extensions_removed"] == 1
+    code, output, response = req(local, "/api/nifti/clean", "POST", headers, raw)
+    assert code == 200 and output == inspect(raw).data
+    assert response["Cache-Control"] == "no-store" and local.result is None
+    assert response["Content-Disposition"] == 'attachment; filename="header-cleaned.nii"'
+    assert req(local, "/nifti-assets/../../server.py")[0] == 404

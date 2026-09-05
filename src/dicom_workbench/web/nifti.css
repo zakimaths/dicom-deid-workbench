@@ -1,0 +1,193 @@
+/* Volume workspace: inherited terminal tokens; original scan proportions. */
+main {
+  max-width: 1504px;
+  margin: auto;
+  padding: 32px;
+}
+main > h1 {
+  font-family: var(--font-body);
+  font-size: clamp(22px, 4vw, 34px);
+  line-height: 1.4;
+}
+h2 {
+  font-size: 19px;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+h3 {
+  margin: 0 0 16px;
+}
+.volume-open,
+#header-review {
+  padding: 24px;
+  background: var(--panel);
+  border: 1px solid var(--boundary);
+  margin: 24px 0;
+}
+.volume-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 12px 0;
+}
+button,
+select {
+  min-height: 44px;
+  padding: 10px 14px;
+  font: inherit;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--boundary);
+  max-width: 100%;
+}
+select {
+  width: 100%;
+}
+button:hover {
+  background: var(--raised);
+}
+button.primary:hover {
+  background: var(--accent-hover);
+}
+label {
+  display: block;
+  margin: 12px 0 8px;
+}
+input[type="file"] {
+  max-width: 100%;
+}
+input[type="range"] {
+  width: 100%;
+  min-height: 44px;
+  accent-color: var(--accent);
+}
+.volume-heading {
+  margin-top: 32px;
+}
+#volume-notes,
+#file-help {
+  max-width: 75ch;
+}
+.volume-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+}
+.volume-picture {
+  min-width: 0;
+  background: var(--screen);
+  border: 1px solid var(--boundary);
+}
+#canvas-host {
+  position: relative;
+  height: clamp(320px, 60vh, 650px);
+  width: 100%;
+}
+#canvas-host canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+#position {
+  padding: 8px 16px;
+  min-height: 3em;
+  overflow-wrap: anywhere;
+}
+.volume-controls {
+  min-width: 0;
+}
+.volume-controls button {
+  width: 100%;
+}
+.control-help,
+.volume-footnote,
+#credit,
+#volume-facts {
+  color: var(--secondary);
+}
+.volume-boundary {
+  padding: 16px;
+  background: var(--warning-surface);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+  margin-top: 24px;
+}
+.review-line {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  max-width: 80ch;
+}
+.review-line input {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+#verification,
+#status {
+  overflow-wrap: anywhere;
+}
+[hidden] {
+  display: none !important;
+}
+a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+footer {
+  padding: 24px 32px;
+}
+@media (max-width: 850px) {
+  .volume-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .volume-controls {
+    display: block;
+  }
+}
+@media (max-width: 500px) {
+  main {
+    padding: 16px;
+  }
+  .volume-open,
+  #header-review {
+    padding: 16px;
+  }
+  .volume-actions > * {
+    flex: 1 1 100%;
+  }
+  #canvas-host {
+    height: 340px;
+  }
+  .topbar {
+    gap: 12px;
+  }
+}
+
+.direction {
+  position: absolute;
+  background: var(--screen);
+  color: var(--text);
+  font-weight: 600;
+  padding: 2px 6px;
+  pointer-events: none;
+}
+.direction-left {
+  left: 8px;
+  top: 50%;
+}
+.direction-right {
+  right: 8px;
+  top: 50%;
+}
+.direction-top {
+  top: 8px;
+  left: 50%;
+}
+.direction-bottom {
+  bottom: 8px;
+  left: 50%;
+}

@@ -6,6 +6,7 @@ from pathlib import Path
 import secrets
 import time
 
+from .nifti import MAX_INPUT as NIFTI_MAX_INPUT, inspect as inspect_nifti
 from .documents import extract_isolated
 from .records import detect, scrub_text
 from .core import MAX_BYTES, Unsupported, transform
@@ -67,7 +68,11 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cross-Origin-Resource-Policy", "same-origin")
         self.send_header(
             "Content-Security-Policy",
-            "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
+            (
+                "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+            ).replace("img-src 'self' blob:", "img-src 'self' blob: data:")
+            if self.path == "/nifti"
+            else "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
         )
         if filename:
             self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
@@ -130,6 +135,23 @@ class Handler(BaseHTTPRequestHandler):
             "/fonts/jetbrains-mono-semibold.ttf": ("fonts/jetbrains-mono-semibold.ttf", "font/ttf"),
             "/fonts/press-start-2p.ttf": ("fonts/press-start-2p.ttf", "font/ttf"),
         }
+        assets.update(
+            {
+                "/nifti": ("nifti.html", "text/html; charset=utf-8"),
+                "/nifti.js": ("nifti.js", "text/javascript"),
+                "/nifti-local.js": ("nifti-local.js", "text/javascript"),
+                "/nifti.css": ("nifti.css", "text/css"),
+                **{
+                    "/nifti-assets/" + name: ("nifti-assets/" + name, mime)
+                    for name, mime in {
+                        "niivue-0.69.0.js": "text/javascript",
+                        "samples.json": "application/json",
+                        "brain-t1.nii.gz": "application/octet-stream",
+                        "phantom.nii.gz": "application/octet-stream",
+                    }.items()
+                },
+            }
+        )
         assets.update(self.server.teaching_assets)
         ocr_manifest = json.loads((STATIC / "ocr-assets/manifest.json").read_text())
         assets.update(
@@ -170,6 +192,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.trusted(token=True):
             return
+        if self.path in ("/api/nifti/inspect", "/api/nifti/clean"):
+            return self.nifti()
         if self.path in ("/api/records/import", "/api/records/detect", "/api/records/scrub"):
             return self.records()
         sample_key = self.path.removeprefix("/api/samples/")
@@ -226,6 +250,31 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(
                 422, {"error": "The file could not be processed. Try the synthetic example."}
             )
+
+    def nifti(self):
+        # Stateless, bounded input; no patient filenames or original values in reports.
+        try:
+            if (
+                self.headers.get("Transfer-Encoding")
+                or self.headers.get("Content-Type") != "application/octet-stream"
+            ):
+                raise Unsupported("Send one complete NIfTI file.")
+            length = int(self.headers.get("Content-Length", "0"))
+            if not 0 < length <= NIFTI_MAX_INPUT:
+                raise Unsupported("Choose a NIfTI file up to 32 MiB.")
+            raw = self.rfile.read(length)
+            if len(raw) != length:
+                raise Unsupported("The upload was incomplete.")
+            result = inspect_nifti(raw)
+            if self.path.endswith("/clean"):
+                return self.respond(
+                    200, result.data, "application/octet-stream", "header-cleaned.nii"
+                )
+            self.respond(200, {"summary": result.summary, "report": result.report})
+        except Unsupported as error:
+            self.respond(422, {"error": str(error)})
+        except Exception:
+            self.respond(422, {"error": "The volume could not be verified. No export was created."})
 
     def records(self):
         # Stateless: source text and exports stay in the caller, never a server job/cache.

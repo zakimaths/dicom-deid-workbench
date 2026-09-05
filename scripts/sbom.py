@@ -1,5 +1,6 @@
 """Combine npm's SPDX inventory with locked Python packages and shipped OCR file hashes."""
 
+from hashlib import sha256
 import json
 from pathlib import Path
 import subprocess
@@ -42,6 +43,19 @@ report["files"] = [
         json.loads((root / "src/dicom_workbench/web/ocr-assets/manifest.json").read_text()).items()
     )
 ]
+for i, path in enumerate(sorted((root / "src/dicom_workbench/web/nifti-assets").iterdir())):
+    if path.is_file():
+        report["files"].append(
+            {
+                "SPDXID": f"SPDXRef-NIfTI-{i}",
+                "fileName": "nifti-assets/" + path.name,
+                "checksums": [
+                    {"algorithm": "SHA256", "checksumValue": sha256(path.read_bytes()).hexdigest()}
+                ],
+                "licenseConcluded": "NOASSERTION",
+                "copyrightText": "NOASSERTION",
+            }
+        )
 out = root / "output/sbom.spdx.json"
 out.parent.mkdir(exist_ok=True)
 out.write_text(json.dumps(report, indent=2) + "\n")

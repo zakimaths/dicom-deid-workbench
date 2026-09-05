@@ -1,0 +1,7 @@
+{
+  "package": "@niivue/niivue",
+  "version": "0.69.0",
+  "commit": "53d450fe2e43c40c0d4ad6a2d8dc08ee37575f8c",
+  "sha256": "bcb456b66a26e20126b7257c2b6071f48b347b7f910f99bca26721a71a96cbed",
+  "preparation": "decodeURIComponent of the npm dist/index.min.js esm export; no CDN imports"
+}

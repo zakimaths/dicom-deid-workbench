@@ -11,3 +11,7 @@ Images, fonts and the original DICOM fixtures retain the separate licences descr
 ## Local hospital-record readers (0.4.0)
 
 The locked local Python tool adds pypdf 6.17.0 (BSD-3-Clause) for text extraction and Pillow 12.3.0 (MIT-CMU) for PNG/JPEG decoding and normalisation. They are installed locally and listed in the SBOM; neither reader is shipped in the public Pages frontend. Original PDF and Office containers are never exported. DOCX extraction uses Python's ZIP/XML libraries. Reader limitations and resource bounds are documented in [hospital-records.md](hospital-records.md).
+
+## NIfTI viewer and volume
+
+NiiVue 0.69.0 (BSD-2-Clause), commit `53d450fe2e43c40c0d4ad6a2d8dc08ee37575f8c`, is self-hosted. Its dependency notices are bundled in `src/dicom_workbench/web/nifti-assets/LICENSES.txt`; `vendor.json` pins the shipped module hash. NiBabel 5.3.2 is MIT-licensed and runs in the local Python tool. The brain teaching volume is a prepared CC0 OpenNeuro ds000114 v1.0.2 file; [credits and transformation](nifti.md). The synthetic block fixture is project code (MIT).

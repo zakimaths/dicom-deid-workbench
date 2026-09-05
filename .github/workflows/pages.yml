@@ -29,6 +29,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run build:preview
+      - run: npm run test:nifti-preview
       - run: npm run test:preview
       - run: npm run test:exercise
       - run: npm run test:accessibility

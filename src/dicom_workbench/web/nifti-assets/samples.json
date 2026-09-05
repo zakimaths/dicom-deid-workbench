@@ -1,0 +1,67 @@
+[
+  {
+    "file": "brain-t1.nii.gz",
+    "title": "Brain MRI \u00b7 T1 structural volume",
+    "notes": "Explore the folded cerebral cortex, the corpus callosum and cerebellum. Axial cuts look from below, coronal cuts from the front, sagittal cuts from the side. The public source has altered facial regions; these are not normal anatomy. This teaching copy takes every second voxel along each axis and preserves spatial coordinates.",
+    "source": "https://doi.org/10.18112/openneuro.ds000114.v1.0.2",
+    "license": "CC0",
+    "credit": "Gorgolewski KJ, Storkey A, Bastin ME, Whittle IR, Wardlaw JM, Pernet CR",
+    "source_md5": "d6820f6cb8fb965e864419c14f6a22d5",
+    "source_sha256": "2bbe4430223d9b9ce47d4dab3ff398a69fefbb481cbf3bd136e07f363a73919c",
+    "source_url": "https://s3.amazonaws.com/openneuro.org/ds000114/sub-01/ses-test/anat/sub-01_ses-test_T1w.nii.gz",
+    "summary": {
+      "dimensions": [
+        128,
+        78,
+        128
+      ],
+      "spacing": [
+        2.0,
+        2.5987517833709717,
+        2.0
+      ],
+      "units": "mm",
+      "datatype": "float32",
+      "orientation": [
+        "R",
+        "A",
+        "S"
+      ],
+      "voxel_count": 1277952,
+      "voxel_bytes": 5111808,
+      "dual_spaces": false
+    },
+    "sha256": "f93ab1d4a3b1af4e48fbd5f590647da8b2ec49908c12a7a780e2f6a13e3974ff"
+  },
+  {
+    "file": "phantom.nii.gz",
+    "title": "Orientation test \u00b7 asymmetric blocks",
+    "notes": "Synthetic blocks, not a scan. The brighter block is on the right. Unequal voxel spacing checks that the viewer preserves proportions. The file contains three explicitly fake text fields and one fake extension for local cleaning practice.",
+    "source": "https://github.com/zakimaths/dicom-deid-workbench",
+    "license": "MIT",
+    "credit": "DICOM Workbench synthetic fixture",
+    "summary": {
+      "dimensions": [
+        32,
+        40,
+        48
+      ],
+      "spacing": [
+        2.0,
+        3.0,
+        4.0
+      ],
+      "units": "mm",
+      "datatype": "int16",
+      "orientation": [
+        "R",
+        "A",
+        "S"
+      ],
+      "voxel_count": 61440,
+      "voxel_bytes": 122880,
+      "dual_spaces": false
+    },
+    "sha256": "6511746ec28ae822dc99ec260363c14eaf56819a328d9120d17ab6e92dc339d1"
+  }
+]

@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>NIfTI volume viewer · DICOM Workbench</title>
+    <link rel="icon" href="./favicon.svg" />
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./nifti.css" />
+  </head>
+  <!-- Operate: extend the existing Arcade Terminal workbench. A large single plane,
+ordinary labelled controls and a separate metadata review keep the scan primary.
+Students load, navigate, review, then explicitly save. Public assets remain curated;
+local header cleaning leaves facial anatomy and accompanying files unresolved. -->
+  <body>
+    <a class="skip-link" href="#main">Skip to volume viewer</a>
+    <header class="topbar">
+      <a class="brand" href="./">← DICOM Workbench</a
+      ><span class="local" id="mode-label">Local volume review</span>
+    </header>
+    <main id="main" tabindex="-1">
+      <h1>NIfTI volume viewer</h1>
+      <p class="lede">
+        A whole 3D scan, one slice at a time. Explore the brain from three
+        directions and understand what header cleaning changes.
+      </p>
+      <section class="volume-open" aria-labelledby="open-title">
+        <h2 id="open-title">Open a volume</h2>
+        <div class="volume-actions">
+          <button
+            id="brain"
+            title="Open a public brain MRI. Move through its slices to explore real anatomy."
+          >
+            Try brain MRI</button
+          ><button
+            id="phantom"
+            title="Open made-up blocks with a brighter right side to check directions and practise header cleaning."
+          >
+            Try orientation test</button
+          ><button
+            id="clear"
+            title="Cancel loading and forget the scan, output and review ticks in this tab."
+          >
+            Clear volume
+          </button>
+        </div>
+        <!-- local:start -->
+        <div id="local-import">
+          <label for="volume-file"
+            >Your NIfTI-1 file (.nii or .nii.gz) · up to 32 MiB</label
+          ><input
+            id="volume-file"
+            type="file"
+            accept=".nii,.gz"
+            aria-describedby="file-help"
+          />
+          <p id="file-help">
+            Scalar 3D in millimetres only: uint8, int16, uint16 or float32. Up to 16,777,216
+            voxels and 64 MiB unpacked. Use authorised data; processing stays on
+            this computer.
+          </p>
+        </div>
+        <!-- local:end -->
+        <p id="status" role="status" aria-live="polite">
+          Choose a teaching volume or a supported local file.
+        </p>
+      </section>
+      <section id="volume-work" hidden aria-labelledby="volume-title">
+        <div class="volume-heading">
+          <h2 id="volume-title">Volume</h2>
+          <p id="volume-facts"></p>
+        </div>
+        <p id="volume-notes"></p>
+        <p id="credit"></p>
+        <div class="volume-layout">
+          <div class="volume-picture">
+            <div id="canvas-host"></div>
+            <p id="position" role="status" aria-live="polite"></p>
+          </div>
+          <div class="volume-controls">
+            <h3>Explore the scan</h3>
+            <label for="plane">Viewing direction</label
+            ><select id="plane">
+              <option value="0">Axial · from below</option>
+              <option value="1">Coronal · from the front</option>
+              <option value="2">Sagittal · from the side</option>
+            </select>
+            <p id="plane-help">
+              Left and right labels refer to the person in the scan.
+            </p>
+            <label for="slice">Slice <output id="slice-number"></output></label
+            ><input id="slice" type="range" min="0" max="1" value="0" />
+            <div class="volume-actions">
+              <button
+                id="previous"
+                title="Move back by one slice in the selected direction."
+              >
+                Previous slice</button
+              ><button
+                id="next"
+                title="Move forward by one slice in the selected direction."
+              >
+                Next slice
+              </button>
+            </div>
+            <label for="zoom">Zoom <output id="zoom-number">100%</output></label
+            ><input
+              id="zoom"
+              type="range"
+              min="50"
+              max="300"
+              step="10"
+              value="100"
+            /><button
+              id="fit"
+              title="Bring the whole slice back into view at its original fit."
+            >
+              Fit whole slice
+            </button>
+            <label for="contrast"
+              >Contrast <output id="contrast-number">100%</output></label
+            ><input
+              id="contrast"
+              type="range"
+              min="25"
+              max="200"
+              step="5"
+              value="100"
+            /><button
+              id="reset"
+              title="Return to the middle of the scan and reset zoom and contrast. The file stays unchanged."
+            >
+              Reset view
+            </button>
+            <p id="control-help" class="control-help">
+              Use the slider or previous and next buttons. Viewing controls
+              never change saved voxels.
+            </p>
+          </div>
+        </div>
+        <p class="volume-boundary">
+          <strong>Facial privacy unresolved.</strong> Header cleaning leaves
+          anatomy and visible labels unchanged. Accompanying files are not
+          assessed. This version does not deface scans or establish anonymity.
+        </p>
+        <!-- local:start -->
+        <section id="header-review" aria-labelledby="header-title">
+          <h2 id="header-title">Review header cleaning</h2>
+          <p>
+            Remove free-text fields, extensions and unused bytes from a fresh
+            .nii copy. Extensions can contain useful information; review whether
+            you need them before continuing.
+          </p>
+          <p id="header-findings"></p>
+          <div class="volume-actions">
+            <button
+              id="clean"
+              class="primary"
+              title="Build a new file without header text or extensions, then reopen it and verify its voxel values and orientation."
+            >
+              Clean header &amp; verify
+            </button>
+          </div>
+          <p id="verification" role="status"></p>
+          <label class="review-line"
+            ><input type="checkbox" id="review-limit" /> I understand this
+            removes header details only; facial anatomy, labels and other files
+            remain unassessed.</label
+          ><label class="review-line"
+            ><input type="checkbox" id="review-extension" /> I have checked that
+            removing extensions is appropriate for this scan.</label
+          >
+          <div class="volume-actions">
+            <button
+              id="save-volume"
+              disabled
+              title="Save the verified header-cleaned .nii file. It is not a defaced or certified anonymous scan."
+            >
+              Save header-cleaned NIfTI</button
+            ><button
+              id="save-report"
+              disabled
+              title="Save check results and counts without the original filename or identifying text."
+            >
+              Save check report
+            </button>
+          </div>
+        </section>
+        <!-- local:end -->
+      </section>
+      <p class="volume-footnote">
+        Volumes clear after ten minutes without interaction.
+        <a
+          href="https://github.com/zakimaths/dicom-deid-workbench/blob/main/docs/nifti.md"
+          >Format limits, source credits and verification details ↗</a
+        >
+      </p>
+    </main>
+    <footer>
+      <p>
+        <a href="https://x.com/vesperlemma">X</a> ·
+        <a href="https://www.linkedin.com/in/alhasan-alkaseem/">LinkedIn</a> ·
+        <a href="https://github.com/zakimaths/dicom-deid-workbench">GitHub</a>
+      </p>
+    </footer>
+    <script type="module" src="./nifti-local.js"></script>
+  </body>
+</html>

@@ -54,6 +54,7 @@ jobs:
       - run: uv sync --locked
       - run: npm ci --ignore-scripts
       - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run test:nifti
       - run: npm run test:records
       - run: npm run benchmark:records
       - run: npm run test:browser
@@ -72,6 +73,7 @@ jobs:
             output/accessibility/
             output/mobile-audit/
             output/benchmarks/
+            output/nifti-browser/
             output/records-browser/
             output/records-evaluation.json
 

@@ -34,7 +34,11 @@ def build():
         '<script type="module" src="./app.js"></script>',
         '<script type="module" src="./preview.js"></script>',
     )
-    html = html.replace('href="./records"', 'href="https://github.com/zakimaths/dicom-deid-workbench#hospital-records-local-only"').replace("Review reports, records &amp; image files ↗", "Hospital records · local setup ↗")
+    html = html.replace('href="./nifti"', 'href="./nifti.html"')
+    html = html.replace(
+        'href="./records"',
+        'href="https://github.com/zakimaths/dicom-deid-workbench#hospital-records-local-only"',
+    ).replace("Review reports, records &amp; image files ↗", "Hospital records · local setup ↗")
     html = html.replace(
         "<title>DICOM Workbench</title>", "<title>DICOM Workbench · browser demo</title>"
     )
@@ -218,6 +222,34 @@ def build():
         (OUT / "samples" / f"{key}.json").write_text(
             json.dumps(sample, sort_keys=True, separators=(",", ":")) + "\n"
         )
+    volume_html = (WEB / "nifti.html").read_text()
+    volume_html = re.sub(r"<!-- local:start -->.*?<!-- local:end -->", "", volume_html, flags=re.S)
+    volume_html = volume_html.replace("./nifti-local.js", "./nifti.js").replace(
+        "Local volume review", "Public teaching volumes"
+    )
+    volume_html = volume_html.replace(
+        "Choose a teaching volume or a supported local file.",
+        "Choose a teaching volume. This public demo accepts no file uploads.",
+    )
+    volume_html = volume_html.replace(
+        '<meta charset="UTF-8" />',
+        "<meta charset=\"UTF-8\" /><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'\" /><meta name=\"referrer\" content=\"no-referrer\" />",
+    )
+    assert 'type="file"' not in volume_html
+    (OUT / "nifti.html").write_text(volume_html)
+    for name in ("nifti.js", "nifti.css"):
+        shutil.copyfile(WEB / name, OUT / name)
+    (OUT / "nifti-assets").mkdir()
+    nifti_assets = [
+        "niivue-0.69.0.js",
+        "brain-t1.nii.gz",
+        "phantom.nii.gz",
+        "samples.json",
+        "LICENSES.txt",
+        "vendor.json",
+    ]
+    for name in nifti_assets:
+        shutil.copyfile(WEB / "nifti-assets" / name, OUT / "nifti-assets" / name)
     (OUT / ".nojekyll").touch()
     allowed = {"index.html", "style.css", "pixels.js", "preview.js", "favicon.svg", ".nojekyll"}
     allowed |= {f"samples/{key}.json" for key in cases}
@@ -232,6 +264,12 @@ def build():
         "ocr.js",
         "build-info.js",
         *library,
+    }
+    allowed |= {
+        "nifti.html",
+        "nifti.js",
+        "nifti.css",
+        *("nifti-assets/" + name for name in nifti_assets),
     }
     allowed |= {f"fonts/{p.name}" for p in (OUT / "fonts").iterdir()}
     allowed |= {"ocr-assets/" + n for n in [*ocr, "manifest.json"]}
