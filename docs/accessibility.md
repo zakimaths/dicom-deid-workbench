@@ -1,6 +1,6 @@
 # Accessibility checks for 0.3.0
 
-The automated pass uses axe-core 4.13.0 with WCAG 2 A/AA, 2.1 A/AA and 2.2 AA rule tags. It covers the home page, library, challenge, scored/zoomed exercise and OCR review. Chromium, Firefox and WebKit run at desktop (1440px) and phone (390px) widths with reduced motion: 27 scans in total. These are tested states, not a WCAG certification.
+The automated pass uses axe-core 4.13.0 with WCAG 2 A/AA, 2.1 A/AA and 2.2 AA rule tags. It covers the home page, library, challenge, scored/zoomed exercise, zoomed-out exercise and OCR review. Chromium, Firefox and WebKit run at desktop (1440px) and phone (390px) widths with reduced motion: 33 scans in total. These are tested states, not a WCAG certification.
 
 The initial scan flagged disabled-button help labels on generic spans. They now use a named group while disabled so the extra keyboard stop has meaningful semantics. The decorative circle/check icon is hidden from assistive technology and has adjacent written status; axe's inconclusive contrast result on this non-text glyph does not carry the status information.
 

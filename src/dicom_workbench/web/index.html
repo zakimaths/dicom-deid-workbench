@@ -311,11 +311,25 @@
                 <button
                   id="exercise-zoom"
                   class="report-button"
-                  aria-pressed="false"
-                  title="Enlarge the picture to select small letters. Scroll the picture to see other areas."
+                  title="Make the picture larger so small letters are easier to select. Scroll to see other areas."
                 >
                   Zoom in
                 </button>
+                <button
+                  id="exercise-zoom-out"
+                  class="report-button"
+                  title="Make the picture smaller to see more of the scan at once. Your selected boxes stay in the same places."
+                >
+                  Zoom out
+                </button>
+                <button
+                  id="exercise-zoom-fit"
+                  class="report-button"
+                  title="Show the whole picture in the available space. This only changes your view, not the saved image."
+                >
+                  Fit picture
+                </button>
+                <span id="exercise-zoom-level" role="status">100% of fit</span>
                 <button
                   id="exercise-undo"
                   class="report-button"
@@ -325,10 +339,10 @@
                 </button>
               </div>
               <p id="exercise-selection-help">
-                Drag to mark a box, or use the rectangle numbers below. On the
-                picture, arrow keys move the box, Shift + arrows resize it, and
-                Enter adds it. Use Tab to leave the picture. Zoomed pictures can
-                be scrolled.
+                Each number inside a box matches the list below. Drag to mark a
+                box, or enter its position and size below. On the picture, arrow
+                keys move the box, Shift + arrows resize it, and Enter adds it.
+                Use Tab to leave the picture. Zoomed pictures can be scrolled.
               </p>
               <div
                 class="exercise-stage"

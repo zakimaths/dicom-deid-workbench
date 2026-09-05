@@ -37,6 +37,21 @@ try {
         reducedMotion: "reduce",
         acceptDownloads: true,
       });
+      await page.addInitScript(() => {
+        window.boxNumbers = [];
+        const prototype = CanvasRenderingContext2D.prototype;
+        const put = prototype.putImageData,
+          fill = prototype.fillText;
+        prototype.putImageData = function (...args) {
+          if (this.canvas.id === "exercise-canvas") window.boxNumbers = [];
+          return put.apply(this, args);
+        };
+        prototype.fillText = function (...args) {
+          if (this.canvas.id === "exercise-canvas")
+            window.boxNumbers.push(args[0]);
+          return fill.apply(this, args);
+        };
+      });
       const errors = [],
         requests = [];
       page.on("pageerror", (e) => errors.push(e.message));
@@ -123,6 +138,17 @@ try {
         await page.locator("#exercise-selections").textContent(),
         /box 1/,
       );
+      assert.deepEqual(await page.evaluate(() => window.boxNumbers), ["1"]);
+      await page.keyboard.press("Enter");
+      assert.deepEqual(await page.evaluate(() => window.boxNumbers), [
+        "1",
+        "2",
+      ]);
+      await page
+        .getByRole("button", { name: "Remove box 1", exact: true })
+        .click();
+      assert.deepEqual(await page.evaluate(() => window.boxNumbers), ["1"]);
+      await page.locator("#exercise-canvas").focus();
       await page.keyboard.press("Tab");
       assert(
         !(await page
@@ -145,7 +171,28 @@ try {
         /4 \/ 4/,
       );
       await click("reveal");
+      assert.deepEqual(await page.evaluate(() => window.boxNumbers), [
+        "1",
+        "2",
+        "3",
+        "4",
+      ]);
+      await page
+        .locator("#exercise-canvas")
+        .screenshot({
+          path: `output/accessibility/numbered-${name}-${width}.png`,
+        });
+      await click("before");
+      assert.deepEqual(await page.evaluate(() => window.boxNumbers), []);
+      await click("before");
+      assert.deepEqual(await page.evaluate(() => window.boxNumbers), [
+        "1",
+        "2",
+        "3",
+        "4",
+      ]);
       await click("erase");
+      assert.deepEqual(await page.evaluate(() => window.boxNumbers), []);
       await click("metadata");
       await page.locator("#exercise-ack").check();
       await click("score");
@@ -157,9 +204,35 @@ try {
       await click("undo");
       assert(await page.locator("#exercise-save").isDisabled());
       await click("metadata");
+      const pictureWidth = () =>
+        page
+          .locator("#exercise-canvas")
+          .evaluate((e) => e.getBoundingClientRect().width);
+      const fitted = await pictureWidth();
+      assert(await page.locator("#exercise-zoom-fit").isDisabled());
+      assert(
+        await page
+          .locator("#exercise-canvas")
+          .evaluate(
+            (e) => e.getBoundingClientRect().height <= innerHeight * 0.75,
+          ),
+      );
       await click("zoom");
+      assert(Math.abs((await pictureWidth()) - fitted * 1.5) < 1);
       await audit("scored-zoom");
-      await click("zoom");
+      await click("zoom-out");
+      assert(Math.abs((await pictureWidth()) - fitted) < 1);
+      await click("zoom-out");
+      assert(Math.abs((await pictureWidth()) - fitted * 0.75) < 1);
+      await audit("zoom-out");
+      await click("zoom-out");
+      await click("zoom-out");
+      assert(await page.locator("#exercise-zoom-out").isDisabled());
+      await click("zoom-fit");
+      assert(Math.abs((await pictureWidth()) - fitted) < 1);
+      for (let i = 0; i < 4; i++) await click("zoom");
+      assert(await page.locator("#exercise-zoom").isDisabled());
+      await click("zoom-fit");
       await page
         .locator("#exercise-all-help")
         .evaluate((el) => (el.closest("details").open = true));

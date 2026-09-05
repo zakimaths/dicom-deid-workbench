@@ -313,7 +313,7 @@
 }
 @media (max-width: 800px) {
   .exercise-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .exercise {
     padding: 16px;
@@ -344,10 +344,10 @@
   max-height: none;
   object-fit: initial;
   touch-action: none;
-}
-.exercise-stage.zoomed canvas {
-  width: 200%;
   max-width: none;
+}
+#exercise-zoom-level {
+  align-self: center;
 }
 .exercise summary {
   min-height: 44px;

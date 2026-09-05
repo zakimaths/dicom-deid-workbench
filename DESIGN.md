@@ -144,7 +144,7 @@ Headings and verification areas use raised surfaces. The inspection list separat
 
 ### Teaching image exercise
 
-The image sits on black within the workbench. A row of numbered actions introduces the fake-details exercise. Beside it, a labelled metadata list and a written verification result explain what remains. Before/current comparison is explicit in both button state and the image caption. Custom rectangle controls are available in a disclosure, keeping the primary sequence visible.
+The image sits on black within the workbench. A row of numbered actions introduces the fake-details exercise. Beside it, a labelled metadata list and a written verification result explain what remains. Before/current comparison is explicit in both button state and the image caption. Custom rectangle controls are available in a disclosure, keeping the primary sequence visible. Yellow number badges inside selected boxes match the editable list and are never included in saved pixels. Separate Zoom in, Zoom out and Fit picture controls offer 25–400% of the fitted view; fitting shows the whole image within the available width and height.
 
 ### Help and feedback
 

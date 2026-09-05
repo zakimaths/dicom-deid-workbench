@@ -5,7 +5,8 @@ import { BUILD } from "./build-info.js";
 let history = [],
   scored = false,
   assisted = false,
-  zoomed = false;
+  zoomIndex = 3;
+const zoomLevels = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 import {
   FAKE_DETAILS,
   nonymise,
@@ -133,18 +134,50 @@ function draw() {
   const s = before ? state.dirty : state;
   canvas.width = s.width;
   canvas.height = s.height;
+  const fitWidth = Math.min(
+    canvas.parentElement.clientWidth,
+    ((window.innerHeight * 0.75 - 2) * s.width) / s.height,
+  );
+  const scale = (Math.max(1, fitWidth) * zoomLevels[zoomIndex]) / s.width;
+  canvas.style.width = `${s.width * scale}px`;
   ctx.putImageData(new ImageData(s.pixels, s.width, s.height), 0, 0);
   if (!before) {
     ctx.strokeStyle = "#ffcc44";
     ctx.lineWidth = Math.max(2, s.width / 400);
-    for (const r of regions)
+    regions.forEach((r, index) => {
       ctx.strokeRect(r.x + 1, r.y + 1, r.width - 2, r.height - 2);
+      // Editing guides live only on this display canvas, never in saved pixels.
+      const label = String(index + 1);
+      const padding = Math.min(3 / scale, r.width / 8, r.height / 8);
+      let fontSize = Math.min(16 / scale, r.height - 2 * padding);
+      ctx.font = `bold ${fontSize}px monospace`;
+      fontSize *= Math.min(
+        1,
+        (r.width - 2 * padding) / ctx.measureText(label).width,
+      );
+      ctx.font = `bold ${fontSize}px monospace`;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(r.x, r.y, r.width, r.height);
+      ctx.clip();
+      ctx.fillStyle = "#ffcc44";
+      ctx.fillRect(
+        r.x,
+        r.y,
+        ctx.measureText(label).width + 2 * padding,
+        fontSize + 2 * padding,
+      );
+      ctx.fillStyle = "#10150e";
+      ctx.textBaseline = "top";
+      ctx.fillText(label, r.x + padding, r.y + padding);
+      ctx.restore();
+    });
   }
   $("view-label").textContent = before
     ? "BEFORE — fake details are still present"
     : "CURRENT — " +
       (regions.length
-        ? `${regions.length} rectangle(s) selected; outlines are not saved`
+        ? `${regions.length} numbered box(es) selected; numbers and outlines are not saved`
         : "saved pixels, without display filters");
 }
 function render() {
@@ -157,7 +190,9 @@ function render() {
     ocr: dirty && !before,
     score: dirty && !before,
     reveal: dirty && state.challenge && !before,
-    zoom: true,
+    zoom: zoomIndex < zoomLevels.length - 1,
+    "zoom-out": zoomIndex > 0,
+    "zoom-fit": zoomIndex !== 3,
     undo: history.length > 0 && !before,
     nonymise: !dirty,
     metadata: dirty && Object.keys(state.metadata).length > 1,
@@ -188,6 +223,8 @@ function render() {
     "discard",
   ])
     if (before) $(id).disabled = true;
+  $("zoom-level").textContent =
+    `${Math.round(zoomLevels[zoomIndex] * 100)}% of fit`;
   $("ack").disabled = busy;
   $("mode").disabled = busy || dirty;
   $("seed").disabled = busy || dirty || $("mode").value !== "challenge";
@@ -343,6 +380,8 @@ export async function openExercise(item, img, stillCurrent = () => true) {
     if (!stillCurrent()) throw new Error("Image opening cancelled.");
     document.dispatchEvent(new Event("exercise-enter"));
     state = next;
+    zoomIndex = 3;
+    canvas.parentElement.scrollTo(0, 0);
     history = [];
     scored = false;
     assisted = false;
@@ -504,12 +543,22 @@ $("restart").onclick = () =>
 $("ack").onchange = render;
 $("mode").onchange = render;
 $("cancel").onclick = cancelOCR;
-$("zoom").onclick = () => {
-  zoomed = !zoomed;
-  canvas.parentElement.classList.toggle("zoomed", zoomed);
-  $("zoom").textContent = zoomed ? "Fit picture" : "Zoom in";
-  $("zoom").setAttribute("aria-pressed", String(zoomed));
-};
+function setZoom(index) {
+  zoomIndex = Math.max(0, Math.min(zoomLevels.length - 1, index));
+  render();
+  if (zoomIndex <= 3) canvas.parentElement.scrollTo(0, 0);
+}
+$("zoom").onclick = () => setZoom(zoomIndex + 1);
+$("zoom-out").onclick = () => setZoom(zoomIndex - 1);
+$("zoom-fit").onclick = () => setZoom(3);
+window.addEventListener("resize", draw);
+let stageWidth = 0;
+new ResizeObserver(([entry]) => {
+  if (entry.contentRect.width !== stageWidth) {
+    stageWidth = entry.contentRect.width;
+    draw();
+  }
+}).observe(canvas.parentElement);
 $("undo").onclick = () =>
   transaction(async () => {
     const previous = history.at(-1);
