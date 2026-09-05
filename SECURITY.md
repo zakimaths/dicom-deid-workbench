@@ -4,11 +4,11 @@ DICOM Workbench is a learning project for synthetic or explicitly permitted publ
 
 ## Public browser demo
 
-GitHub Pages serves static frontend files only. The published folder contains the page, styles, scripts, fonts and eight known sample assets. It contains no Python service, DICOM containers, credentials or environment files.
+GitHub Pages serves static frontend files only. The published folder contains the page, styles, scripts, fonts, eight exercise sample assets, and 50 teaching images with thumbnails and a source catalogue. It contains no Python service, DICOM containers, credentials or environment files.
 
 The demo has no file picker, upload endpoint, login, analytics, service worker or browser-storage feature. Dropped files are refused without reading them. It fetches samples from the same site and performs display and rectangle edits in the tab. Downloads are PNG previews and exercise reports, not anonymised DICOM files.
 
-The page uses a restrictive content security policy and a no-referrer policy. External profile links open only when selected. GitHub controls the hosting, TLS and response headers; a frontend application cannot promise protection against a compromised host or browser. GitHub also records visitor IP addresses for security purposes. [GitHub Pages data collection](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages#data-collection).
+The page uses a restrictive content security policy and a no-referrer policy. External profile and image-source links open only when selected. The teaching library contains already-published JPEG pictures, including recognisable head anatomy; it is not an anonymity benchmark. GitHub controls the hosting, TLS and response headers; a frontend application cannot promise protection against a compromised host or browser. GitHub also records visitor IP addresses for security purposes. [GitHub Pages data collection](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages#data-collection).
 
 ## Optional local tool
 

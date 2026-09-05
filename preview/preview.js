@@ -490,7 +490,7 @@ new ResizeObserver(fit).observe($("viewport"));
 const help = {
   demo: "Opens a made-up scan. Use it to try the viewer without patient data.",
   "browse-samples":
-    "Shows six public teaching pictures. They are small examples for learning, not diagnosis.",
+    "Shows six small DICOM test fixtures. For clearer anatomy and study notes, choose Browse 50 teaching scans.",
   "text-exercise":
     "Opens a made-up image with FAKE ID 123 printed in its pixels. The suggested rectangle covers that text.",
   "mark-region":

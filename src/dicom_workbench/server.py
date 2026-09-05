@@ -10,6 +10,7 @@ from .core import MAX_BYTES, Unsupported, transform
 from .fixtures import synthetic_dicom
 from .samples import SAMPLES, sample_dicom
 from .selection import load_selection
+from .teaching import teaching_assets
 
 STATIC = Path(__file__).parent / "web"
 TTL_SECONDS = 600
@@ -22,6 +23,9 @@ class WorkbenchServer(HTTPServer):
         self.result = None
         self.job = None
         self.created = 0
+        self.teaching_assets = {
+            "/" + name: (name, mime) for name, mime in teaching_assets().items()
+        }
 
     def get_request(self):
         connection, address = super().get_request()
@@ -106,11 +110,14 @@ class Handler(BaseHTTPRequestHandler):
             "/app.js": ("app.js", "text/javascript; charset=utf-8"),
             "/pixels.js": ("pixels.js", "text/javascript; charset=utf-8"),
             "/style.css": ("style.css", "text/css; charset=utf-8"),
+            "/teaching.css": ("teaching.css", "text/css; charset=utf-8"),
+            "/teaching.js": ("teaching.js", "text/javascript; charset=utf-8"),
             "/favicon.svg": ("favicon.svg", "image/svg+xml"),
             "/fonts/jetbrains-mono-regular.ttf": ("fonts/jetbrains-mono-regular.ttf", "font/ttf"),
             "/fonts/jetbrains-mono-semibold.ttf": ("fonts/jetbrains-mono-semibold.ttf", "font/ttf"),
             "/fonts/press-start-2p.ttf": ("fonts/press-start-2p.ttf", "font/ttf"),
         }
+        assets.update(self.server.teaching_assets)
         if self.path in assets:
             name, mime = assets[self.path]
             return self.respond(200, (STATIC / name).read_bytes(), mime)

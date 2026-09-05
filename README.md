@@ -4,7 +4,7 @@ A small workbench for learning how medical images are stored, displayed and de-i
 
 **[Try the browser demo →](https://zakimaths.github.io/dicom-deid-workbench/)** · [Run the local tool](#run-the-local-tool) · [What has been tested](docs/validation.md)
 
-Open a sample, move the contrast sliders, inspect the example metadata changes, or practise erasing the made-up text in the synthetic image. The demo needs no installation.
+Browse 50 larger, labelled MRI, CT and X-ray images, or try metadata and erasing exercises with the small DICOM examples. The demo needs no installation. [About the teaching collection](docs/teaching-library.md).
 
 [![DICOM Workbench showing the synthetic image exercise](docs/screenshot.png)](https://zakimaths.github.io/dicom-deid-workbench/)
 
@@ -13,7 +13,7 @@ Open a sample, move the contrast sliders, inspect the example metadata changes, 
 | | Browser demo | Local tool |
 | --- | --- | --- |
 | Where it runs | Static frontend on GitHub Pages | On your computer; macOS setup below |
-| Images | Two synthetic examples and six prepared public samples | The same examples, plus supported DICOM files |
+| Images | 50 teaching pictures, two synthetic examples and six DICOM test fixtures | The same collection, plus supported DICOM files |
 | Metadata | Shows changes prepared before the demo was published | Scrubs the supported metadata fields when you open a file |
 | Editing | Replaces selected sample pixels in the browser | Replaces selected pixels in a new DICOM file |
 | Downloads | PNG preview and exercise report | DICOM file and processing report |
@@ -33,7 +33,7 @@ uv sync --locked
 uv run --locked dicom-workbench serve
 ```
 
-Open [localhost:8765](http://127.0.0.1:8765) and choose **Try synthetic example** or **Browse public scans**. If that port is busy, add `--port 8766` to the serve command. Press `Ctrl+C` in the terminal to stop the app.
+Open [localhost:8765](http://127.0.0.1:8765) and choose **Try synthetic example** or **Browse 50 teaching scans**. If that port is busy, add `--port 8766` to the serve command. Press `Ctrl+C` in the terminal to stop the app.
 
 The setup installs the pinned Python version and dependencies. Normal use needs no Docker, Node.js or cloud account. After installation, the local tool uses local assets and loopback requests only. Button explanations are available on hover, keyboard focus and in the expandable guide.
 
@@ -92,14 +92,16 @@ Add `--with-text` when generating a fixture to include the fake text. Pass a JSO
 
 The local tool uses Python and [pydicom](https://pydicom.github.io/) for DICOM parsing and writing. Plain JavaScript and Canvas handle the viewer. For this small, uncompressed, single-frame scope, that keeps the setup manageable.
 
-The public demo shares the visual design and pixel-display functions. A build step prepares the known examples, then publishes only HTML, CSS, JavaScript, fonts and sample JSON. Python runs during the build and in the optional local tool; it is not deployed as a web service.
+The public demo shares the visual design and pixel-display functions. A build step prepares the known examples, then publishes only HTML, CSS, JavaScript, fonts, sample JSON and the teaching pictures. Python runs during the build and in the optional local tool; it is not deployed as a web service.
 
 A broader viewer would need a different support plan. Full object validation, related-file processing, evaluated text detection and volume-level privacy work come before clinical use. The [research roadmap](docs/anonymisation-roadmap.md) and [implementation prompts](docs/prompts/README.md) break that work into smaller tasks.
 
 ## Sources and contributing
 
-The public CT/MRI examples come from pydicom's existing NEMA and PCIR test collections. Four are only 16 × 16 pixels and are useful for edge-case testing, not anatomical detail. [Sources, hashes and preparation](docs/public-samples.md).
+The [50 teaching pictures](docs/teaching-image-credits.md) come from individually credited open-licence or public-domain Wikimedia Commons sources. They are JPEG views, not DICOM volumes.
 
-Code is MIT licensed. The bundled fonts have their own SIL Open Font Licences. Please use synthetic examples in bug reports and never attach patient data. Read the [security notes](SECURITY.md) before reporting a sensitive issue.
+The six small DICOM CT/MRI examples come from pydicom's existing NEMA and PCIR test collections. Four are only 16 × 16 pixels and are useful for edge-case testing, not anatomical detail. [Sources, hashes and preparation](docs/public-samples.md).
+
+Code is MIT licensed. Teaching images and thumbnails retain their individual licences, including ShareAlike where applicable. The bundled fonts have their own SIL Open Font Licences. Please use synthetic examples in bug reports and never attach patient data. Read the [security notes](SECURITY.md) before reporting a sensitive issue.
 
 [Changelog](CHANGELOG.md) · [Sharing drafts](docs/share.md) · [LinkedIn](https://www.linkedin.com/in/alhasan-alkaseem/) · [X](https://x.com/vesperlemma) · [GitHub](https://github.com/zakimaths)

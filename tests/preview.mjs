@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { checkTeaching } from "./teaching.mjs";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -53,6 +54,14 @@ try {
       if (m.type() === "error") failures.push(m.text());
     });
     await page.route("**/*", (route) => {
+      // WebKit exposes browser-memory image loads to routing; these make no network request.
+      const parsed = new URL(route.request().url());
+      if (
+        parsed.protocol === "blob:" &&
+        parsed.origin === new URL(base).origin &&
+        route.request().method() === "GET"
+      )
+        return route.continue();
       const request = route.request();
       requests.push({ url: request.url(), method: request.method() });
       if (!request.url().startsWith(base) || request.method() !== "GET")
@@ -176,6 +185,7 @@ try {
     });
     assert(await page.locator("#canvas").isHidden());
     assert.match(await page.locator("#status").textContent(), /samples only/);
+    await checkTeaching(page, base, engineName, true);
     assert.equal(
       await page.evaluate(() => localStorage.length + sessionStorage.length),
       0,
@@ -194,7 +204,7 @@ try {
       engine: engineName,
       passed: true,
       scope:
-        "Eight samples, contrast/reset, selection/discard/edit, PNG/report exports, clear, refused file drop, responsive layout, no storage/cookies/API or off-origin requests",
+        "50 teaching images with labelled anatomy, source links, filters, fit/zoom, sharing and failure-state checks; eight exercise samples, contrast/reset, selection/discard/edit, PNG/report exports, clear, refused file drop, responsive layout, no storage/cookies/API or off-origin requests",
     });
     console.log(`${engineName}: static preview checks passed`);
     await browser.close();

@@ -1,5 +1,12 @@
 # Changelog
 
+## Teaching library — 5 September 2026
+
+- Add 50 individually credited, larger MRI/CT/X-ray pictures with anatomy labels, study notes and source/licence links.
+- Add search, modality filters, original-contrast viewing, actual size, reset and direct image links in both local and public versions.
+- Separate tiny DICOM test fixtures from anatomy teaching images; keep the DICOM import/export support limits unchanged.
+- Pin image hashes and add repeatable asset checks plus all-image browser checks, including failed and rapid image selections.
+
 ## Browser demo and documentation — 5 September 2026
 
 - Add a GitHub Pages demo with prepared samples, contrast controls, rectangle editing and PNG/report downloads. No processing backend or file upload is deployed.

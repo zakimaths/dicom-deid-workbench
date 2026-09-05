@@ -255,7 +255,7 @@ async function load(file, sample = null) {
   for (const id of importControls) $(id).disabled = true;
   status(
     sample
-      ? "Opening a public teaching scan and scrubbing its metadata…"
+      ? "Opening a public test fixture and scrubbing its metadata…"
       : file
         ? "Scrubbing supported metadata…"
         : "Generating a synthetic example…",
@@ -426,7 +426,7 @@ const helpText = {
     "Permanently replaces the selected pixels in a new file. The app reopens it to check that those pixels were replaced and all other pixels stayed the same. Reimport the original to start again.",
   demo: "Creates a made-up scan using simple shapes. Start here to practise changing contrast and see which personal details the app removes.",
   "browse-samples":
-    "Opens a small collection of public CT and MRI teaching images. Choose one to practise with a scan instead of the made-up shapes.",
+    "Opens six small DICOM files for testing metadata scrubbing and pixel edits. For clearer anatomy, choose Browse 50 teaching scans.",
   "sample-ct":
     "Opens one public CT slice. A slice is a single picture from a scan. Try the contrast sliders to make different parts easier to see.",
   "sample-mr":

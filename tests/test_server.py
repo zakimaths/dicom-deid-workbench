@@ -6,6 +6,7 @@ import pytest
 
 from dicom_workbench.server import WorkbenchServer
 from dicom_workbench.samples import SAMPLES
+from dicom_workbench.teaching import teaching_assets
 
 
 @pytest.fixture
@@ -174,3 +175,22 @@ def test_ambiguous_json_invalidates_export(local, selection):
     body = '{"job":' + json.dumps(job) + ',"regions":' + selection + "}"
     assert req(local, "/api/redact", "POST", headers, body)[0] == 422
     assert local.result is None
+
+
+def test_teaching_routes_preserve_local_security(local):
+    for path, mime in teaching_assets().items():
+        status, body, headers = req(local, "/" + path)
+        assert status == 200 and body
+        assert headers["Content-Type"] == mime
+        assert headers["X-Content-Type-Options"] == "nosniff"
+    for path in (
+        "/teaching/../core.py",
+        "/teaching/unknown.jpg",
+        "/teaching/catalog.json?extra=1",
+        "/teaching/%2e%2e/server.py",
+    ):
+        assert req(local, path)[0] == 404
+    assert (
+        req(local, "/teaching/catalog.json", headers={"Origin": "https://attacker.example"})[0]
+        == 403
+    )

@@ -10,6 +10,7 @@
     <title>DICOM Workbench</title>
     <link rel="icon" href="/favicon.svg" />
     <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/teaching.css" />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to workbench</a>
@@ -108,12 +109,25 @@
             /></label>
           </div>
           <button
+            id="browse-teaching"
+            class="report-button"
+            aria-haspopup="dialog"
+            aria-describedby="teaching-open-help"
+          >
+            Browse 50 teaching scans ↗
+          </button>
+          <span id="teaching-open-help" hidden
+            >Open larger MRI, CT and X-ray images with anatomy labels and study
+            notes. These are published pictures, separate from the DICOM
+            scrubbing exercises.</span
+          >
+          <button
             id="browse-samples"
             class="report-button"
             aria-expanded="false"
             aria-controls="sample-library"
           >
-            Browse public scans
+            DICOM test fixtures (6)
           </button>
           <p class="drop-note">
             or drop a file here. Use synthetic or already-public data.
@@ -121,12 +135,12 @@
         </div>
       </section>
       <div id="sample-library" class="sample-library" hidden>
-        <p><strong>Six public images to learn with</strong></p>
+        <p><strong>Small DICOM fixtures for software testing</strong></p>
         <p>
-          Public test images from pydicom, sourced from NEMA and PCIR. Two
-          teaching slices and four tiny 16 × 16 test images help you try
-          different inputs. They load from your computer without an internet
-          request.
+          Public test images from pydicom, sourced from NEMA and PCIR. These
+          small images check file handling and pixel edits; use the teaching
+          library above for visible anatomy. They load from your computer
+          without an internet request.
         </p>
         <div class="sample-options">
           <button id="sample-ct" class="report-button">
@@ -429,5 +443,148 @@
     </main>
     <div id="button-help" class="button-help" role="tooltip" hidden></div>
     <script type="module" src="/app.js"></script>
+    <script type="module" src="/teaching.js"></script>
+    <!-- Teaching collection extends the existing workbench: readable anatomy first,
+         source and limitations beside each picture; original DICOM workflow stays separate. -->
+    <dialog id="teaching-dialog" aria-labelledby="teaching-heading">
+      <header class="teaching-header">
+        <div>
+          <span class="section-label">PUBLIC IMAGE LIBRARY</span>
+          <h2 id="teaching-heading">50 scans to study</h2>
+        </div>
+        <button
+          id="teaching-close"
+          class="report-button"
+          data-help="Close the teaching library and return to your workbench exercise."
+        >
+          Return to workbench ×
+        </button>
+      </header>
+      <p class="teaching-intro">
+        Study anatomy with published MRI, CT and X-ray pictures. These JPEG
+        views have no DICOM metadata to scrub. Some show disease or implants;
+        the notes are study pointers, not a diagnosis.
+      </p>
+      <button
+        id="teaching-find"
+        class="report-button"
+        data-help="Jump to the search box and image collection to choose a different body part or scan type."
+      >
+        Find another scan ↓
+      </button>
+      <div class="teaching-layout">
+        <section
+          class="teaching-view"
+          aria-labelledby="teaching-title"
+          aria-busy="false"
+        >
+          <div class="teaching-label">
+            <span id="teaching-kind" class="section-label"></span>
+            <h3 id="teaching-title" tabindex="-1">Choose an image</h3>
+            <p id="teaching-plane"></p>
+          </div>
+          <div id="teaching-stage">
+            <img id="teaching-image" alt="" hidden />
+          </div>
+          <p id="teaching-status" role="status" aria-live="polite">
+            Loading the collection…
+          </p>
+          <div class="teaching-controls">
+            <button
+              id="teaching-prev"
+              class="report-button"
+              data-help="Show the previous image in your current search results."
+            >
+              ← Previous
+            </button>
+            <button
+              id="teaching-next"
+              class="report-button"
+              data-help="Show the next image in your current search results."
+            >
+              Next →
+            </button>
+            <button
+              id="teaching-zoom"
+              class="report-button"
+              data-help="Switch between fitting the whole image on screen and viewing its saved pixels at actual size. Scroll to explore when enlarged."
+            >
+              Actual size
+            </button>
+            <button
+              id="teaching-reset"
+              class="report-button"
+              data-help="Restore the publisher’s original brightness and contrast and fit the whole image on screen."
+            >
+              Reset view
+            </button>
+          </div>
+          <div class="teaching-sliders">
+            <label
+              >Brightness <output id="teaching-brightness-value">100%</output
+              ><input
+                id="teaching-brightness"
+                type="range"
+                min="50"
+                max="180"
+                value="100"
+            /></label>
+            <label
+              >Contrast <output id="teaching-contrast-value">100%</output
+              ><input
+                id="teaching-contrast"
+                type="range"
+                min="50"
+                max="180"
+                value="100"
+            /></label>
+          </div>
+          <p class="teaching-small">
+            Starts with the publisher’s contrast. These controls change the
+            displayed picture, not a CT tissue window or the source file.
+          </p>
+          <div class="teaching-notes">
+            <h4>What am I looking at?</h4>
+            <p id="teaching-look"></p>
+            <p id="teaching-context"></p>
+          </div>
+          <p id="teaching-credit" class="teaching-small"></p>
+          <div class="teaching-links">
+            <a id="teaching-source" target="_blank" rel="noopener noreferrer"
+              >Source &amp; original image ↗</a
+            ><a id="teaching-license" target="_blank" rel="noopener noreferrer"
+              >Image licence ↗</a
+            ><button
+              id="teaching-share"
+              class="report-button"
+              data-help="Copy a link that opens this exact teaching image. You can send it to a study partner."
+            >
+              Copy image link
+            </button>
+          </div>
+          <p id="teaching-help" class="teaching-help">
+            Hover over a button or focus it with the keyboard for an
+            explanation.
+          </p>
+        </section>
+        <aside class="teaching-catalog" aria-label="Find a teaching image">
+          <label for="teaching-search">Find anatomy or a view</label
+          ><input
+            id="teaching-search"
+            type="search"
+            placeholder="Try knee, chest, sagittal…"
+          />
+          <label for="teaching-filter">Scan type</label
+          ><select id="teaching-filter">
+            <option value="all">All scan types</option>
+            <option>MRI</option>
+            <option>CT</option>
+            <option>X-ray</option>
+          </select>
+          <p id="teaching-count" role="status"></p>
+          <div id="teaching-cards"></div>
+        </aside>
+      </div>
+    </dialog>
   </body>
 </html>

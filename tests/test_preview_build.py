@@ -23,7 +23,7 @@ def test_preview_is_repeatable_and_excludes_backend_and_source_values():
     first = hashes()
     preview.build()
     assert hashes() == first
-    assert len(first) == 19
+    assert len(first) == 122
     assert not any(
         Path(p).suffix in {".py", ".dcm", ".env", ".toml", ".yml", ".map"} for p in first
     )
@@ -45,6 +45,7 @@ def test_preview_is_repeatable_and_excludes_backend_and_source_values():
         assert "SYNTHETIC^EXAMPLE" not in path.read_text()
     html = (preview.OUT / "index.html").read_text()
     assert 'type="file"' not in html and "<form" not in html
+    assert "load from your computer" not in html
     assert "Content-Security-Policy" in html and "unsafe-inline" not in html
     assert 'href="/' not in html and 'src="/' not in html
     assert "/api/" not in (preview.OUT / "preview.js").read_text()

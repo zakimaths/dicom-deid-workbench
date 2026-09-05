@@ -36,3 +36,15 @@ The [0.2.0 CI run](https://github.com/zakimaths/dicom-deid-workbench/actions/run
 Follow the commands in the [README](../README.md#run-the-checks). State the commit, operating system, architecture, Python/browser version, steps and expected result when reporting a bug. Use a generated fixture with made-up identifiers. Never attach patient data.
 
 The work does not include an external IOD validator, a real-patient privacy study, validated OCR, defacing evaluation, diagnostic-display calibration, a screen reader or physical touch-device testing. Playwright WebKit is useful browser coverage, but it is not a test of the installed Safari application. The earlier 200% layout check used CSS zoom, not the browser's zoom menu.
+
+
+## Teaching library — 5 September 2026
+
+Added 50 distinct published images: 15 MRI, 15 CT and 20 X-rays. Each source and shipped picture has at least 512 pixels on both sides. Images were visually reviewed for useful anatomy, starting contrast and obvious identifying text. This is not expert clinical validation; related views, false-colour composites and source-labelled conditions are identified in the notes. See the [collection details](teaching-library.md) and [individual credits](teaching-image-credits.md).
+
+- 120 Python checks passed, including the catalogue, serving boundaries and repeatable static build.
+- Seven numerical pixel-display checks passed.
+- Local browser workflows passed in Chromium, Firefox and WebKit; all 50 teaching images were opened in each engine, alongside the existing DICOM exercises. Twenty-one downloaded DICOM results passed independent pydicom/NumPy verification.
+- The static demo passed all three engines, opening all 50 teaching images and all eight exercise samples. Library checks cover labels, decoded dimensions, filters, search, navigation, contrast/reset, fitted image bounds, phone selection/focus, public share links, cold deep links, corrupt images, delayed catalogue closing and rapid image changes. Network requests remain same-site; browser-memory blob URLs are checked for the same origin.
+- All 100 full-image/thumbnail files were regenerated from the pinned source bytes with matching SHA-256 hashes using Pillow 12.3.0 and libjpeg-turbo 3.1.4.1. The full JPEGs decoded successfully and contained no EXIF, comment or ICC payloads. This does not assess identifying content in their pixels.
+- The static output contains 122 allowlisted frontend assets. Python code, original DICOM containers and original downloaded image containers are excluded.

@@ -1,0 +1,253 @@
+/* Teaching images keep their published contrast and proportions; no pixelation. */
+#browse-teaching {
+  margin-block: 12px 6px;
+  color: var(--accent);
+}
+#teaching-dialog {
+  width: min(1380px, calc(100vw - 24px));
+  max-width: none;
+  height: calc(100dvh - 24px);
+  max-height: none;
+  padding: 24px;
+  border: 1px solid var(--boundary);
+  color: var(--text);
+  background: var(--panel);
+}
+#teaching-dialog::backdrop {
+  background: rgb(0 0 0 / 80%);
+}
+.teaching-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+}
+.teaching-header h2 {
+  font: 600 24px/1.4 var(--font-body);
+  margin: 4px 0;
+}
+.teaching-intro {
+  color: var(--secondary);
+  max-width: 100ch;
+  margin-block: 12px 24px;
+}
+.teaching-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 28px;
+}
+.teaching-view {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+.teaching-catalog {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+.teaching-catalog > label {
+  display: block;
+  margin-bottom: 6px;
+}
+.teaching-catalog input,
+.teaching-catalog select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--boundary);
+  color: var(--text);
+  background: var(--screen);
+  padding: 8px;
+  font: inherit;
+  margin-bottom: 12px;
+}
+#teaching-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  max-height: 66vh;
+  overflow-y: auto;
+  padding: 3px;
+}
+.teaching-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--divider);
+  background: var(--screen);
+  color: var(--text);
+  text-align: left;
+  padding: 8px;
+  gap: 6px;
+}
+.teaching-card[aria-pressed="true"] {
+  border-color: var(--accent);
+}
+.teaching-card img {
+  width: 100%;
+  height: 110px;
+  object-fit: contain;
+  background: #000;
+}
+.teaching-card span {
+  font-size: 12px;
+  line-height: 1.45;
+}
+.teaching-card small {
+  color: var(--secondary);
+}
+.teaching-label h3 {
+  font: 600 22px/1.35 var(--font-body);
+  margin: 4px 0;
+}
+.teaching-label p {
+  color: var(--secondary);
+  margin: 4px 0 12px;
+}
+#teaching-stage {
+  height: clamp(300px, 52vh, 720px);
+  overflow: auto;
+  display: grid;
+  place-items: center;
+  background: #000;
+  border: 1px solid var(--divider);
+}
+#teaching-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: auto;
+}
+#teaching-image[hidden] {
+  display: none;
+}
+#teaching-stage.actual-size {
+  display: block;
+}
+#teaching-stage.actual-size img {
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+}
+#teaching-status {
+  margin: 8px 0;
+  color: var(--secondary);
+  min-height: 1.6em;
+}
+.teaching-controls,
+.teaching-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+.teaching-controls button,
+.teaching-links button,
+.teaching-header button {
+  min-height: 44px;
+}
+.teaching-sliders {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+}
+.teaching-sliders label {
+  display: block;
+}
+.teaching-sliders input {
+  display: block;
+  width: 100%;
+  min-height: 32px;
+  accent-color: var(--accent);
+}
+.teaching-sliders output {
+  float: right;
+  color: var(--secondary);
+}
+.teaching-small {
+  font-size: 12px;
+  color: var(--secondary);
+  overflow-wrap: anywhere;
+}
+.teaching-notes {
+  border-block: 1px solid var(--divider);
+  margin-block: 16px;
+  padding-block: 8px;
+}
+.teaching-notes h4 {
+  margin: 8px 0;
+  font-size: 15px;
+}
+.teaching-notes p {
+  margin: 8px 0;
+}
+.teaching-help {
+  color: var(--accent);
+  min-height: 3.2em;
+  font-size: 12px;
+}
+#teaching-dialog :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+@media (max-width: 760px) {
+  #teaching-dialog {
+    padding: 16px;
+  }
+  .teaching-header {
+    flex-direction: column;
+  }
+  .teaching-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .teaching-view {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .teaching-catalog {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  #teaching-cards {
+    max-height: none;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  #teaching-stage {
+    height: 380px;
+    max-height: 65vh;
+  }
+  .teaching-sliders {
+    gap: 12px;
+  }
+}
+
+#teaching-find {
+  margin-bottom: 16px;
+}
+
+/* Bound the fit image to the viewport, rather than an intrinsic grid track. */
+#teaching-stage {
+  position: relative;
+}
+#teaching-image {
+  position: absolute;
+  inset: 0;
+  min-width: 0;
+  min-height: 0;
+}
+#teaching-stage.actual-size img {
+  position: static;
+}
+#teaching-dialog .report-button {
+  width: auto;
+}
+@media (min-width: 761px) {
+  #teaching-find {
+    display: none;
+  }
+}

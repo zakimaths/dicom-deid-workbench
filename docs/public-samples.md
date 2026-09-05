@@ -1,8 +1,10 @@
-# Public teaching scans
+# Public DICOM test fixtures
 
-Choose **Browse public scans** to open a CT or MRI example. In the local tool, all six come from the pinned pydicom 3.0.2 package and pass through the same processing checks as an upload. No scan needs to be fetched during local use. The browser demo fetches prepared pixel/report assets from its own site and does not run the DICOM scrubber or accept uploads.
+For larger anatomy images, use the separate [50-image teaching library](teaching-library.md).
 
-These are existing public test images. Their availability does not mean other scans are open-source or safe to share. Two are low-resolution teaching slices; four are tiny 16 × 16 test fixtures, useful for exercising image-boundary controls rather than anatomical detail. Public availability does not establish clinical suitability or complete de-identification.
+Choose **DICOM test fixtures (6)** to open a CT or MRI example. In the local tool, all six come from the pinned pydicom 3.0.2 package and pass through the same processing checks as an upload. No scan needs to be fetched during local use. The browser demo fetches prepared pixel/report assets from its own site and does not run the DICOM scrubber or accept uploads.
+
+These are existing public test images. Their availability does not mean other scans are open-source or safe to share. Two are low-resolution slices; four are tiny 16 × 16 test fixtures, useful for exercising image-boundary controls rather than anatomical detail. Public availability does not establish clinical suitability or complete de-identification.
 
 ## Sources and reuse
 

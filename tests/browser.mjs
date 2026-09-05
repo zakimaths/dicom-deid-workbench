@@ -1,5 +1,6 @@
 // Real-browser regression passes. No remote service or patient data is used.
 import assert from "node:assert/strict";
+import { checkTeaching } from "./teaching.mjs";
 import { spawn, execFileSync } from "node:child_process";
 import { once } from "node:events";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -48,6 +49,14 @@ try {
       external = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.route("**/*", (route) => {
+      // WebKit exposes browser-memory image loads to routing; these make no network request.
+      const parsed = new URL(route.request().url());
+      if (
+        parsed.protocol === "blob:" &&
+        parsed.origin === new URL(base).origin &&
+        route.request().method() === "GET"
+      )
+        return route.continue();
       if (
         !route
           .request()
@@ -89,6 +98,8 @@ try {
       return readFile(filename);
     };
     try {
+      await checkTeaching(page, base, name);
+      pass("50 labelled teaching images and library controls");
       await page.goto(base);
       await page.waitForFunction(
         () => !document.querySelector("#demo").disabled,

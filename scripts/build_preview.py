@@ -10,6 +10,7 @@ import shutil
 from dicom_workbench.core import transform
 from dicom_workbench.fixtures import synthetic_dicom
 from dicom_workbench.samples import SAMPLES, sample_dicom
+from dicom_workbench.teaching import teaching_assets
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = ROOT / "src/dicom_workbench/web"
@@ -71,9 +72,10 @@ def build():
         count=1,
         flags=re.S,
     )
-    html = html.replace(
-        "load from your computer without an internet\n          request.",
+    html = re.sub(
+        r"load from your computer\s+without an internet\s+request\.",
         "are fetched from this site when you select one; edits stay in this tab.",
+        html,
     )
     html = re.sub(
         r"<strong>Metadata scrubbing is only one step\.</strong>.*?anonymiser\.",
@@ -131,6 +133,10 @@ def build():
     )
     for name in ("pixels.js", "favicon.svg"):
         shutil.copyfile(WEB / name, OUT / name)
+    library = teaching_assets()
+    (OUT / "teaching").mkdir()
+    for name in ("teaching.js", "teaching.css", *library):
+        shutil.copyfile(WEB / name, OUT / name)
     shutil.copyfile(ROOT / "preview/preview.js", OUT / "preview.js")
     (OUT / "fonts").mkdir()
     for name in (
@@ -177,6 +183,7 @@ def build():
     (OUT / ".nojekyll").touch()
     allowed = {"index.html", "style.css", "pixels.js", "preview.js", "favicon.svg", ".nojekyll"}
     allowed |= {f"samples/{key}.json" for key in cases}
+    allowed |= {"teaching.js", "teaching.css", *library}
     allowed |= {f"fonts/{p.name}" for p in (OUT / "fonts").iterdir()}
     files = {str(p.relative_to(OUT)) for p in OUT.rglob("*") if p.is_file()}
     assert files == allowed and not any(p.is_symlink() for p in OUT.rglob("*"))
