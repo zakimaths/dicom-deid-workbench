@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to workbench</a>
     <header class="topbar">
       <a class="brand" href="/"
         ><img src="/favicon.svg" width="32" height="32" alt="" /><span
@@ -19,7 +20,7 @@
         ></a
       >
       <span class="local"
-        ><span aria-hidden="true"></span> Running on your Mac / PC</span
+        ><span aria-hidden="true"></span> Local processing</span
       >
       <a
         href="https://github.com/zakimaths/dicom-deid-workbench"
@@ -28,20 +29,22 @@
         >GitHub <span aria-hidden="true">↗</span></a
       >
     </header>
-    <main>
+    <main id="main" tabindex="-1">
       <section class="intro">
         <div>
-          <p class="eyebrow">IMAGING / METADATA / EXPLORATION</p>
-          <h1>A closer look.<br /><span>Less identifying metadata.</span></h1>
+          <p class="eyebrow">DICOM / SINGLE-FRAME TOOLS</p>
+          <h1>
+            Image workbench<span class="title-cursor" aria-hidden="true"
+              >_</span
+            >
+          </h1>
           <p class="lede">
-            Inspect a scan, scrub its metadata, and see exactly what changed.<br
-              class="desktop"
-            />
-            A small local tool for learning how DICOM works.
+            Inspect an image. Scrub its metadata. Review what changed. A local
+            tool for learning how DICOM works.
           </p>
         </div>
         <div class="import-box" id="dropzone">
-          <p class="import-title">Start with an image</p>
+          <p class="import-title">Load an image</p>
           <p>Single-frame CT or MR · uncompressed · up to 8 MiB</p>
           <div class="import-actions">
             <button class="primary" id="demo">
@@ -59,15 +62,18 @@
         </div>
       </section>
       <p class="notice">
-        <span class="notice-icon" aria-hidden="true">i</span
+        <span class="notice-icon" aria-hidden="true">!</span
         ><span
           ><strong>Metadata scrubbing is only one step.</strong> Pixels and
           recognisable anatomy are not assessed. This is an educational
           prototype, not a clinical anonymiser.</span
         >
       </p>
-      <div id="status" class="status" role="status" aria-live="polite">
-        Ready. Try the synthetic example to explore the workbench.
+      <div class="status-line">
+        <span class="status-prompt" aria-hidden="true">&gt;</span>
+        <div id="status" class="status" role="status" aria-live="polite">
+          Ready. Try the synthetic example to explore the workbench.
+        </div>
       </div>
       <section class="workbench" aria-label="Image workbench">
         <div class="viewer">
@@ -81,7 +87,7 @@
           <div class="viewport" id="viewport">
             <div class="empty" id="empty">
               <div class="crosshair" aria-hidden="true"></div>
-              <p>Your image, in focus.</p>
+              <p>No image loaded</p>
               <span>Load the example or choose a supported DICOM.</span>
             </div>
             <canvas
@@ -141,7 +147,13 @@
               <strong id="kept-count">—</strong><span>fields retained</span>
             </div>
           </div>
-          <div class="change-list" id="changes">
+          <div
+            class="change-list"
+            id="changes"
+            tabindex="0"
+            role="region"
+            aria-label="Metadata action list"
+          >
             <p class="muted">
               The report will list field names and actions.<br />Original values
               are never included.

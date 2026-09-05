@@ -93,6 +93,9 @@ class Handler(BaseHTTPRequestHandler):
             "/pixels.js": ("pixels.js", "text/javascript; charset=utf-8"),
             "/style.css": ("style.css", "text/css; charset=utf-8"),
             "/favicon.svg": ("favicon.svg", "image/svg+xml"),
+            "/fonts/jetbrains-mono-regular.ttf": ("fonts/jetbrains-mono-regular.ttf", "font/ttf"),
+            "/fonts/jetbrains-mono-semibold.ttf": ("fonts/jetbrains-mono-semibold.ttf", "font/ttf"),
+            "/fonts/press-start-2p.ttf": ("fonts/press-start-2p.ttf", "font/ttf"),
         }
         if self.path in assets:
             name, mime = assets[self.path]

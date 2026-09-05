@@ -145,6 +145,7 @@ function present(result, buffer) {
     left.append(name, tag);
     const badge = document.createElement("span");
     badge.className = "action";
+    badge.dataset.action = action.action;
     badge.textContent = labels[action.action];
     row.append(left, badge);
     $("changes").append(row);
@@ -177,6 +178,7 @@ new ResizeObserver(fitCanvas).observe($("viewport"));
 async function load(file) {
   if (busy) return;
   busy = true;
+  document.querySelector(".workbench").setAttribute("aria-busy", "true");
   const current = ++generation;
   clearView();
   $("demo").disabled = $("file").disabled = true;
@@ -208,6 +210,7 @@ async function load(file) {
     status(error.message || "Unable to connect to the local service.", true);
   } finally {
     busy = false;
+    document.querySelector(".workbench").setAttribute("aria-busy", "false");
     $("demo").disabled = $("file").disabled = false;
     $("file").value = "";
   }

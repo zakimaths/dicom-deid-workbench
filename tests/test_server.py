@@ -35,6 +35,18 @@ def test_assets_and_no_store(local):
     assert req(local, "/../../pyproject.toml")[0] == 404
 
 
+@pytest.mark.parametrize(
+    "font", ["jetbrains-mono-regular", "jetbrains-mono-semibold", "press-start-2p"]
+)
+def test_local_font_assets_keep_security_headers(local, font):
+    status, body, headers = req(local, f"/fonts/{font}.ttf")
+    assert status == 200 and body[:4] == b"\x00\x01\x00\x00"
+    assert headers["Content-Type"] == "font/ttf"
+    assert headers["Cache-Control"] == "no-store"
+    assert "default-src 'self'" in headers["Content-Security-Policy"]
+    assert req(local, "/fonts/../../core.py")[0] == 404
+
+
 def test_token_host_origin_and_cross_site_checks(local):
     assert req(local, "/api/demo", "POST")[0] == 403
     assert req(local, "/api/session", headers={"Host": "attacker.example"})[0] == 403

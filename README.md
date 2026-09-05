@@ -109,4 +109,4 @@ The design is informed by [DICOM PS3.15](https://dicom.nema.org/medical/dicom/cu
 
 Pixel redaction, facial de-identification, DICOMweb and clinical workflows are outside this release. Suggestions and synthetic reproductions are welcome.
 
-MIT licensed. Generated demo geometry is original; no external patient dataset is redistributed. [Shareable post drafts](docs/share.md).
+Code is MIT licensed. Bundled fonts use the SIL Open Font License; see [font attribution](src/dicom_workbench/web/fonts/README.md). Generated demo geometry is original; no external patient dataset is redistributed. [Shareable post drafts](docs/share.md).
