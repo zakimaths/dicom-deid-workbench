@@ -1,6 +1,7 @@
 // Only reviewed, hash-pinned samples reach the public viewer. Local imports use a separate module.
 const $ = (id) => document.getElementById(id);
 let nv = null,
+  graphics = null,
   generation = 0,
   abort = null,
   timer,
@@ -22,7 +23,10 @@ function release() {
   nv = null;
   old.onLocationChange = () => {};
   old.cleanup();
-  old.gl?.getExtension("WEBGL_lose_context")?.loseContext();
+  // NiiVue's gl getter throws when initialization failed. Keep our own reference
+  // so that reporting unavailable graphics never fails during cleanup.
+  graphics?.getExtension("WEBGL_lose_context")?.loseContext();
+  graphics = null;
   old.volumes = [];
   $("canvas-host").replaceChildren();
 }
@@ -143,7 +147,9 @@ export async function show(buffer, info, g) {
       );
   });
   try {
-    await viewer.attachToCanvas(canvas);
+    graphics = canvas.getContext("webgl2", { alpha: true, antialias: false });
+    if (!graphics) throw Error("WebGL2 unavailable");
+    await viewer.attachToCanvas(canvas, false);
     if (!current(g)) return false;
     await viewer.loadFromArrayBuffer(buffer, "volume.nii");
     if (!current(g)) {

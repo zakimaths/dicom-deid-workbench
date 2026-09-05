@@ -29,7 +29,12 @@ try {
   for (const [name, engine] of Object.entries(
     process.env.SMOKE ? { chromium } : { chromium, firefox, webkit },
   )) {
-    browser = await engine.launch();
+    browser = await engine.launch({
+      headless: process.env.NIFTI_HEADED !== "1",
+      ...(name === "firefox" && process.platform === "linux"
+        ? { firefoxUserPrefs: { "webgl.force-enabled": true } }
+        : {}),
+    });
     for (const width of process.env.SMOKE ? [1280] : [1280, 390, 320]) {
       const page = await browser.newPage({
         viewport: { width, height: 950 },
@@ -46,6 +51,7 @@ try {
         }
         return route.continue();
       });
+      console.log("Starting local NIfTI", name, width);
       await page.goto(base + "/nifti");
       await page.locator("#phantom").click();
       await page.waitForFunction(
@@ -156,6 +162,25 @@ try {
       });
       await page.close();
     }
+    const unavailable = await browser.newPage();
+    const unavailableErrors = [];
+    unavailable.on("pageerror", (e) => unavailableErrors.push(e.message));
+    await unavailable.addInitScript(() => {
+      const original = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (kind, ...args) {
+        return kind === "webgl2" ? null : original.call(this, kind, ...args);
+      };
+    });
+    await unavailable.goto(base + "/nifti");
+    await unavailable.locator("#phantom").click();
+    await unavailable.waitForFunction(() =>
+      document.getElementById("status").textContent.includes("WebGL2 graphics are required"));
+    assert(await unavailable.locator("#volume-work").isHidden());
+    assert.deepEqual(unavailableErrors, []);
+    await unavailable.locator("#clear").click();
+    assert.match(await unavailable.locator("#status").textContent(), /Volume cleared/);
+    await unavailable.close();
+    console.log(name, "unavailable graphics handled without an uncaught error");
     await browser.close();
     browser = null;
   }

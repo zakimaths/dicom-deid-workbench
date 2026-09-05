@@ -54,7 +54,10 @@ jobs:
       - run: uv sync --locked
       - run: npm ci --ignore-scripts
       - run: npx playwright install --with-deps chromium firefox webkit
+      - run: xvfb-run -a env NIFTI_HEADED=1 LIBGL_ALWAYS_SOFTWARE=1 npm run test:nifti
+        if: runner.os == 'Linux'
       - run: npm run test:nifti
+        if: runner.os != 'Linux'
       - run: npm run test:records
       - run: npm run benchmark:records
       - run: npm run test:browser

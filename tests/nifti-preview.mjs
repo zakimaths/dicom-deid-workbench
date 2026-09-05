@@ -31,7 +31,12 @@ try {
   await mkdir("output/nifti-preview", { recursive: true });
   const axe = await readFile("node_modules/axe-core/axe.min.js", "utf8");
   for (const [name, engine] of Object.entries({ chromium, firefox, webkit })) {
-    browser = await engine.launch();
+    browser = await engine.launch({
+      headless: process.env.NIFTI_HEADED !== "1",
+      ...(name === "firefox" && process.platform === "linux"
+        ? { firefoxUserPrefs: { "webgl.force-enabled": true } }
+        : {}),
+    });
     for (const width of [1280, 320]) {
       const page = await browser.newPage({ viewport: { width, height: 950 } });
       const errors = [],
@@ -42,6 +47,7 @@ try {
         requests.push(u.href);
         return u.origin === base ? r.continue() : r.abort();
       });
+      console.log("Starting public NIfTI", name, width);
       await page.goto(base + "/");
       await page.locator("#nifti-link").click();
       assert(page.url().endsWith("/nifti.html"));
@@ -49,10 +55,12 @@ try {
       for (const id of ["phantom", "brain"]) {
         await page.locator("#" + id).click();
         await page.waitForFunction(() =>
-          document
-            .getElementById("status")
-            .textContent.startsWith("Volume ready"),
+          /Volume ready|could not|unavailable/.test(
+            document.getElementById("status").textContent,
+          ),
         );
+        assert.match(await page.locator("#status").textContent(), /Volume ready/,
+          `${name} ${width} ${id}`);
         await page.locator("#next").click();
       }
       await page.evaluate(axe);
@@ -97,6 +105,25 @@ try {
       });
       await page.close();
     }
+    const unavailable = await browser.newPage();
+    const unavailableErrors = [];
+    unavailable.on("pageerror", (e) => unavailableErrors.push(e.message));
+    await unavailable.addInitScript(() => {
+      const original = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (kind, ...args) {
+        return kind === "webgl2" ? null : original.call(this, kind, ...args);
+      };
+    });
+    await unavailable.goto(base + "/nifti.html");
+    await unavailable.locator("#phantom").click();
+    await unavailable.waitForFunction(() =>
+      document.getElementById("status").textContent.includes("WebGL2 graphics are required"));
+    assert(await unavailable.locator("#volume-work").isHidden());
+    assert.deepEqual(unavailableErrors, []);
+    await unavailable.locator("#clear").click();
+    assert.match(await unavailable.locator("#status").textContent(), /Volume cleared/);
+    await unavailable.close();
+    console.log(name, "unavailable graphics handled without an uncaught error");
     await browser.close();
     browser = null;
   }

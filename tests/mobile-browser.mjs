@@ -75,6 +75,11 @@ try {
           overflow: document.documentElement.scrollWidth > innerWidth + 1,
           innerWidth,
           scrollWidth: document.documentElement.scrollWidth,
+          internalOverflow: [...document.querySelectorAll("body *")]
+            .filter((e) => e.clientWidth > 0 && e.scrollWidth > e.clientWidth + 2)
+            .map((e) => ({ tag: e.tagName, id: e.id, class: e.className,
+              clientWidth: e.clientWidth, scrollWidth: e.scrollWidth,
+              overflowX: getComputedStyle(e).overflowX })),
           overflowElements: [...document.querySelectorAll("body *")]
             .filter((e) => {
               const r = e.getBoundingClientRect();
@@ -199,6 +204,9 @@ try {
               violations,
               overflow,
               overflowElements,
+              internalOverflow,
+              innerWidth,
+              scrollWidth,
               errors,
             }) => ({
               engineName,
@@ -208,6 +216,9 @@ try {
               violations,
               overflow,
               overflowElements,
+              internalOverflow,
+              innerWidth,
+              scrollWidth,
               errors,
             }),
           ),
