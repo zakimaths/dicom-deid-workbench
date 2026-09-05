@@ -1,0 +1,8 @@
+{
+  "name": "dicom-workbench-pixel-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/pixels.test.mjs"
+  }
+}

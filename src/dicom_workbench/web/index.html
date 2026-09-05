@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="A local DICOM metadata scrubber and 2D viewer. Explore with a synthetic image."
+    />
+    <title>DICOM Workbench</title>
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/"
+        ><img src="/favicon.svg" width="32" height="32" alt="" /><span
+          >DICOM <strong>Workbench</strong></span
+        ></a
+      >
+      <span class="local"
+        ><span aria-hidden="true"></span> Running on your Mac / PC</span
+      >
+      <a
+        href="https://github.com/zakimaths/dicom-deid-workbench"
+        target="_blank"
+        rel="noreferrer"
+        >GitHub <span aria-hidden="true">↗</span></a
+      >
+    </header>
+    <main>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">IMAGING / METADATA / EXPLORATION</p>
+          <h1>A closer look.<br /><span>Less identifying metadata.</span></h1>
+          <p class="lede">
+            Inspect a scan, scrub its metadata, and see exactly what changed.<br
+              class="desktop"
+            />
+            A small local tool for learning how DICOM works.
+          </p>
+        </div>
+        <div class="import-box" id="dropzone">
+          <p class="import-title">Start with an image</p>
+          <p>Single-frame CT or MR · uncompressed · up to 8 MiB</p>
+          <div class="import-actions">
+            <button class="primary" id="demo">
+              Try synthetic example <span aria-hidden="true">↗</span></button
+            ><label class="file-label" for="file"
+              >Choose .dcm<input
+                type="file"
+                id="file"
+                accept=".dcm,application/dicom"
+            /></label>
+          </div>
+          <p class="drop-note">
+            or drop a file here. Use synthetic or already-public data.
+          </p>
+        </div>
+      </section>
+      <p class="notice">
+        <span class="notice-icon" aria-hidden="true">i</span
+        ><span
+          ><strong>Metadata scrubbing is only one step.</strong> Pixels and
+          recognisable anatomy are not assessed. This is an educational
+          prototype, not a clinical anonymiser.</span
+        >
+      </p>
+      <div id="status" class="status" role="status" aria-live="polite">
+        Ready. Try the synthetic example to explore the workbench.
+      </div>
+      <section class="workbench" aria-label="Image workbench">
+        <div class="viewer">
+          <div class="panel-heading">
+            <div>
+              <span class="section-label">IMAGE PREVIEW</span
+              ><span id="image-title">No image loaded</span>
+            </div>
+            <span id="sample-badge" class="sample-badge" hidden>SYNTHETIC</span>
+          </div>
+          <div class="viewport" id="viewport">
+            <div class="empty" id="empty">
+              <div class="crosshair" aria-hidden="true"></div>
+              <p>Your image, in focus.</p>
+              <span>Load the example or choose a supported DICOM.</span>
+            </div>
+            <canvas
+              id="canvas"
+              hidden
+              aria-label="Preview of the metadata-scrubbed DICOM pixel data"
+            ></canvas
+            ><span class="viewport-caption" id="viewport-caption" hidden
+              >Pixels unchanged · single frame</span
+            >
+          </div>
+          <div class="controls">
+            <div class="control">
+              <label for="center"
+                >Level <output id="center-value">—</output></label
+              ><input
+                type="range"
+                id="center"
+                min="-1024"
+                max="3071"
+                value="40"
+                disabled
+              />
+            </div>
+            <div class="control">
+              <label for="width"
+                >Window <output id="width-value">—</output></label
+              ><input
+                type="range"
+                id="width"
+                min="1"
+                max="4096"
+                value="400"
+                disabled
+              />
+            </div>
+            <button id="reset" class="reset" disabled>Reset</button>
+          </div>
+          <p class="viewer-note" id="image-details">
+            Contrast controls affect the preview. Exported pixels stay
+            unchanged.
+          </p>
+        </div>
+        <aside class="inspector" aria-label="Metadata changes">
+          <div class="panel-heading">
+            <div>
+              <span class="section-label">METADATA REPORT</span
+              ><span>What changed</span>
+            </div>
+            <button class="text-button" id="clear" disabled>Clear</button>
+          </div>
+          <div class="counts">
+            <div>
+              <strong id="changed-count">—</strong><span>fields scrubbed</span>
+            </div>
+            <div>
+              <strong id="kept-count">—</strong><span>fields retained</span>
+            </div>
+          </div>
+          <div class="change-list" id="changes">
+            <p class="muted">
+              The report will list field names and actions.<br />Original values
+              are never included.
+            </p>
+          </div>
+          <div class="integrity">
+            <span id="integrity-icon" aria-hidden="true">○</span>
+            <div>
+              <strong id="integrity-title">Output checks</strong>
+              <p id="integrity-copy">
+                Pixel preservation and file reopen checks run after processing.
+              </p>
+            </div>
+          </div>
+          <div class="exports">
+            <label class="ack"
+              ><input id="ack" type="checkbox" disabled /><span
+                >I understand this export only scrubs metadata; its pixels have
+                not been assessed.</span
+              ></label
+            ><button class="primary download" id="download" disabled>
+              Download scrubbed DICOM <span aria-hidden="true">↓</span></button
+            ><button class="report-button" id="report" disabled>
+              Download action report
+            </button>
+          </div>
+        </aside>
+      </section>
+      <footer>
+        <span
+          >LOCAL PROCESSING <span aria-hidden="true">/</span> NO CLOUD
+          UPLOADS</span
+        >
+        <p>
+          One image at a time. Temporary results expire after 10 minutes or when
+          cleared.
+        </p>
+        <span>v0.1.0</span>
+      </footer>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

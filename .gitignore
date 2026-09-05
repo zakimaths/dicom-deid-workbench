@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.DS_Store
+tmp/
+output/
+dist/
+.playwright-cli/
+node_modules/
+*.dcm
+*.raw
+*.zip
+*.log
+data/
+exports/

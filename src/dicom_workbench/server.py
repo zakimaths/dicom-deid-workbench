@@ -1,0 +1,177 @@
+"""Single-user loopback service, without upload spooling or patient-data logging."""
+
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import json
+from pathlib import Path
+import secrets
+import time
+
+from .core import MAX_BYTES, Unsupported, transform
+from .fixtures import synthetic_dicom
+
+STATIC = Path(__file__).parent / "web"
+TTL_SECONDS = 600
+
+
+class WorkbenchServer(HTTPServer):
+    def __init__(self, address):
+        super().__init__(address, Handler)
+        self.token = secrets.token_urlsafe(32)
+        self.result = None
+        self.job = None
+        self.created = 0
+
+    def get_request(self):
+        connection, address = super().get_request()
+        connection.settimeout(10)
+        return connection, address
+
+    def handle_error(self, request, client_address):
+        # Never print request data, filenames or DICOM exceptions to terminal logs.
+        pass
+
+    def clear(self):
+        self.result = None
+        self.job = None
+        self.created = 0
+
+    def service_actions(self):
+        if self.result is not None and time.monotonic() - self.created > TTL_SECONDS:
+            self.clear()
+
+
+class Handler(BaseHTTPRequestHandler):
+    server_version = "DICOMWorkbench"
+    sys_version = ""
+
+    def log_message(self, *args):
+        pass
+
+    def respond(self, code, data, content_type="application/json", filename=None):
+        if not isinstance(data, bytes):
+            data = json.dumps(data, allow_nan=False).encode()
+        self.send_response(code)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("Cross-Origin-Resource-Policy", "same-origin")
+        self.send_header(
+            "Content-Security-Policy",
+            "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
+        )
+        if filename:
+            self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+        self.end_headers()
+        self.wfile.write(data)
+
+    def trusted(self, token=False):
+        port = self.server.server_port
+        hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
+        host = self.headers.get("Host", "")
+        origin = self.headers.get("Origin")
+        if host not in hosts or (origin is not None and origin != f"http://{host}"):
+            self.respond(403, {"error": "This service accepts same-origin local requests only."})
+            return False
+        if self.headers.get("Sec-Fetch-Site") == "cross-site":
+            self.respond(403, {"error": "Cross-site requests are not accepted."})
+            return False
+        if token and not secrets.compare_digest(
+            self.headers.get("X-Workbench-Token", ""), self.server.token
+        ):
+            self.respond(403, {"error": "Session expired. Reload the page."})
+            return False
+        return True
+
+    def do_GET(self):
+        if not self.trusted():
+            return
+        assets = {
+            "/": ("index.html", "text/html; charset=utf-8"),
+            "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+            "/pixels.js": ("pixels.js", "text/javascript; charset=utf-8"),
+            "/style.css": ("style.css", "text/css; charset=utf-8"),
+            "/favicon.svg": ("favicon.svg", "image/svg+xml"),
+        }
+        if self.path in assets:
+            name, mime = assets[self.path]
+            return self.respond(200, (STATIC / name).read_bytes(), mime)
+        if self.path == "/api/session":
+            return self.respond(200, {"token": self.server.token, "max_bytes": MAX_BYTES})
+        if not self.path.startswith("/api/jobs/"):
+            return self.respond(404, {"error": "Not found."})
+        if not self.trusted(token=True):
+            return
+        parts = self.path.split("/")
+        if (
+            len(parts) != 5
+            or self.server.result is None
+            or parts[3] != self.server.job
+            or time.monotonic() - self.server.created > TTL_SECONDS
+        ):
+            return self.respond(404, {"error": "This image has expired. Import it again."})
+        result = self.server.result
+        if parts[4] == "pixels":
+            return self.respond(200, result.pixels, "application/octet-stream")
+        if parts[4] == "dicom":
+            return self.respond(200, result.dicom, "application/dicom", "metadata-scrubbed.dcm")
+        if parts[4] == "report":
+            return self.respond(200, result.report, filename="metadata-report.json")
+        self.respond(404, {"error": "Not found."})
+
+    def do_POST(self):
+        if not self.trusted(token=True):
+            return
+        if self.path not in ("/api/demo", "/api/process", "/api/clear"):
+            return self.respond(404, {"error": "Not found."})
+        # Every new import invalidates the previous result, even when import fails.
+        self.server.clear()
+        try:
+            if self.headers.get("Transfer-Encoding"):
+                raise Unsupported("Streaming uploads are not supported.")
+            length = int(self.headers.get("Content-Length", "0"))
+            if length < 0 or length > MAX_BYTES:
+                raise Unsupported("This version accepts files up to 8 MiB.")
+            if self.path == "/api/clear":
+                return self.respond(200, {"cleared": True})
+            if self.path == "/api/demo":
+                data = synthetic_dicom()
+            else:
+                if self.headers.get("Content-Type") != "application/dicom":
+                    raise Unsupported("Upload a DICOM file as application/dicom.")
+                data = self.rfile.read(length)
+                if len(data) != length:
+                    raise Unsupported("The upload was incomplete.")
+            result = transform(data)
+            self.server.result = result
+            self.server.job = secrets.token_urlsafe(18)
+            self.server.created = time.monotonic()
+            self.respond(
+                200,
+                {
+                    "job": self.server.job,
+                    "image": result.image,
+                    "report": result.report,
+                    "synthetic": self.path == "/api/demo",
+                },
+            )
+        except Unsupported as error:
+            self.respond(422, {"error": str(error)})
+        except Exception:
+            self.respond(
+                422, {"error": "The file could not be processed. Try the synthetic example."}
+            )
+
+
+def serve(port=8765):
+    server = WorkbenchServer(("127.0.0.1", port))
+    print(f"DICOM Workbench: http://127.0.0.1:{server.server_port}")
+    print("Local educational prototype. Use synthetic or already-public data. Ctrl+C to stop.")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.clear()
+        server.server_close()
