@@ -107,6 +107,7 @@ function render() {
 }
 
 function present(result, buffer) {
+  clearTimeout(expiry);
   job = result.job;
   regions = [];
   dragStart = null;
@@ -422,13 +423,24 @@ function showHelp(control) {
   helpOwner = control;
   let text = helpText[control.id];
   if (control.disabled)
-    text += busy
-      ? " Please wait for the image to finish loading."
-      : !token
-        ? " The local service needs to connect first."
-        : control.id === "download"
-          ? " This button becomes available after you tick the box above it."
-          : " Open an image first to use this button.";
+    text +=
+      edited &&
+      ["mark-region", "add-region", "undo-regions", "apply-regions"].includes(
+        control.id,
+      )
+        ? " This image has already been edited. Reimport it to make a different selection."
+        : job &&
+            !busy &&
+            ["undo-regions", "apply-regions"].includes(control.id) &&
+            !regions.length
+          ? " Select at least one rectangle first."
+          : busy
+            ? " Please wait for the image to finish loading."
+            : !token
+              ? " The local service needs to connect first."
+              : control.id === "download"
+                ? " This button becomes available after you tick the box above it."
+                : " Open an image first to use this button.";
   tip.textContent = text;
   $("help-" + control.id).textContent = text;
   tip.hidden = false;
