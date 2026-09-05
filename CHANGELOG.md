@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — teaching PNG exercises
+
+- Open any of the 50 teaching images in the workbench.
+- NONYMISE writes deliberately fake PNG fields and visible pixel labels; separate steps remove each.
+- Clean PNG downloads require reopened pixel checks, no remaining injected identifiers and acknowledgement of the exercise limits.
+- Independent exported-PNG tests cover all 50 images in three browser engines.
+
 ## Teaching library — 5 September 2026
 
 - Add 50 individually credited, larger MRI/CT/X-ray pictures with anatomy labels, study notes and source/licence links.

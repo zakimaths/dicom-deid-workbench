@@ -47,4 +47,14 @@ Added 50 distinct published images: 15 MRI, 15 CT and 20 X-rays. Each source and
 - Local browser workflows passed in Chromium, Firefox and WebKit; all 50 teaching images were opened in each engine, alongside the existing DICOM exercises. Twenty-one downloaded DICOM results passed independent pydicom/NumPy verification.
 - The static demo passed all three engines, opening all 50 teaching images and all eight exercise samples. Library checks cover labels, decoded dimensions, filters, search, navigation, contrast/reset, fitted image bounds, phone selection/focus, public share links, cold deep links, corrupt images, delayed catalogue closing and rapid image changes. Network requests remain same-site; browser-memory blob URLs are checked for the same origin.
 - All 100 full-image/thumbnail files were regenerated from the pinned source bytes with matching SHA-256 hashes using Pillow 12.3.0 and libjpeg-turbo 3.1.4.1. The full JPEGs decoded successfully and contained no EXIF, comment or ICC payloads. This does not assess identifying content in their pixels.
-- The static output contains 122 allowlisted frontend assets. Python code, original DICOM containers and original downloaded image containers are excluded.
+- The static output contains 125 allowlisted frontend assets. Python code, original DICOM containers and original downloaded image containers are excluded.
+
+## NONYMISE teaching exercise — 5 September 2026
+
+- 123 Python tests and 13 JavaScript pixel/PNG checks passed.
+- All 50 teaching pictures completed the add-fake-details, metadata scrub and pixel-erasure cycle in Chromium, Firefox and WebKit (150 complete runs). An independent Node/zlib PNG decoder checked downloaded metadata and every colour/alpha channel: added margins were black and the original scan area was unchanged.
+- Tests exercised both scrub orders, incomplete label removal, blank rectangle inputs, before-view export blocking, restart, source-credit retention and file/pixel SHA-256 reports. Parser checks reject corrupt/truncated/trailing data and strip alternate text, EXIF and unknown ancillary chunks when rebuilding the exercise file.
+- Existing local and static browser suites passed on all three engines, including new tests that hold a legacy export until after entering the teaching mode and cancel a teaching opening mid-encoding. The existing 21 local DICOM exports still passed independent pydicom/NumPy checks.
+- Final representative PNG exercises passed in all three engines after mode-isolation and layout changes. Desktop and phone layouts were visually reviewed. Static builds retain an explicit 125-file allowlist and repeatable build checks.
+
+One static-library run encountered a picture-loading failure during concurrent browser testing; a complete rerun passed. This record does not claim that every possible browser, network or privacy failure has been ruled out. Tests establish removal of this exercise's injected details, not anonymity of arbitrary scans.

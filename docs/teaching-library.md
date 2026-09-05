@@ -2,7 +2,7 @@
 
 Choose **Browse 50 teaching scans** in the local app or the [browser demo](https://zakimaths.github.io/dicom-deid-workbench/#learn=xr-chest-frontal-radiograph). The collection contains 15 MRI, 15 CT and 20 X-ray images. Search for a body part or viewing direction, or filter by scan type. Each image has an anatomy label, a plain-language study note and links to its source and licence.
 
-These are published pictures, not original DICOM files. They help you learn to recognise anatomy and compare viewing directions. They do not exercise the metadata scrubber, and the library does not offer DICOM exports. The original six small files remain under **DICOM test fixtures (6)** for testing file handling and pixel edits.
+These are published pictures, not original DICOM files. They help you learn to recognise anatomy and compare viewing directions. **Open in workbench** starts a PNG exercise with that picture. It tests removing deliberately added fake details, and does not offer DICOM exports. The original six small files remain under **DICOM test fixtures (6)** for testing file handling and pixel edits.
 
 ## How the images were selected
 
@@ -30,7 +30,7 @@ Hover over a button or focus it with the keyboard to read its explanation. Anato
 
 The checked-in [catalogue](../src/dicom_workbench/web/teaching/catalog.json) records source URLs, source byte hashes, source dimensions, shipped dimensions, full-image and thumbnail hashes, changes and review notes. All source downloads were checked against the SHA-1 supplied by Wikimedia; the catalogue also records SHA-256. Before displaying a full picture, the browser checks its SHA-256 and decoded dimensions against the catalogue. A mismatch leaves the picture hidden and shows an error. These checks establish agreement with the committed catalogue; they do not certify medical accuracy or anonymity.
 
-No image is fetched from a third-party host during normal use. The public site fetches its own assets, and source links open only when selected. Teaching pictures stay in a separate JPEG viewer; brightness, contrast and navigation do not pass them through the DICOM scrubber or modify a DICOM job in the workbench.
+No image is fetched from a third-party host during normal use. The public site fetches its own assets, and source links open only when selected. The library keeps its JPEG viewer. **Open in workbench** copies the selected picture into a separate browser-only PNG exercise; it does not pass it through the DICOM scrubber or modify a DICOM job. **Return to DICOM** restores that view.
 
 ## Reproducing the collection
 
@@ -44,3 +44,17 @@ uv run --no-project --with pillow==12.3.0 python scripts/rebuild_teaching.py \
 ```
 
 The catalogue test checks counts, distinct source/file hashes, licences, dimensions and the complete asset allowlist. Both browser suites open all 50 pictures in Chromium, Firefox and WebKit and check labels, source links, filters, search, navigation, actual size, reset, deep links, corrupt-image rejection, rapid selection and narrow layouts. Local route tests check that traversal and cross-origin requests remain blocked.
+
+## Practise adding and removing identifiers
+
+1. Select a scan and choose **Open in workbench**.
+2. Press **NONYMISE**. Seven clearly fake fields are written into real PNG `tEXt` chunks. Four fake labels are drawn as pixels in added black margins, preserving the source scan.
+3. **Scrub fake metadata** removes the fake fields. The encoded image payload stays byte-for-byte unchanged, so visible labels remain.
+4. **Select fake labels** selects the margins we added. This uses their known positions; it is not OCR. **Erase selected pixels** replaces those pixels with opaque black. You can also try your own rectangle, including a partial selection.
+5. Check the remaining-field and remaining-label counts. **Show before** compares the image with its NONYMISED version. Acknowledge the stated limits, then **Save scrubbed PNG**.
+
+The file is reopened and every decoded colour and alpha channel is compared with the expected result. Erasure checks every pixel inside and outside the selected boxes. The clean download stays blocked while fake fields, injected label pixels or pending selections remain, or while the before view is showing. Both scrub orders work. **Save NONYMISED example** deliberately saves the fake-tagged before file; it is labelled accordingly.
+
+The JSON report includes the current PNG and pixel SHA-256 fingerprints, source credit, remaining counts and rectangle checks. Source credit is the only retained PNG text field after metadata scrubbing. Existing source labels and recognisable anatomy are not assessed. A successful exercise proves removal of the details injected here, not anonymity of arbitrary images. These PNG fields are not DICOM tags.
+
+`npm run test:exercise` runs all 50 pictures through both steps in Chromium, Firefox and WebKit. A separate Node decoder reads each downloaded PNG, checks its metadata and reconstructs its pixel data independently of the app. Tests verify opaque black margins, exact preservation of the source area, partial-erasure blocking, both step orders, before-view blocking and restart. Browser PNG compression and JPEG decoding can differ between engines; repeatable assertions compare decoded pixels within each engine, rather than promising identical cross-browser files.

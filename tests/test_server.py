@@ -194,3 +194,12 @@ def test_teaching_routes_preserve_local_security(local):
         req(local, "/teaching/catalog.json", headers={"Origin": "https://attacker.example"})[0]
         == 403
     )
+
+
+@pytest.mark.parametrize("asset", ["exercise.js", "exercise-core.js", "exercise-png.js"])
+def test_exercise_scripts_keep_local_security(local, asset):
+    status, body, headers = req(local, "/" + asset)
+    assert status == 200 and body
+    assert headers["Cache-Control"] == "no-store"
+    assert "text/javascript" in headers["Content-Type"]
+    assert req(local, "/" + asset, headers={"Origin": "https://attacker.example"})[0] == 403

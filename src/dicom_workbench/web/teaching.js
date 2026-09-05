@@ -1,3 +1,4 @@
+import { openExercise } from "./exercise.js";
 // Published teaching pictures have their own viewer, never a DICOM export path.
 const $ = (id) => document.getElementById(id);
 const dialog = $("teaching-dialog");
@@ -46,6 +47,7 @@ function resetView() {
   $("teaching-zoom").textContent = "Actual size";
 }
 function disposeImage() {
+  $("teaching-workbench").disabled = true;
   revision++;
   controller?.abort();
   $("teaching-image").hidden = true;
@@ -115,6 +117,7 @@ async function choose(item) {
     $("teaching-image").src = url;
     $("teaching-image").hidden = false;
     $("teaching-zoom").disabled = false;
+    $("teaching-workbench").disabled = false;
     setStatus(
       `${item.width} × ${item.height} · published scan image · original display contrast`,
     );
@@ -290,4 +293,26 @@ $("teaching-share").onclick = async () => {
 if (location.hash.startsWith("#learn=")) openLibrary();
 window.addEventListener("hashchange", () => {
   if (location.hash.startsWith("#learn=")) openLibrary();
+});
+
+$("teaching-workbench").addEventListener("click", async () => {
+  const item = selected,
+    ticket = revision;
+  $("teaching-workbench").disabled = true;
+  try {
+    // Copy the already hash-checked, decoded image before closing its dialog.
+    await openExercise(
+      item,
+      $("teaching-image"),
+      () => ticket === revision && dialog.open,
+    );
+    dialog.close();
+    document.getElementById("exercise-title").focus();
+    document.getElementById("exercise").scrollIntoView({ block: "start" });
+  } catch (error) {
+    setStatus(error.message);
+  } finally {
+    if (item === selected && objectURL)
+      $("teaching-workbench").disabled = false;
+  }
 });

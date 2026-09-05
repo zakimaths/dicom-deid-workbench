@@ -591,3 +591,8 @@ document.addEventListener("keydown", (e) => {
 window.addEventListener("resize", hideHelp);
 window.addEventListener("scroll", hideHelp, true);
 clear();
+
+// Cancel exports started in the other workbench mode, even if it is closed again.
+document.addEventListener("exercise-enter", () => {
+  ++revision;
+});

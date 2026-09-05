@@ -21,3 +21,7 @@ Metadata checks and pixel comparisons test specific behaviour. They do not prove
 ## Report a security issue
 
 Use **Security → Advisories → Report a vulnerability** in this repository for a private report. Include the version, environment and a synthetic example that shows the problem. Do not attach patient images, real identifiers, confidential logs or identifier mappings. Ordinary, non-sensitive bugs can go in public issues.
+
+### Teaching PNG exercises
+
+NONYMISE operates only on the catalogue's verified published images. It adds explicit fake identifiers for testing, with no upload route. A bounded PNG chunk rebuilder retains only essential truecolour image chunks and controlled attribution text when scrubbing; the output is independently decoded before export. These checks cover injected details only. Known-label selection is not OCR, and it does not establish anonymity of existing source pixels or anatomy. Dirty-example downloads deliberately contain FAKE identifiers.

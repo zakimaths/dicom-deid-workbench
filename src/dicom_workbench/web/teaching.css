@@ -251,3 +251,71 @@
     display: none;
   }
 }
+
+.workbench.exercise-active > .viewer,
+.workbench.exercise-active > .inspector {
+  display: none;
+}
+.exercise {
+  grid-column: 1 / -1;
+  padding: 24px;
+  min-width: 0;
+}
+.exercise[hidden] {
+  display: none;
+}
+.exercise-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(250px, 1fr);
+  gap: 28px;
+}
+.exercise h2 {
+  margin: 6px 0;
+  font-size: 1.2rem;
+}
+.exercise p {
+  line-height: 1.6;
+}
+.exercise-stage {
+  background: #000;
+  border: 1px solid var(--line, #334533);
+}
+.exercise-stage canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 75vh;
+  object-fit: contain;
+}
+.exercise-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.exercise .report-button {
+  width: auto;
+}
+.exercise dl {
+  overflow-wrap: anywhere;
+}
+.exercise dt {
+  margin-top: 12px;
+  font-weight: bold;
+}
+.exercise dd {
+  margin: 4px 0;
+  font-size: 0.85rem;
+}
+.exercise summary {
+  cursor: pointer;
+  margin: 12px 0;
+}
+@media (max-width: 800px) {
+  .exercise-layout {
+    grid-template-columns: 1fr;
+  }
+  .exercise {
+    padding: 16px;
+  }
+}

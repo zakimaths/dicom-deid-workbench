@@ -1,3 +1,4 @@
+import { checkExerciseBoundaries } from "./exercise-boundaries.mjs";
 import assert from "node:assert/strict";
 import { checkTeaching } from "./teaching.mjs";
 import { spawn } from "node:child_process";
@@ -84,6 +85,7 @@ try {
       await d.saveAs(path);
       return readFile(path);
     };
+    await checkExerciseBoundaries(page, base, false);
     await page.goto(base);
     assert.equal(await page.locator("input[type=file]").count(), 0);
     assert.equal(await page.locator("form").count(), 0);

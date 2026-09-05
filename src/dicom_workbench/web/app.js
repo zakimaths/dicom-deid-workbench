@@ -713,3 +713,8 @@ $("apply-regions").addEventListener("click", async () => {
     for (const id of importControls) $(id).disabled = false;
   }
 });
+
+// Cancel exports started in the other workbench mode, even if it is closed again.
+document.addEventListener("exercise-enter", () => {
+  ++viewRevision;
+});

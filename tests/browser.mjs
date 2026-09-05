@@ -1,3 +1,4 @@
+import { checkExerciseBoundaries } from "./exercise-boundaries.mjs";
 // Real-browser regression passes. No remote service or patient data is used.
 import assert from "node:assert/strict";
 import { checkTeaching } from "./teaching.mjs";
@@ -100,6 +101,7 @@ try {
     try {
       await checkTeaching(page, base, name);
       pass("50 labelled teaching images and library controls");
+      await checkExerciseBoundaries(page, base, true);
       await page.goto(base);
       await page.waitForFunction(
         () => !document.querySelector("#demo").disabled,

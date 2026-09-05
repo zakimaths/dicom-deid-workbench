@@ -4,7 +4,7 @@ A small workbench for learning how medical images are stored, displayed and de-i
 
 **[Try the browser demo →](https://zakimaths.github.io/dicom-deid-workbench/)** · [Run the local tool](#run-the-local-tool) · [What has been tested](docs/validation.md)
 
-Browse 50 larger, labelled MRI, CT and X-ray images, or try metadata and erasing exercises with the small DICOM examples. The demo needs no installation. [About the teaching collection](docs/teaching-library.md).
+Browse 50 larger, labelled MRI, CT and X-ray images. Choose **Open in workbench**, then **NONYMISE** to add fake patient details and practise removing hidden metadata and visible labels. The teaching exercise saves PNGs; the small DICOM examples have their own workflow. The demo needs no installation. [About the teaching collection](docs/teaching-library.md).
 
 [![DICOM Workbench showing the synthetic image exercise](docs/screenshot.png)](https://zakimaths.github.io/dicom-deid-workbench/)
 
@@ -73,6 +73,7 @@ npm test
 npm run test:browser
 npm run build:preview
 npm run test:preview
+npm run test:exercise
 ```
 
 The browser suites start their own temporary local servers. On Linux, Playwright may need `npx playwright install --with-deps chromium firefox webkit` to install browser dependencies. Generated files stay under ignored `output/`.

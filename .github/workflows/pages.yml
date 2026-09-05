@@ -26,6 +26,7 @@ jobs:
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run build:preview
       - run: npm run test:preview
+      - run: npm run test:exercise
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:

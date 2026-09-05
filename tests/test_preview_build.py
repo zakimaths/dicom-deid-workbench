@@ -23,7 +23,7 @@ def test_preview_is_repeatable_and_excludes_backend_and_source_values():
     first = hashes()
     preview.build()
     assert hashes() == first
-    assert len(first) == 122
+    assert len(first) == 125
     assert not any(
         Path(p).suffix in {".py", ".dcm", ".env", ".toml", ".yml", ".map"} for p in first
     )

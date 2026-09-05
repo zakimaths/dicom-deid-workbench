@@ -189,6 +189,180 @@
         </div>
       </div>
       <section class="workbench" aria-label="Image workbench">
+        <section
+          id="exercise"
+          class="exercise"
+          hidden
+          aria-label="Teaching image workbench"
+        >
+          <div class="panel-heading">
+            <div>
+              <span class="section-label">TEACHING IMAGE WORKBENCH · PNG</span>
+              <h2 id="exercise-title" tabindex="-1"></h2>
+            </div>
+            <button
+              id="exercise-close"
+              class="report-button"
+              title="Close this exercise and return to the DICOM workbench."
+            >
+              Return to DICOM
+            </button>
+          </div>
+          <p id="exercise-source"></p>
+          <p>
+            Practise on this published scan. NONYMISE adds made-up patient
+            details inside the file and writes fake labels into new black
+            margins. NONYMISE leaves the original scan intact. Your own
+            rectangles can erase anatomy.
+          </p>
+          <div class="exercise-layout">
+            <div>
+              <div class="exercise-actions">
+                <button
+                  id="exercise-nonymise"
+                  class="primary"
+                  title="Add seven fake information fields and four visible fake labels. These are real changes to the practice PNG, so you can test removing them."
+                >
+                  1. NONYMISE
+                </button>
+                <button
+                  id="exercise-metadata"
+                  class="report-button"
+                  title="Remove the fake information stored inside the file. This does not remove letters you can still see in the picture."
+                >
+                  2. Scrub fake metadata
+                </button>
+                <button
+                  id="exercise-select"
+                  class="report-button"
+                  title="Select the two margins where this exercise added fake labels. We know their positions because we put them there; this is not automatic text detection."
+                >
+                  3. Select fake labels
+                </button>
+                <button
+                  id="exercise-erase"
+                  class="primary"
+                  title="Replace every selected pixel with solid black. The saved picture is changed, then reopened to check the edit and all pixels outside it."
+                >
+                  4. Erase selected pixels
+                </button>
+              </div>
+              <div class="exercise-stage">
+                <canvas
+                  id="exercise-canvas"
+                  aria-label="Teaching image; fake labels appear in the added margins"
+                ></canvas>
+              </div>
+              <p id="exercise-view-label">Current image</p>
+              <details>
+                <summary>Select your own rectangle</summary>
+                <p>
+                  Use image pixel positions. A partial selection will leave some
+                  fake letters behind, and the check will tell you.
+                </p>
+                <div class="region-inputs">
+                  <label
+                    >Left<input
+                      id="exercise-x"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value="0" /></label
+                  ><label
+                    >Top<input
+                      id="exercise-y"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value="0" /></label
+                  ><label
+                    >Width<input
+                      id="exercise-w"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="100" /></label
+                  ><label
+                    >Height<input
+                      id="exercise-h"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="20"
+                  /></label>
+                </div>
+                <button
+                  id="exercise-add"
+                  class="report-button"
+                  title="Add the rectangle described by these four numbers. Selected boxes are outlines until you press Erase selected pixels."
+                >
+                  Add rectangle</button
+                ><button
+                  id="exercise-discard"
+                  class="report-button"
+                  title="Remove the selection outlines without changing any image pixels."
+                >
+                  Discard selection
+                </button>
+              </details>
+              <div class="exercise-actions">
+                <button
+                  id="exercise-before"
+                  class="report-button"
+                  title="Compare with the image just after its fake details were added. This view cannot be downloaded as a scrubbed result."
+                >
+                  Show before</button
+                ><button
+                  id="exercise-restart"
+                  class="report-button"
+                  title="Start again from the original published picture. This discards this exercise’s edits."
+                >
+                  Restart exercise
+                </button>
+              </div>
+            </div>
+            <aside>
+              <h3>What is still in the file?</h3>
+              <p id="exercise-status" role="status" aria-live="polite"></p>
+              <dl id="exercise-fields"></dl>
+              <p id="exercise-checks"></p>
+              <p>
+                Checks cover the fake details added here. Existing source
+                labels, recognisable anatomy and identifying features are not
+                assessed. This is a PNG exercise, not a DICOM anonymisation
+                certificate.
+              </p>
+              <label class="ack"
+                ><input id="exercise-ack" type="checkbox" />I understand that
+                this checks the injected fake details only.</label
+              >
+              <div class="exercise-actions">
+                <button
+                  id="exercise-save"
+                  class="primary"
+                  title="Save the current PNG only after both fake metadata and fake label pixels are gone, the reopened file passes checks, and you acknowledge the limits."
+                >
+                  Save scrubbed PNG</button
+                ><button
+                  id="exercise-dirty"
+                  class="report-button"
+                  title="Save the before example with clearly FAKE information still inside the file and visible in its pixels."
+                >
+                  Save NONYMISED example</button
+                ><button
+                  id="exercise-report"
+                  class="report-button"
+                  title="Save a report of what was checked, including the exact saved file’s fingerprint and the image’s source credit."
+                >
+                  Save verification report
+                </button>
+              </div>
+              <p id="exercise-help" class="teaching-help">
+                Hover over a button for a plain-language explanation.
+              </p>
+            </aside>
+          </div>
+        </section>
         <div class="viewer">
           <div class="panel-heading">
             <div>
@@ -379,7 +553,7 @@
         >
         <p>
           One image at a time. Temporary results expire after 10 minutes or when
-          cleared.
+          cleared. Teaching PNG exercises stay in memory until you close them.
         </p>
         <span class="version">v0.2.1</span>
         <nav class="social-links" aria-label="Social profiles · footer">
@@ -554,6 +728,13 @@
               >Source &amp; original image ↗</a
             ><a id="teaching-license" target="_blank" rel="noopener noreferrer"
               >Image licence ↗</a
+            ><button
+              id="teaching-workbench"
+              class="primary"
+              disabled
+              data-help="Bring this published picture into the workbench. Add fake details, remove them, and check the saved PNG."
+            >
+              Open in workbench</button
             ><button
               id="teaching-share"
               class="report-button"

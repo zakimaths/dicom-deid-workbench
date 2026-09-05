@@ -124,14 +124,14 @@ def build():
     )
     html = html.replace(
         "One image at a time. Temporary results expire after 10 minutes or when\n          cleared.",
-        "Edits stay in this tab and clear after 10 minutes. GitHub hosts the site; external profile links open only when you select them.",
+        "DICOM exercise edits stay in this tab and clear after 10 minutes. GitHub hosts the site; external profile links open only when you select them.",
     )
     assert 'type="file"' not in html and "/app.js" not in html
     (OUT / "index.html").write_text(html)
     (OUT / "style.css").write_text(
         (WEB / "style.css").read_text().replace('url("/fonts/', 'url("./fonts/')
     )
-    for name in ("pixels.js", "favicon.svg"):
+    for name in ("pixels.js", "favicon.svg", "exercise.js", "exercise-core.js", "exercise-png.js"):
         shutil.copyfile(WEB / name, OUT / name)
     library = teaching_assets()
     (OUT / "teaching").mkdir()
@@ -183,7 +183,7 @@ def build():
     (OUT / ".nojekyll").touch()
     allowed = {"index.html", "style.css", "pixels.js", "preview.js", "favicon.svg", ".nojekyll"}
     allowed |= {f"samples/{key}.json" for key in cases}
-    allowed |= {"teaching.js", "teaching.css", *library}
+    allowed |= {"teaching.js", "teaching.css", "exercise.js", "exercise-core.js", "exercise-png.js", *library}
     allowed |= {f"fonts/{p.name}" for p in (OUT / "fonts").iterdir()}
     files = {str(p.relative_to(OUT)) for p in OUT.rglob("*") if p.is_file()}
     assert files == allowed and not any(p.is_symlink() for p in OUT.rglob("*"))

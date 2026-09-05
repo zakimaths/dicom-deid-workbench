@@ -3,10 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/pixels.test.mjs",
+    "test": "node --test tests/pixels.test.mjs tests/exercise.test.mjs",
     "test:browser": "node tests/browser.mjs",
     "build:preview": "PYTHONPATH=src .venv/bin/python scripts/build_preview.py",
-    "test:preview": "node tests/preview.mjs"
+    "test:preview": "node tests/preview.mjs",
+    "test:exercise": "node tests/exercise-browser.mjs"
   },
   "devDependencies": {
     "playwright": "1.62.1"
