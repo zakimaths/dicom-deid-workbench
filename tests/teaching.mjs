@@ -158,6 +158,14 @@ export async function checkTeaching(
   await page.locator("#teaching-reset").focus();
   assert.match(await page.locator("#teaching-help").textContent(), /publisher/);
   const deepLink = page.url();
+  // Close and immediately navigate in the same task: late native close events
+  // must not strip the new link or cancel the reopened library.
+  await page.evaluate((url) => {
+    document.getElementById("teaching-close").click();
+    location.hash = new URL(url).hash;
+  }, deepLink);
+  await ready();
+  assert.equal(new URL(page.url()).hash, new URL(deepLink).hash);
   await page.keyboard.press("Escape");
   assert(!(await page.locator("#teaching-dialog").evaluate((el) => el.open)));
   assert.equal(

@@ -3,6 +3,7 @@ import { openExercise } from "./exercise.js";
 const $ = (id) => document.getElementById(id);
 const dialog = $("teaching-dialog");
 let opening = 0;
+let closed = true;
 let collection,
   selected,
   visible = [],
@@ -207,6 +208,7 @@ function validate(items) {
 async function openLibrary() {
   const ticket = ++opening;
   if (!dialog.open) dialog.showModal();
+  closed = false;
   try {
     if (!collection) {
       const response = await fetch(
@@ -236,13 +238,25 @@ async function openLibrary() {
   }
 }
 $("browse-teaching").onclick = openLibrary;
-$("teaching-close").onclick = () => dialog.close();
-dialog.addEventListener("close", () => {
+// Finish cleanup synchronously: a queued native close event must not erase a
+// newer #learn link or cancel a library that has already been reopened.
+function closeLibrary() {
+  if (closed) return;
+  closed = true;
   opening++;
   disposeImage();
   if (location.hash.startsWith("#learn="))
     history.replaceState(null, "", location.pathname + location.search);
+  dialog.close();
   $("browse-teaching").focus();
+}
+$("teaching-close").onclick = closeLibrary;
+dialog.addEventListener("cancel", (event) => {
+  event.preventDefault();
+  closeLibrary();
+});
+dialog.addEventListener("close", () => {
+  if (!dialog.open && !closed) closeLibrary();
 });
 $("teaching-find").onclick = () => {
   $("teaching-search").focus();
@@ -306,7 +320,7 @@ $("teaching-workbench").addEventListener("click", async () => {
       $("teaching-image"),
       () => ticket === revision && dialog.open,
     );
-    dialog.close();
+    closeLibrary();
     document.getElementById("exercise-title").focus();
     document.getElementById("exercise").scrollIntoView({ block: "start" });
   } catch (error) {
