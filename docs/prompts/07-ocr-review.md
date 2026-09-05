@@ -2,14 +2,18 @@
 
 Roadmap references: A037-A040, A043-A048.
 
-Status/dependencies: Depends on accepted OCR evaluation and the verified redaction backend.
+Status: Depends on accepted OCR evaluation and the verified redaction backend.
 
 ## Prompt
 
-Read the repository README, SECURITY.md, docs/policy.md, docs/anonymisation-roadmap.md and relevant tests before editing. Preserve unrelated changes. Use synthetic or explicitly permitted public data only. Do not send scans, identifiers or OCR text to external services. Do not weaken format validation to make a fixture pass. Do not label an output anonymous, HIPAA compliant, PS3.15 conformant or clinically validated without the specific evidence required for that claim. Keep source files intact and keep original values, filenames, UID mappings and tokens out of reports/logs. Work in one bounded branch or change set; do not publish or contact others unless the user has authorised it. Run relevant checks and return changed files, evidence, remaining limitations and the next dependency. Do not mark a planned feature complete merely because its prompt exists.
+Before editing, read the README, SECURITY.md, docs/policy.md, the research roadmap and the relevant tests. Keep the change focused and preserve other work in the repository.
 
-Your task: Integrate the evaluated detector as optional local suggestions. The user can inspect, resize, add or discard boxes before applying permanent erasure. Show which boxes are suggestions and which edits were applied. Model installation is explicit; processing makes no network requests. Bound and cancel inference.
+Use synthetic or explicitly permitted public examples. Keep scans, identifiers and OCR text out of external services. Leave source files intact, and keep original values, filenames, identifier mappings and tokens out of reports and logs. Do not relax format checks just to make an example pass.
 
-Acceptance criteria: Test detector failure, partial results, no detections, new image during inference and stale suggestions. Suggestions must never automatically certify complete text cleaning. Reopen and verify the exact final output after user-approved edits.
+Describe only what the evidence supports. A successful test does not make the output anonymous, HIPAA compliant, PS3.15 conformant or clinically validated. Publishing code or contacting other people still needs the user's authorisation. A task description is not evidence that the feature has been built.
 
-Handoff: state the concrete before/after behaviour, tests and their actual outcomes, privacy claims that remain unsupported, changed files and the next dependency. Include a minimal reproduction with synthetic data.
+Task: Integrate the evaluated detector as optional local suggestions. The user can inspect, resize, add or discard boxes before applying permanent erasure. Show which boxes are suggestions and which edits were applied. Model installation is explicit; processing makes no network requests. Bound and cancel inference.
+
+Check the result: Test detector failure, partial results, no detections, new image during inference and stale suggestions. Suggestions must never automatically certify complete text cleaning. Reopen and verify the exact final output after user-approved edits.
+
+When finished, explain what changed and how it was tested. List the changed files, actual results, remaining limits and what needs to happen next. Include a small synthetic example that someone else can repeat.

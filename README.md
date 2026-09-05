@@ -1,16 +1,30 @@
 # DICOM Workbench
 
-A small **local DICOM metadata scrubber and 2D viewer**. Load a synthetic example or a public CT/MRI teaching slice, adjust window/level, inspect metadata actions, optionally erase selected pixel regions, and download the transformed file.
+A small workbench for learning how medical images are stored, displayed and de-identified.
 
-Built for a straightforward macOS setup. One runtime dependency, no frontend build, no cloud service.
+**[Try the browser demo →](https://zakimaths.github.io/dicom-deid-workbench/)** · [Run the local tool](#run-the-local-tool) · [What has been tested](docs/validation.md)
 
-> **Educational prototype.** This is a limited metadata policy, not a complete anonymiser, a HIPAA compliance tool or a diagnostic viewer. Pixels and recognisable anatomy are not assessed. Use synthetic or already-public data. The export is not automatically safe to publish. Manual redaction verifies only the selected regions; remaining pixels and anatomy stay unassessed.
+Open a sample, move the contrast sliders, inspect the example metadata changes, or practise erasing the made-up text in the synthetic image. The demo needs no installation.
 
-![DICOM Workbench after erasing fake text from a synthetic phantom](docs/screenshot.png)
+[![DICOM Workbench showing the synthetic image exercise](docs/screenshot.png)](https://zakimaths.github.io/dicom-deid-workbench/)
 
-## Run locally
+## Two ways to try it
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if needed (`brew install uv` on macOS), then:
+| | Browser demo | Local tool |
+| --- | --- | --- |
+| Where it runs | Static frontend on GitHub Pages | On your computer; macOS setup below |
+| Images | Two synthetic examples and six prepared public samples | The same examples, plus supported DICOM files |
+| Metadata | Shows changes prepared before the demo was published | Scrubs the supported metadata fields when you open a file |
+| Editing | Replaces selected sample pixels in the browser | Replaces selected pixels in a new DICOM file |
+| Downloads | PNG preview and exercise report | DICOM file and processing report |
+
+The public site has no processing backend, file-upload control, API keys or analytics code. It fetches its own sample assets; edits stay in the tab. GitHub provides the hosting and keeps ordinary access logs. See [how the preview is built](docs/preview.md).
+
+**This is a learning project, not a clinical anonymiser.** Erasing a rectangle does not find every name or remove recognisable anatomy. The local tool uses a limited metadata policy and does not establish complete DICOM conformance or anonymity. Use synthetic or explicitly permitted public images; an exported file is not automatically safe to publish.
+
+## Run the local tool
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) first. On macOS, `brew install uv` is one option.
 
 ```sh
 git clone https://github.com/zakimaths/dicom-deid-workbench.git
@@ -19,122 +33,73 @@ uv sync --locked
 uv run --locked dicom-workbench serve
 ```
 
-Open **[http://127.0.0.1:8765](http://127.0.0.1:8765)** and select **Try synthetic example**. Or select **Browse public scans** for six local public images from pydicom (NEMA and PCIR sources). No separate DICOM download is needed. Hover over or focus on a button for a plain-language explanation; the **Button guide** also works on touch screens. See [sample sources and preparation](docs/public-samples.md). Stop with `Ctrl+C`.
+Open [localhost:8765](http://127.0.0.1:8765) and choose **Try synthetic example** or **Browse public scans**. If that port is busy, add `--port 8766` to the serve command. Press `Ctrl+C` in the terminal to stop the app.
 
-uv installs the Python version specified in `.python-version`. The service runs natively; Docker and Node.js are not needed to use the app. Installation needs network access; the app itself uses only local assets and loopback requests. If port 8765 is occupied, use `serve --port 8766`.
+The setup installs the pinned Python version and dependencies. Normal use needs no Docker, Node.js or cloud account. After installation, the local tool uses local assets and loopback requests only. Button explanations are available on hover, keyboard focus and in the expandable guide.
 
-## What v0.1 does
+## Try the erasing exercise
 
-- Generates a deterministic, geometric CT phantom with fake identifiers, including nested and private fields. No clinical image is bundled.
-- Imports one supported Part 10 file, at most 8 MiB / 1024 × 1024 pixels.
-- Builds a new dataset using an explicit numeric-imaging allowlist, blanks selected identity fields, replaces instance/study/series IDs, removes all sequences and private fields, and rebuilds file metadata and preamble.
-- Displays the output pixel bytes with signed/unsigned decoding, rescale, DICOM LINEAR windowing, MONOCHROME1 inversion and pixel-spacing aspect ratio.
-- Checks output reopen and byte-for-byte pixel preservation. Downloads the transformed DICOM and a report without original metadata values.
-- Keeps one temporary result in server memory, replacing it on import and expiring it after ten minutes. **Clear** also releases the browser preview and server result.
+1. Select **Try a fake-text exercise**.
+2. Add the suggested rectangle: left **16**, top **12**, width **132**, height **14**.
+3. Select **Erase selected pixels** and inspect the result.
+4. Read the export note, then save the result.
 
-## Supported input
+You can also draw a rectangle or enter your own coordinates. Pending selections pause downloads. Each image supports one applied edit containing up to 32 rectangles; open it again to start over. The browser demo saves a PNG. The local tool saves a new DICOM and checks that the selected pixels changed as intended while all outside pixels stayed the same.
 
-| Feature | v0.1 scope |
-| --- | --- |
-| SOP classes | Classic CT Image Storage / MR Image Storage |
-| Transfer syntax | Explicit VR Little Endian, uncompressed |
-| Frames | One |
-| Pixels | One channel; 16 allocated and stored bits; HighBit 15; signed or unsigned |
-| Photometric interpretation | MONOCHROME1 or MONOCHROME2 |
-| Contrast | Linear slope/intercept and standard LINEAR windowing |
-| Excluded | Compressed data, enhanced multiframe, colour, LUT sequences, padding, non-identity presentation LUTs, PixelAspectRatio, known identifying-pixel flags |
+## What the local tool accepts
 
-Images declaring `BurnedInAnnotation=YES` or `RecognizableVisualFeatures=YES` are rejected. Missing flags or `NO` do **not** establish safe pixels. All accepted images retain the "pixels not assessed" notice.
+One classic CT or MR Part 10 file, up to 8 MiB and 1024 × 1024 pixels. It supports uncompressed Explicit VR Little Endian, one frame, one monochrome channel and 16 allocated/stored bits, with signed or unsigned values.
 
-**Trade-off:** the conservative allowlist discards other fields and all relationships in sequences, including potentially useful or required acquisition information. Output is reopened with pydicom, but complete CT/MR IOD validity and PS3.15 conformance are **not** established. It is unsuitable for clinical exchange. IDs are fresh per file, so processing a series file-by-file does not preserve study continuity. See [the policy](docs/policy.md).
+Compressed images, enhanced multiframe objects, colour, LUT sequences, padding and other unsupported presentation features are rejected. So are files that declare identifying text or recognisable features in their pixels. Missing flags or a `NO` value do not prove that the pixels are clear.
 
-## Repeatable checks
+The metadata policy retains selected numeric imaging fields, empties specified identity fields, replaces instance identifiers, and removes other source fields, private data and sequences. That can remove useful or required acquisition information. Some required MR fields are still missing from the output, and processing files separately does not preserve a study's relationships. The output is unsuitable for clinical exchange. [Full policy and limits](docs/policy.md).
+
+## Run the checks
 
 ```sh
-uv run --locked pytest
+uv run --locked pytest -q
 uv run --locked ruff check .
 uv run --locked python scripts/reproduce.py
 ```
 
-The reproduction command generates the phantom, checks transformation invariants, and writes `output/reproduction.json` with environment and deterministic fixture/pixel/report hashes. Output DICOM identifiers are random by design; we test equivalent behaviour, not identical output DICOM bytes.
+The reproduction file records the environment and fixture/pixel/report digests. Output identifiers are deliberately random, so repeatability means the same processing results, not identical DICOM files.
 
-For the frontend's small numerical test suite, install Node.js 22 or newer and run:
-
-```sh
-node --test tests/pixels.test.mjs
-```
-
-For repeatable whole-app checks in Chromium, Firefox and WebKit:
+For the browser checks, install Node.js 22 or newer:
 
 ```sh
 npm ci --ignore-scripts
 npx playwright install chromium firefox webkit
+npm test
 npm run test:browser
+npm run build:preview
+npm run test:preview
 ```
 
-Run `uv sync --locked` first; the browser suite starts and stops its own local server. It tests controls, six public samples, imports, redaction, downloads, response races and expiry, then independently compares exported pixels and preview values with pydicom/NumPy. Screenshots and the check list go to `output/browser/`. Browser tools are development dependencies; normal app use still needs no Node.js.
+The browser suites start their own temporary local servers. On Linux, Playwright may need `npx playwright install --with-deps chromium firefox webkit` to install browser dependencies. Generated files stay under ignored `output/`.
 
-CI runs Python checks on macOS arm64, macOS Intel and Linux, plus JavaScript pixel tests and browser flows on macOS arm64 and Linux. See [validation notes](docs/validation.md) and the [0.2.1 audit](docs/audit-0.2.1.md) for evidence and remaining limits. WebKit automation is not a certification of the installed Safari app or privacy effectiveness.
+GitHub Actions checks the local Python tool on Linux and both Mac architectures, and browser workflows on Linux and macOS ARM. The static preview has its own checks before deployment. [Validation history](docs/validation.md) and the [0.2.1 audit](docs/audit-0.2.1.md) explain what those results cover.
 
-## Command-line usage
-
-The CLI and browser call the same transformation engine:
+## Use the command line
 
 ```sh
 uv run --locked dicom-workbench fixture /tmp/synthetic.dcm
 uv run --locked dicom-workbench scrub /tmp/synthetic.dcm /tmp/scrubbed.dcm --report /tmp/scrub-report.json
 ```
 
-Existing output files are never overwritten. Choose new paths when repeating these commands. The CLI does not open a browser or require the service.
+Add `--with-text` when generating a fixture to include the fake text. Pass a JSON array of `{x, y, width, height}` rectangles with `scrub --regions /path/to/regions.json` to erase selected pixels. Choose new output paths each time: existing files are never overwritten.
 
-## Why this stack?
+## How it is built
 
-Python + [pydicom](https://pydicom.github.io/) handles file parsing and writing. A tiny standard-library HTTP service hosts plain JavaScript and Canvas. The browser receives binary pixel bytes, not a JSON array or lossy PNG; contrast changes do not alter export pixels.
+The local tool uses Python and [pydicom](https://pydicom.github.io/) for DICOM parsing and writing. Plain JavaScript and Canvas handle the viewer. For this small, uncompressed, single-frame scope, that keeps the setup manageable.
 
-This intentionally simplifies the original React/Cornerstone proposal. For one uncompressed frame, a small, tested display pipeline avoids a build system, WebGL setup and codec workers. A future broader viewer should adopt Cornerstone3D rather than accumulate custom image-format handling.
+The public demo shares the visual design and pixel-display functions. A build step prepares the known examples, then publishes only HTML, CSS, JavaScript, fonts and sample JSON. Python runs during the build and in the optional local tool; it is not deployed as a web service.
 
-```text
-local file / synthetic generator / pinned public samples
-             ↓
-      Python metadata policy ← CLI
-             ↓
-   new DICOM + output checks
-             ↓
- local browser preview + download
-```
+A broader viewer would need a different support plan. Full object validation, related-file processing, evaluated text detection and volume-level privacy work come before clinical use. The [research roadmap](docs/anonymisation-roadmap.md) and [implementation prompts](docs/prompts/README.md) break that work into smaller tasks.
 
-## Privacy and limitations
+## Sources and contributing
 
-The service binds only to `127.0.0.1`, validates Host/Origin, uses a per-launch request token and serves no third-party assets. It does not write uploads to disk, send telemetry or log file contents. It is a **single-user development tool**, not a hardened server. Do not expose it through a reverse proxy, tunnel or shared network. Other local processes and browser extensions are outside its protection boundary. Memory clearing is not a secure-erasure guarantee.
+The public CT/MRI examples come from pydicom's existing NEMA and PCIR test collections. Four are only 16 × 16 pixels and are useful for edge-case testing, not anatomical detail. [Sources, hashes and preparation](docs/public-samples.md).
 
-Names in pixels, recognisable anatomy, numeric fingerprints and remaining metadata may identify someone. A download acknowledgement communicates scope; it is not a privacy assessment. Do not upload patient files to GitHub issues, screenshots or CI. Read [SECURITY.md](SECURITY.md).
+Code is MIT licensed. The bundled fonts have their own SIL Open Font Licences. Please use synthetic examples in bug reports and never attach patient data. Read the [security notes](SECURITY.md) before reporting a sensitive issue.
 
-The design is informed by [DICOM PS3.15](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html) and [DICOM LINEAR windowing](https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.11.2.html). Those references are not conformance claims.
-
-## Small next steps
-
-1. Independently validate and preserve required fields for a precisely defined CT/MR subset.
-2. Add a coherent multi-file UID mapping and series-level tests.
-3. Adopt Cornerstone3D if adding compressed formats or stack navigation.
-
-Pixel redaction, facial de-identification, DICOMweb and clinical workflows are outside this release. Suggestions and synthetic reproductions are welcome.
-
-Code is MIT licensed. Bundled fonts use the SIL Open Font License; see [font attribution](src/dicom_workbench/web/fonts/README.md). Generated demo geometry is original. Public teaching slices are read from the existing pydicom dependency; see [provenance and preparation](docs/public-samples.md). [Shareable post drafts](docs/share.md).
-
-## Stronger cleaning: version 0.2.0
-
-Open **Try a fake-text exercise**, add the suggested rectangle (left 16, top 12, width 132, height 14), then select **Erase selected pixels**. You can also mark a rectangle by dragging over the image or enter source-pixel coordinates. Pending selections pause downloads. After applying, inspect the actual saved-image preview and acknowledge its limits again before downloading. Reimport to start over; one set of up to 32 rectangles is supported per load.
-
-The server permanently changes selected stored samples and reopens the file to check every selected and unselected pixel. It also checks the custom metadata contract. This is not an automatic search for identifying content. Inputs declaring burned-in identifying annotations or recognisable features still fail the existing validation gate.
-
-For a repeatable command-line exercise:
-
-```sh
-uv run --locked dicom-workbench fixture /tmp/text-exercise.dcm --with-text
-printf '[{"x":16,"y":12,"width":132,"height":14}]' > /tmp/regions.json
-uv run --locked dicom-workbench scrub /tmp/text-exercise.dcm /tmp/redacted.dcm --regions /tmp/regions.json --report /tmp/redaction-report.json
-```
-
-Report schema 2 binds the report to `output_sha256` and separates `selected_regions_only` from complete assessment. The metadata policy remains `single-frame-metadata-v1`; applied pixel erasure is `stored-rectangles-v1`. Semantic reproducibility excludes the output digest because output UIDs intentionally change.
-
-See the [research PDF](docs/anonymisation-strength-roadmap.pdf), [96-action research roadmap](docs/anonymisation-roadmap.md), [agent prompts](docs/prompts/README.md), [assurance and risk register](docs/assurance.md), and [changelog](CHANGELOG.md). The next major correctness milestone is independent IOD validation and required CT/MR field handling.
+[Changelog](CHANGELOG.md) · [Sharing drafts](docs/share.md) · [LinkedIn](https://www.linkedin.com/in/alhasan-alkaseem/) · [X](https://x.com/vesperlemma) · [GitHub](https://github.com/zakimaths)

@@ -1,14 +1,14 @@
-# Assurance scope, requirements and residual risks
+# Evidence and remaining risks
 
-Owner: project maintainer. Review date: 5 September 2026. Intended use: local educational work with synthetic or explicitly permitted public fixtures. This is an engineering evidence record, not a compliance assessment or a clinical release approval.
+Maintained by the project owner; reviewed 5 September 2026. This record covers the local teaching tool and its synthetic or permitted public examples. The static browser demo has a separate [build and test description](preview.md). Neither record is a compliance assessment or clinical approval.
 
-## Threat model
+## What needs protection
 
 Inputs are untrusted files even when loaded locally. Protected material may occur in metadata, stored pixels, alternate image/graphic objects and recognisable anatomy. A recipient may also hold original images or other identifying information. The service assumes a single user on loopback; hostile extensions, other local processes, swap/crash dumps and files deliberately downloaded by the user are outside its isolation guarantee.
 
-The principal boundary is the exported DICOM and its report. The browser shows a preview of the processed output. Pending rectangles are visibly outlined and suspend normal UI downloads. The edit request is checked against the current opaque job, and failures invalidate its result. UI acknowledgement communicates limitations; it is not authorisation infrastructure or proof of a privacy assessment. A local caller with the session token can use the API directly; server-side enforcement of a future formal review is a separate requirement.
+The main outputs to check are the exported DICOM and its report. The browser shows a preview of the processed output. Pending rectangles are visibly outlined and suspend normal UI downloads. The edit request is checked against the current opaque job, and failures invalidate its result. The acknowledgement explains the limits. It does not provide access control or prove that someone has assessed privacy. A local caller with the session token can use the API directly; server-side enforcement of a future formal review is a separate requirement.
 
-## Requirement-to-evidence matrix
+## Requirements and their tests
 
 | Requirement | Implementation | Evidence | Limit |
 | --- | --- | --- | --- |
@@ -22,7 +22,7 @@ The principal boundary is the exported DICOM and its report. The browser shows a
 | R08: repeatable privacy fixtures | fixtures.py; scripts/reproduce.py | Synthetic and fake-text checksums, semantic report digest | Random output UIDs deliberately prevent identical full DICOM bytes |
 | R09: local processing | Host/Origin/token checks, explicit assets | Server tests; browser network denied outside loopback | Not designed as a hosted or multi-user service |
 
-## Risk register
+## Risks still to address
 
 | Risk | Priority | Mitigation / evidence | Remaining decision |
 | --- | --- | --- | --- |
@@ -37,7 +37,7 @@ The principal boundary is the exported DICOM and its report. The browser shows a
 | Dependency or policy drift | Medium | Locked versions, CI | Pin action revisions, SBOM, provenance and vulnerability checks, A092-A094 |
 | Claims exceed validation | High | This matrix, versioned report, explicit limits | External imaging/privacy review before institutional use, A096 |
 
-## Release gate for this increment
+## Checks before a local-tool release
 
 Require passing Python and pixel tests, static checks, reproducibility generation, packaged assets, and browser checks of actual redacted downloads, acknowledgement reset, stale jobs and narrow layouts. Keep known limits above visible in README and reports. Do not claim that these gates are sufficient for real-patient publication or full DICOM validity.
 

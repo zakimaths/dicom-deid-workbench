@@ -1,21 +1,23 @@
-# Share the first version
+# Posts you can adapt
 
-Repository: https://github.com/zakimaths/dicom-deid-workbench
+Demo: https://zakimaths.github.io/dicom-deid-workbench/
+Code: https://github.com/zakimaths/dicom-deid-workbench
 
-Use the synthetic screenshot in `docs/screenshot.png`. It contains no patient data. These are drafts for you to post; they are not published automatically.
+These are drafts, not published posts. The screenshot in `docs/screenshot.png` shows generated shapes and made-up text.
 
 ## LinkedIn
 
-I built a small DICOM Workbench: a local metadata scrubber and 2D medical-image viewer, with a straightforward macOS setup.
+I've been building DICOM Workbench, a small project for learning how medical-image metadata and pixels need different kinds of privacy checks.
 
-It generates a synthetic CT phantom, shows which metadata fields changed, lets you adjust window/level, and exports a new DICOM without changing its pixels. The Python core also runs from the command line and has repeatable tests.
+You can now try it in a browser: open a sample CT or MRI image, adjust the contrast, and practise erasing made-up text. The public demo is a static frontend with no file uploads. It saves PNG previews; the optional local Python tool handles the supported DICOM workflow.
 
-The biggest lesson: removing metadata is not the same as anonymising an image. This is an educational prototype with a deliberately narrow support matrix; it does not assess identifying text or anatomy in pixels.
+Removing a patient name from metadata is only part of the job. Text can be printed into the picture, and anatomy can still be recognisable. This is a learning project with repeatable tests, not a clinical anonymiser.
 
-Code and setup: https://github.com/zakimaths/dicom-deid-workbench
+Try it: https://zakimaths.github.io/dicom-deid-workbench/
+Code: https://github.com/zakimaths/dicom-deid-workbench
 
 ## X
 
-Built a local DICOM Workbench: metadata scrubbing, window/level viewing and a synthetic CT demo. Small Python setup, repeatable tests. Educational only: pixels aren't assessed for identity.
+Try DICOM Workbench: sample CT/MRI images, contrast controls and a fake-text erasing exercise. The browser demo has no file uploads and saves PNG previews. A learning project, not a clinical anonymiser.
 
-https://github.com/zakimaths/dicom-deid-workbench
+https://zakimaths.github.io/dicom-deid-workbench/

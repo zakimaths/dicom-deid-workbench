@@ -1,8 +1,8 @@
 # Public teaching scans
 
-Use **Browse public scans** to open a CT or MRI slice. All six load locally from the pinned pydicom 3.0.2 dependency. No scan is downloaded at runtime and no upload is sent to an external service. Each load uses the same metadata-scrubbing and pixel-verification pipeline as an upload. New output identifiers still change on each load.
+Choose **Browse public scans** to open a CT or MRI example. In the local tool, all six come from the pinned pydicom 3.0.2 package and pass through the same processing checks as an upload. No scan needs to be fetched during local use. The browser demo fetches prepared pixel/report assets from its own site and does not run the DICOM scrubber or accept uploads.
 
-These are public sample images, not a new clinical dataset or a claim that arbitrary scans are open-source. Two are low-resolution teaching slices; four are tiny 16 × 16 test fixtures, useful for exercising image-boundary controls rather than anatomical detail. Public availability does not establish clinical suitability or complete de-identification.
+These are existing public test images. Their availability does not mean other scans are open-source or safe to share. Two are low-resolution teaching slices; four are tiny 16 × 16 test fixtures, useful for exercising image-boundary controls rather than anatomical detail. Public availability does not establish clinical suitability or complete de-identification.
 
 ## Sources and reuse
 
@@ -24,7 +24,7 @@ The four additional entries are distinct fixtures, not alternate encodings of MR
 
 ## Preparation for this viewer
 
-The original fixtures do not directly satisfy the deliberately narrow importer. Only these hash-verified examples receive preparation, in memory:
+Some original fixtures contain fields the narrow importer does not support. Only these hash-verified examples receive preparation, in memory:
 
 - CT: remove PixelPaddingValue (-2000) after checking that **no pixel has that value**. No actual padding pixel is discarded or modified.
 - MRI teaching slice: remove the empty EchoTrainLength field.
@@ -32,7 +32,7 @@ The original fixtures do not directly satisfy the deliberately narrow importer. 
 - CT test slice B: remove an empty ReconstructionDiameter field.
 - MRI test slices A and B: no metadata preparation is required.
 
-Every other dataset element and every pixel byte are unchanged before the normal scrub runs. The UI identifies the selected public sample and displays its preparation. The action report describes scrubbing of the prepared input; the preparation above happens first and is not counted as a scrub action. User uploads retain the original strict validation rules.
+Preparation leaves every other field and pixel byte unchanged before the local scrub runs. The UI identifies the selected public sample and displays its preparation. The action report describes scrubbing of the prepared input; the preparation above happens first and is not counted as a scrub action. User uploads retain the original strict validation rules.
 
 ## Repeat the test
 

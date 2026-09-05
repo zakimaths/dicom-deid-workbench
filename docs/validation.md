@@ -1,44 +1,38 @@
-# Validation history
+# What has been tested
 
-Tests are evidence for the declared narrow scope, not a certification. Test and screenshot data is synthetic or drawn from the pinned public fixtures. Earlier sections record the scope at that version.
+This page records checks that were actually run. Passing them supports the behaviours listed here; it does not certify anonymity, clinical suitability or compatibility with every DICOM viewer.
 
-## Automated checks
+## Local tool, version 0.2.1
 
-- Python tests exercise identifier removal, nested/private sequence removal, output pixel arrays (independently decoded with pydicom/NumPy), new IDs, file metadata, unsupported inputs, CLI overwrite prevention, local HTTP access controls, downloads, expiry and invalidation after failed imports.
-- Seven Node built-in tests check the browser's DICOM LINEAR boundaries, width-one threshold, MONOCHROME1 inversion, signed/unsigned little-endian decoding, rescale and RGBA output. No npm packages are needed.
-- A reproduction script emits fixture, pixel and report hashes. Random output UIDs are intentionally excluded from deterministic hash comparisons.
-- GitHub Actions runs the Python suite on Linux, macOS arm64 and macOS Intel. See the actual run for the release commit; runner images can change even with named OS labels.
+The [0.2.1 audit](audit-0.2.1.md) passed 117 Python tests and 7 JavaScript pixel-math tests. It also ran 42 workflow groups across Chromium, Firefox and WebKit, reopened 21 downloaded DICOM files, and compared all pixels in 18 public-sample previews with pydicom's windowing calculation.
 
-## Local verification
+The Python checks cover metadata removal, private and nested fields, identifiers, saved-file verification, malformed inputs, rectangular edits, command-line behaviour and the local service. Generated cases include 100 seeded random rectangle sets, 100 truncated files, 200 random headers, and the maximum supported image and rectangle count. Those cases run inside test functions; they are not extra pytest test items.
 
-Development environment: macOS 26.6.2, arm64, Python 3.12.11, pydicom 3.0.2. All **29 Python tests** and **7 JavaScript tests** passed. Ruff reported no issues.
+Browser checks cover all samples, file selection and drag-and-drop, contrast/reset, numeric and drawn rectangles, pending edits, acknowledgement, downloads, stale responses, failures, clearing and expiry. Layout checks use 320, 390, 768 and 1440px widths. No page exceptions or external asset requests occurred in those workflows.
 
-Chromium 152 was used for browser review at 1440 × 1150 and 390 × 844. The synthetic example rendered, window adjustment and reset worked, the acknowledgement enabled export, and the browser-downloaded DICOM reopened with unchanged pixels and an empty patient name. There was no horizontal overflow at either width and no browser console errors. A clean source-archive installation successfully ran the fixture command; the wheel includes the UI assets.
+[All six CI jobs passed](https://github.com/zakimaths/dicom-deid-workbench/actions/runs/33950102081). Python checks ran on macOS ARM, macOS Intel and Linux; browser workflows ran on macOS ARM and Linux. The five synthetic/semantic digests and all six public-fixture source/pixel digests matched across the three Python platforms. A fresh wheel installation also loaded the UI assets and processed all six public samples.
 
-## What is not established
+## Static browser demo
 
-No real patient data, external clinical datasets, MIDI benchmark run, full IOD validator, formal PS3.15 evaluation, Safari certification, calibrated medical display assessment or clinical workflow study is included. Independent series integrity and compressed-format checks do not apply because those features are unsupported.
+The public [preview](preview.md) has a separate test suite because it does not use the local API. `npm run test:preview` checks the built site under a project subpath in Chromium, Firefox and WebKit. It covers eight sample assets, contrast/reset, sample edits, PNG/report exports, clearing, rejected file drops and responsive layout. It also rejects backend calls, non-GET requests and requests outside the site, and checks that the page does not write cookies or browser storage.
 
-## Reproducing an issue
+The current local suite has 118 Python tests, including the static build boundary/repeatability check, and passes with pytest 9.0.3 after the test-runner security update. The 7 numerical JavaScript tests also pass.
 
-Use `dicom-workbench fixture` and modify only fake fields. State the source commit, operating system, architecture, Python/browser version, command and expected behaviour. Never attach patient data to an issue.
+The Pages workflow runs these checks before publishing the allowlisted frontend folder. Check the workflow result for the commit you are using; a previous local-tool test result does not cover a later preview change.
 
-## Public samples and student help (September 2026)
+## Earlier milestones
 
-37 Python tests and 7 JavaScript pixel tests pass locally on macOS. New tests pin the two upstream scan hashes, compare prepared metadata element by element, preserve original pixel bytes through scrubbing, and check sample endpoint authentication, invalid identifiers, downloads and clearing. The source and wheel builds pass.
+| Milestone | Recorded checks |
+| --- | --- |
+| First version | 29 Python tests, 7 pixel tests, Chromium checks, clean source installation and packaged assets |
+| Arcade-style interface | 32 Python tests, 7 pixel tests, unchanged rendering/output checks, responsive and keyboard review |
+| First two public samples | 37 Python tests, 7 pixel tests, pinned source hashes and browser checks |
+| Stored-pixel erasing, 0.2.0 | 70 Python tests, 7 pixel tests, NumPy comparisons, downloaded-file checks and a fresh edit-expiry timer |
 
-Chromium checks cover opening both samples, switching back to the synthetic example, resetting acknowledgement on a new image, and downloading/reopening the CT output. Hover help, keyboard focus, Escape dismissal, moving the pointer onto a help bubble, disabled-control help and the touch-friendly guide were exercised. Screens at 320, 390, 768 and 1440 pixels have no page-wide horizontal overflow. No external requests or browser JavaScript errors occurred. Safari, Firefox and a screen reader were not tested.
+The [0.2.0 CI run](https://github.com/zakimaths/dicom-deid-workbench/actions/runs/33948284304) passed on both Mac architectures and Linux. Its five fixture/semantic digests matched across platforms. The original ten-page research PDF was checked for all 96 action IDs and visually reviewed when it was published; it remains a dated research record.
 
-## Stored-pixel redaction and assurance (version 0.2.0)
+## Repeat the checks or report a problem
 
-70 Python tests and 7 JavaScript pixel tests pass locally on macOS ARM, with Ruff and packaging checks. The new tests cover both pixel signednesses, MONOCHROME1/2, rescale polarity, independent NumPy masks, invalid selections, metadata/output corruption, stale jobs, null/empty edit rejection, CLI operation and complete removal of the fake text fixture. Semantic reproduction now also records the fake-text fixture and redacted pixel digests.
+Follow the commands in the [README](../README.md#run-the-checks). State the commit, operating system, architecture, Python/browser version, steps and expected result when reporting a bug. Use a generated fixture with made-up identifiers. Never attach patient data.
 
-Chromium end-to-end checks exercised numeric and pointer selection, pending export gating, discard, new acknowledgement after apply, actual DICOM/report downloads, clear and 320/390/768/1440px layouts with no external requests or JavaScript errors. Reopening the final downloaded exercise output confirms that all 1,848 selected samples have the replacement value, all outside samples match the original, and its SHA-256 matches the report. These are local browser checks, not yet a checked-in cross-browser automation suite. Safari, Firefox, screen readers, real-patient privacy risk and external IOD validators were not assessed.
-
-The research PDF was structurally checked for all 96 action IDs and hyperlinks, and all ten rendered pages were visually inspected. The companion roadmap, agent prompts and assurance matrix identify implemented scope and remaining work.
-
-The first 0.2.0 implementation also passed [CI on macOS ARM, macOS Intel and Linux](https://github.com/zakimaths/dicom-deid-workbench/actions/runs/33948284304). All five fixture/semantic digests matched across those platforms. A follow-up browser check confirms that an applied edit receives a fresh expiry timer and is not cleared by the original image's timer.
-
-## Adversarial audit (version 0.2.1)
-
-117 Python and 7 JavaScript numerical tests pass locally. A checked-in Playwright suite now covers Chromium, Firefox and WebKit: 42 workflow groups, 21 independently decoded downloads and 18 independent full-canvas numerical comparisons. See the [complete audit record](audit-0.2.1.md) for reproduced findings, fixes, test commands, source provenance and residual limitations. Browser CI is configured for macOS ARM and Linux in addition to the existing three-platform Python matrix.
+The work does not include an external IOD validator, a real-patient privacy study, validated OCR, defacing evaluation, diagnostic-display calibration, a screen reader or physical touch-device testing. Playwright WebKit is useful browser coverage, but it is not a test of the installed Safari application. The earlier 200% layout check used CSS zoom, not the browser's zoom menu.

@@ -15,7 +15,7 @@ dependencies = ["pydicom==3.0.2"]
 dicom-workbench = "dicom_workbench.cli:main"
 
 [dependency-groups]
-dev = ["pytest==8.4.2", "numpy==2.2.6", "ruff==0.12.12"]
+dev = ["pytest==9.0.3", "numpy==2.2.6", "ruff==0.12.12"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

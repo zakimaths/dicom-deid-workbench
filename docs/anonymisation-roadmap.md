@@ -1,14 +1,16 @@
-# Stronger anonymisation and a more formal DICOM Workbench
+# Improving anonymisation: research and next steps
 
-Research and implementation roadmap | 5 September 2026
+Research notes from 5 September 2026. Edited for clarity; source dates and the 96 action IDs are preserved.
 
-Audience: project owner, student contributors and future reviewers. Scope: local macOS educational classic CT/MR workbench, audited at commit f8d906e before this increment. UK context is primary; US HIPAA is included as a comparison, not an assumption of jurisdiction. No clinical deployment, certification or unconditional anonymity claim is made.
+This roadmap is for the project owner, student contributors and reviewers. It began with an audit of the local macOS CT/MR tool at commit f8d906e. The privacy discussion uses the UK as its main context and compares US HIPAA requirements; it does not establish compliance in either jurisdiction. Later implementation results are in the [changelog](../CHANGELOG.md) and [validation record](validation.md).
 
-## Direct answer
+The [original research PDF](anonymisation-strength-roadmap.pdf) is an archived version of these notes. It has not been rewritten as a new validation result. The [public browser demo](preview.md) is separate from the local DICOM processing tool discussed here.
+
+## What to improve first
 
 The project should strengthen three separate things: the transformation itself, evidence about the exact exported result, and the process used to decide whether that result can be shared. More tag deletion alone is insufficient. Prioritise permanent manual pixel redaction, independent post-write assertions and honest assessment states; next repair the supported DICOM object definitions and establish an external-validator baseline. Add evaluated local OCR assistance later. Treat full-volume defacing and institutional deployment as separate projects.
 
-This inventory contains **96 distinct improvement actions** across 12 areas. It is exhaustive for the identified threat families and present scope, not a proof that no future attack or vendor-specific case exists. P0 means the immediate safety/evidence foundation; P1 means the next engineering milestone; P2 means a larger scoped extension. Most actions remain planned. The implementation section identifies exactly what was started and completed in this increment.
+The list contains **96 actions** across 12 areas. It covers the risks identified for this project, but cannot rule out other vendor-specific cases or future attacks. P0 marks immediate correctness and evidence work, P1 the next development steps, and P2 larger extensions. Most items are still plans; use the implementation notes and current tests to check what exists.
 
 ## What the audit found
 
@@ -20,7 +22,7 @@ DICOM confidentiality-profile conformance requires appropriate protection and re
 
 The project therefore must continue to say that it implements a custom subset. Neither a successful parser reopen nor an independent validator is official certification or proof of anonymity. [Validator limitations](https://www.dclunie.com/dicom3tools/dciodvfy.html)
 
-## Evidence that changes the priorities
+## What the sources show
 
 ICO distinguishes pseudonymisation from anonymisation; separately held linking information and the recipient's ability to identify someone matter. Its current guidance is under review following the Data (Use and Access) Act, so a static UK-compliance label would be inappropriate. HHS describes Safe Harbor and Expert Determination as distinct routes with additional conditions; a DICOM tag scrubber or a user checkbox does not establish either. [ICO pseudonymisation](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/pseudonymisation/), [HHS guidance](https://www.hhs.gov/hipaa/for-professionals/special-topics/de-identification/index.html)
 
@@ -28,18 +30,18 @@ OCR is useful assistance, but published results include misses and institution-s
 
 Formal engineering should draw on the final NIST SSDF v1.1; v1.2 remains an initial public draft in the material retrieved. Repeatable fixtures are useful but do not prove reproducible software builds. Build provenance needs verification, and it cannot prove privacy effectiveness. [NIST final](https://csrc.nist.gov/pubs/sp/800/218/final), [NIST draft](https://csrc.nist.gov/pubs/sp/800/218/r1/ipd), [Reproducible Builds definition](https://reproducible-builds.org/docs/definition/), [SLSA verification](https://slsa.dev/spec/v1.2/verifying-artifacts)
 
-## Stack decisions
+## Technology choices
 
-Keep Python/pydicom for the small local transformation service and the existing browser Canvas for this increment. Add pure-Python replacement and verifier modules; no cloud service, AI model or native codec is needed for bounded 16-bit rectangular erasure. Keep the UI and CLI on the same core transformation path.
+Keep Python/pydicom for the small local transformation service and the existing browser Canvas for the first local implementation. Add pure-Python replacement and verifier modules; no cloud service, AI model or native codec is needed for bounded 16-bit rectangular erasure. Keep the UI and CLI on the same core transformation path.
 
-For the next validation milestone, evaluate a pinned dicom3tools dciodvfy build and the Python dicom-validator with an explicit DICOM edition. The latter shares pydicom parsing and is not a fully independent parser. No validator installation or pass is claimed in this increment. [dciodvfy](https://www.dclunie.com/dicom3tools/dciodvfy.html), [dicom-validator](https://github.com/pydicom/dicom-validator)
+For the next validation milestone, evaluate a pinned dicom3tools dciodvfy build and the Python dicom-validator with an explicit DICOM edition. The latter shares pydicom parsing and is not a fully independent parser. No validator installation or pass is claimed in the first local implementation. [dciodvfy](https://www.dclunie.com/dicom3tools/dciodvfy.html), [dicom-validator](https://github.com/pydicom/dicom-validator)
 
 Do not add Cornerstone3D merely to strengthen anonymisation: it can help future stack navigation and richer rendering, but it is not a privacy engine. Do not use an LLM as an authoritative PHI-removal judge. Compare local OCR candidates on measured misses, coverage and Mac resource use before choosing one. Treat vendor-specific private retention and date retention as utility tradeoffs rather than default privacy improvements.
 
 
 ## Purpose, claims and risk ownership
 
-Evidence context: [DICOM confidentiality profiles](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html), [ICO pseudonymisation](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/pseudonymisation/), [ICO effective anonymisation](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/how-do-we-ensure-anonymisation-is-effective/), [ICO governance](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/what-accountability-and-governance-measures-do-we-need/), [HHS de-identification guidance](https://www.hhs.gov/hipaa/for-professionals/special-topics/de-identification/index.html). The actions below are project-specific engineering proposals.
+Sources: [DICOM confidentiality profiles](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html), [ICO pseudonymisation](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/pseudonymisation/), [ICO effective anonymisation](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/how-do-we-ensure-anonymisation-is-effective/), [ICO governance](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/what-accountability-and-governance-measures-do-we-need/), [HHS de-identification guidance](https://www.hhs.gov/hipaa/for-professionals/special-topics/de-identification/index.html).
 
 - **A001 [P0] Separate five claims.** Distinguish metadata processing, selected-region erasure, human inspection, technical verification and disclosure-risk assessment in UI and reports.
 
@@ -59,7 +61,7 @@ Evidence context: [DICOM confidentiality profiles](https://dicom.nema.org/medica
 
 ## Metadata policy strength
 
-Evidence context: [DICOM confidentiality profiles](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html), [DICOM Basic Profile](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.2.html), [DICOM descriptor cleaning](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.5.html), [DICOM safe private retention](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.10.html), [DICOM MR module requirements](https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.8.3.html). The actions below are project-specific engineering proposals.
+Sources: [DICOM confidentiality profiles](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html), [DICOM Basic Profile](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.2.html), [DICOM descriptor cleaning](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.5.html), [DICOM safe private retention](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.10.html), [DICOM MR module requirements](https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.8.3.html).
 
 - **A009 [P0] Version the policy contract.** Give retained, emptied, replaced and rejected fields an immutable policy identifier, rationale and regression references.
 
@@ -79,7 +81,7 @@ Evidence context: [DICOM confidentiality profiles](https://dicom.nema.org/medica
 
 ## Hidden metadata and alternate containers
 
-Evidence context: [DICOM confidentiality profiles](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html), [DICOM graphics cleaning](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.3.html), [DICOM structured-content cleaning](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.4.html), [DICOM descriptor cleaning](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.5.html). The actions below are project-specific engineering proposals.
+Sources: [DICOM confidentiality profiles](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html), [DICOM graphics cleaning](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.3.html), [DICOM structured-content cleaning](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.4.html), [DICOM descriptor cleaning](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.5.html).
 
 - **A017 [P0] Test nested identifier traps.** Plant names in multiple sequence depths and verify output DICOM, reports and errors do not contain them.
 
@@ -99,7 +101,7 @@ Evidence context: [DICOM confidentiality profiles](https://dicom.nema.org/medica
 
 ## Permanent pixel redaction
 
-Evidence context: [DICOM Clean Pixel Data](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.html), [DICOM recognisable visual features](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.2.html), [DICOM graphics cleaning](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.3.html). The actions below are project-specific engineering proposals.
+Sources: [DICOM Clean Pixel Data](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.html), [DICOM recognisable visual features](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.2.html), [DICOM graphics cleaning](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.3.html).
 
 - **A025 [P0] Erase stored samples.** Replace chosen image samples in the actual exported PixelData with a constant independent of their original values.
 
@@ -119,7 +121,7 @@ Evidence context: [DICOM Clean Pixel Data](https://dicom.nema.org/medical/dicom/
 
 ## Human review and student experience
 
-Evidence context: [DICOM Clean Pixel Data](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.html), [ICO effective anonymisation](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/how-do-we-ensure-anonymisation-is-effective/), [ICO governance](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/what-accountability-and-governance-measures-do-we-need/). The actions below are project-specific engineering proposals.
+Sources: [DICOM Clean Pixel Data](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.html), [ICO effective anonymisation](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/how-do-we-ensure-anonymisation-is-effective/), [ICO governance](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/what-accountability-and-governance-measures-do-we-need/).
 
 - **A033 [P0] Provide a fake-text challenge.** Generate deterministic original glyphs and fake identifiers at known coordinates, with no real patient information.
 
@@ -139,7 +141,7 @@ Evidence context: [DICOM Clean Pixel Data](https://dicom.nema.org/medical/dicom/
 
 ## Local OCR assistance and evaluation
 
-Evidence context: [DICOM Clean Pixel Data](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.html), [DICOM metadata and burned-in text study](https://pmc.ncbi.nlm.nih.gov/articles/PMC11522224/). The actions below are project-specific engineering proposals.
+Sources: [DICOM Clean Pixel Data](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.html), [DICOM metadata and burned-in text study](https://pmc.ncbi.nlm.nih.gov/articles/PMC11522224/).
 
 - **A041 [P1] Benchmark candidate local detectors.** Compare a simple CPU OCR engine with a local text detector on the same labelled corpus; record Mac hardware and runtime.
 
@@ -159,7 +161,7 @@ Evidence context: [DICOM Clean Pixel Data](https://dicom.nema.org/medical/dicom/
 
 ## Recognisable anatomy and residual linkage
 
-Evidence context: [DICOM recognisable visual features](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.2.html), [DICOM UID retention](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.9.html), [Changing the face of neuroimaging research](https://pmc.ncbi.nlm.nih.gov/articles/PMC8154695/), [ADNI4 face de-identification validation](https://pmc.ncbi.nlm.nih.gov/articles/PMC11567833/). The actions below are project-specific engineering proposals.
+Sources: [DICOM recognisable visual features](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.2.html), [DICOM UID retention](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.9.html), [Changing the face of neuroimaging research](https://pmc.ncbi.nlm.nih.gov/articles/PMC8154695/), [ADNI4 face de-identification validation](https://pmc.ncbi.nlm.nih.gov/articles/PMC11567833/).
 
 - **A049 [P2] Require complete volume support.** Do not advertise defacing on one slice; validate geometry, ordering and reconstruction of a supported head/neck volume first.
 
@@ -179,7 +181,7 @@ Evidence context: [DICOM recognisable visual features](https://dicom.nema.org/me
 
 ## Related files, dates and demographic utility
 
-Evidence context: [DICOM confidentiality profiles](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html), [DICOM temporal retention options](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.6.html), [DICOM patient-characteristic retention](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.7.html), [DICOM UID retention](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.9.html), [DICOM safe private retention](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.10.html). The actions below are project-specific engineering proposals.
+Sources: [DICOM confidentiality profiles](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html), [DICOM temporal retention options](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.6.html), [DICOM patient-characteristic retention](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.7.html), [DICOM UID retention](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.9.html), [DICOM safe private retention](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.10.html).
 
 - **A057 [P1] Map related identifiers consistently.** Use fresh project-scoped replacements across studies, series, instances and frame-of-reference links; avoid global deterministic patient hashes.
 
@@ -199,7 +201,7 @@ Evidence context: [DICOM confidentiality profiles](https://dicom.nema.org/medica
 
 ## Format expansion and parser resilience
 
-Evidence context: [DICOM confidentiality profiles](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html), [DICOM MR module requirements](https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.8.3.html), [dciodvfy and dcentvfy](https://www.dclunie.com/dicom3tools/dciodvfy.html), [dicom-validator](https://github.com/pydicom/dicom-validator). The actions below are project-specific engineering proposals.
+Sources: [DICOM confidentiality profiles](https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html), [DICOM MR module requirements](https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.8.3.html), [dciodvfy and dcentvfy](https://www.dclunie.com/dicom3tools/dciodvfy.html), [dicom-validator](https://github.com/pydicom/dicom-validator).
 
 - **A065 [P1] Baseline an independent IOD validator.** Run a pinned external validator on synthetic CT/MR outputs, sanitise findings, and document every unresolved failure.
 
@@ -219,7 +221,7 @@ Evidence context: [DICOM confidentiality profiles](https://dicom.nema.org/medica
 
 ## Independent testing and evidence
 
-Evidence context: [dciodvfy and dcentvfy](https://www.dclunie.com/dicom3tools/dciodvfy.html), [dicom-validator](https://github.com/pydicom/dicom-validator), [NIST Secure Software Development Framework](https://csrc.nist.gov/pubs/sp/800/218/final), [Reproducible Builds definition](https://reproducible-builds.org/docs/definition/). The actions below are project-specific engineering proposals.
+Sources: [dciodvfy and dcentvfy](https://www.dclunie.com/dicom3tools/dciodvfy.html), [dicom-validator](https://github.com/pydicom/dicom-validator), [NIST Secure Software Development Framework](https://csrc.nist.gov/pubs/sp/800/218/final), [Reproducible Builds definition](https://reproducible-builds.org/docs/definition/).
 
 - **A073 [P0] Use property-based acceptance tests.** Compare the exact exported samples to an independently built mask and assert the intended invariants across representations.
 
@@ -239,7 +241,7 @@ Evidence context: [dciodvfy and dcentvfy](https://www.dclunie.com/dicom3tools/dc
 
 ## Application security and data lifecycle
 
-Evidence context: [ICO pseudonymisation](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/pseudonymisation/), [ICO governance](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/what-accountability-and-governance-measures-do-we-need/), [NIST Secure Software Development Framework](https://csrc.nist.gov/pubs/sp/800/218/final). The actions below are project-specific engineering proposals.
+Sources: [ICO pseudonymisation](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/pseudonymisation/), [ICO governance](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/what-accountability-and-governance-measures-do-we-need/), [NIST Secure Software Development Framework](https://csrc.nist.gov/pubs/sp/800/218/final).
 
 - **A081 [P0] Preserve loopback isolation.** Keep same-origin Host/Origin checks, per-launch tokens, no-store headers and explicit local assets across new endpoints.
 
@@ -259,7 +261,7 @@ Evidence context: [ICO pseudonymisation](https://ico.org.uk/for-organisations/uk
 
 ## Project formality and release discipline
 
-Evidence context: [ICO governance](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/what-accountability-and-governance-measures-do-we-need/), [HHS de-identification guidance](https://www.hhs.gov/hipaa/for-professionals/special-topics/de-identification/index.html), [NIST Secure Software Development Framework](https://csrc.nist.gov/pubs/sp/800/218/final), [NIST SSDF revision status](https://csrc.nist.gov/pubs/sp/800/218/r1/ipd), [Reproducible Builds definition](https://reproducible-builds.org/docs/definition/), [SLSA artifact verification](https://slsa.dev/spec/v1.2/verifying-artifacts). The actions below are project-specific engineering proposals.
+Sources: [ICO governance](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-sharing/anonymisation/what-accountability-and-governance-measures-do-we-need/), [HHS de-identification guidance](https://www.hhs.gov/hipaa/for-professionals/special-topics/de-identification/index.html), [NIST Secure Software Development Framework](https://csrc.nist.gov/pubs/sp/800/218/final), [NIST SSDF revision status](https://csrc.nist.gov/pubs/sp/800/218/r1/ipd), [Reproducible Builds definition](https://reproducible-builds.org/docs/definition/), [SLSA artifact verification](https://slsa.dev/spec/v1.2/verifying-artifacts).
 
 - **A089 [P0] Create a traceable requirements table.** Link each privacy requirement to code, tests, evidence and remaining limitations; keep implemented and planned work distinct.
 
@@ -277,7 +279,7 @@ Evidence context: [ICO governance](https://ico.org.uk/for-organisations/uk-gdpr-
 
 - **A096 [P2] Seek external review before claims.** Arrange imaging-domain and privacy assessment for the intended use; no badges, attestations or validators are substitutes for that review.
 
-## First implementation: delivered scope
+## What the first implementation added
 
 This increment adds a constant-value stored-pixel rectangle operation, independently indexed decoded-pixel verification, post-write custom metadata assertions, retained numeric VR checks, and a deterministic fake-text exercise. The interface supports drawing and numeric coordinates. Pending selections suspend downloads. Applying an edit creates a new result, invalidates the old URL and requires fresh acknowledgement. Reports identify the exact output by SHA-256 and distinguish selected-region verification from complete anonymity. The CLI accepts a JSON region file.
 
@@ -285,19 +287,19 @@ The first implementation intentionally supports one applied selection set per lo
 
 No automatic OCR, volume defacing, full PS3.15 profile, full IOD validation or clinical approval is implemented. The existing MR required-field gap remains a priority for the next milestone. The metadata verifier shares the declared allowlist and pydicom parser, so it is an additional assertion layer rather than external certification. Redaction tests use an independent NumPy mask to check the write results; injected corruption exercises the verifier's failure paths.
 
-## Execution order and agent prompts
+## Suggested order of work
 
-Use the work packages in docs/prompts. Start with output contracts and redaction (implemented here), then follow with IOD/profile correctness and automated browser evidence. OCR requires a separate evaluation corpus before detector integration. Batch/date work depends on reference-graph validation; defacing depends on full-volume support. Release engineering can proceed alongside feature work once its exact artifacts and claims are defined.
+Use the work packages in docs/prompts. Start with output contracts and redaction (implemented here), then continue with IOD/profile correctness. Automated browser checks were added in 0.2.1. OCR requires a separate evaluation corpus before detector integration. Batch/date work depends on reference-graph validation; defacing depends on full-volume support. Release engineering can proceed alongside feature work once its exact artifacts and claims are defined.
 
 Every prompt requires a concrete testable result, explicit non-goals, privacy-preserving evidence and a truthful handoff. A prompt is not evidence that its feature exists. No future roadmap item should be marked complete until its acceptance criteria pass.
 
 ## Research coverage and limitations
 
-Discovery covered DICOM profiles and options, current code, output validity, independent validators, UK/US privacy framing, OCR, facial de-identification and secure/reproducible release practices. Two bounded research lanes reviewed standards and assurance. Follow-up checked consequential profile, MR-module, regulator and NIST-version claims against primary material visible to the coordinator.
+Discovery covered DICOM profiles and options, current code, output validity, independent validators, UK/US privacy framing, OCR, facial de-identification and secure/reproducible release practices. The review covered both standards and engineering evidence. A follow-up pass checked the main DICOM, MR-module, regulator and NIST-version claims against primary sources.
 
-The coordinator's direct PMC reads encountered a browser challenge for two studies; the research agent retrieved the study material. Study conclusions are therefore reported qualitatively, with explicit generalisation limits, and no unsupported numerical risk or performance estimate is used. Tool installation compatibility, new OCR model licensing and real institutional privacy risk were not assessed. Those are named work items rather than assumed facts.
+Two study pages required an alternate retrieval path during the original research. Study conclusions are therefore reported qualitatively, with explicit generalisation limits, and no unsupported numerical risk or performance estimate is used. Tool installation compatibility, new OCR model licensing and real institutional privacy risk were not assessed. Those are named work items rather than assumed facts.
 
-Research stopped after all material threat families had primary evidence or an explicit limitation and further broad searches were unlikely to change the first build order. This is a dated engineering assessment; new standards, datasets, dependency changes and attack methods require reevaluation.
+The research focused on evidence that could change the first build priorities; unresolved questions are listed as work items. This is a dated engineering assessment; new standards, datasets, dependency changes and attack methods require reevaluation.
 
 ## Source register
 

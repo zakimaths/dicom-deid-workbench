@@ -2,14 +2,18 @@
 
 Roadmap references: A060-A063.
 
-Status/dependencies: Depends on batch consistency and an explicit research-use requirement.
+Status: Depends on batch consistency and an explicit research-use requirement.
 
 ## Prompt
 
-Read the repository README, SECURITY.md, docs/policy.md, docs/anonymisation-roadmap.md and relevant tests before editing. Preserve unrelated changes. Use synthetic or explicitly permitted public data only. Do not send scans, identifiers or OCR text to external services. Do not weaken format validation to make a fixture pass. Do not label an output anonymous, HIPAA compliant, PS3.15 conformant or clinically validated without the specific evidence required for that claim. Keep source files intact and keep original values, filenames, UID mappings and tokens out of reports/logs. Work in one bounded branch or change set; do not publish or contact others unless the user has authorised it. Run relevant checks and return changed files, evidence, remaining limitations and the next dependency. Do not mark a planned feature complete merely because its prompt exists.
+Before editing, read the README, SECURITY.md, docs/policy.md, the research roadmap and the relevant tests. Keep the change focused and preserve other work in the repository.
 
-Your task: Keep date/demographic/device retention off for public teaching by default. If a research use requires it, define a separate versioned policy with recipient risk assumptions, project-scoped date offsets and documented treatment of partial dates, times, ages, sites and devices. Preserve clinically necessary intervals only within scope.
+Use synthetic or explicitly permitted public examples. Keep scans, identifiers and OCR text out of external services. Leave source files intact, and keep original values, filenames, identifier mappings and tokens out of reports and logs. Do not relax format checks just to make an example pass.
 
-Acceptance criteria: Test leap days, time zones, midnight crossings, partial values and interval invariants across related files. Document residual linkage and distinguish pseudonymisation from anonymity. Never advertise retention as universally stronger privacy.
+Describe only what the evidence supports. A successful test does not make the output anonymous, HIPAA compliant, PS3.15 conformant or clinically validated. Publishing code or contacting other people still needs the user's authorisation. A task description is not evidence that the feature has been built.
 
-Handoff: state the concrete before/after behaviour, tests and their actual outcomes, privacy claims that remain unsupported, changed files and the next dependency. Include a minimal reproduction with synthetic data.
+Task: Keep date/demographic/device retention off for public teaching by default. If a research use requires it, define a separate versioned policy with recipient risk assumptions, project-scoped date offsets and documented treatment of partial dates, times, ages, sites and devices. Preserve clinically necessary intervals only within scope.
+
+Check the result: Test leap days, time zones, midnight crossings, partial values and interval invariants across related files. Document residual linkage and distinguish pseudonymisation from anonymity. Never advertise retention as universally stronger privacy.
+
+When finished, explain what changed and how it was tested. List the changed files, actual results, remaining limits and what needs to happen next. Include a small synthetic example that someone else can repeat.

@@ -1,12 +1,14 @@
-# Arcade Terminal redesign
+# Interface design notes
 
-## Scope and baseline
+## Original local interface
 
-One route (`/`), plain HTML/CSS/JavaScript; no component library or frontend build. Python serves explicit local assets and the existing API. No theme selector, client-side router, search, dialogs, authentication UI or browser persistence. The local session token, upload limits and expiry are owned by the existing service.
+This note records the original arcade-style update on 5 September 2026. Later sample, editing and browser-demo changes are described in the [changelog](../CHANGELOG.md).
+
+The local interface has one route (`/`) and uses plain HTML/CSS/JavaScript; no component library or frontend build. Python serves explicit local assets and the existing API. No theme selector, client-side router, search, dialogs, authentication UI or browser persistence. The local session token, upload limits and expiry are owned by the existing service.
 
 The UI uses element IDs for its event handlers, CSS variables for shared styling, a canvas for the image and a generated list for metadata actions. The redesign preserves these connections and all processing code.
 
-## Functionality checklist
+## Controls and states
 
 | Area | Controls and behaviour | Important states |
 | --- | --- | --- |
@@ -24,7 +26,7 @@ Use the requested near-black, green-tinted palette with semantic amber warnings,
 
 The working surface replaces the previous marketing-style headline. Panes stack on smaller screens. Font files are local and licensed; no third-party request is introduced at runtime.
 
-## Verification
+## Checks run for that update
 
 Verified on macOS in Chromium on 5 September 2026:
 
@@ -36,7 +38,7 @@ Verified on macOS in Chromium on 5 September 2026:
 - No external asset requests or browser JavaScript errors occurred. Local font routes retain CSP and no-store headers, covered by three focused tests.
 - Main text contrast is 13.76:1 and secondary text 7.59:1 against raised panels; control boundaries are 3.47:1. Semantic accent text exceeds 6:1 against the base panel.
 
-[Current screenshot](screenshot.png). Run `make test` for the repeatable processing and server suite. Use the checklist above to repeat the browser workflows with the built-in synthetic example. Compare reports and pixel bytes rather than whole exported DICOM files, because new instance identifiers are intentional.
+[Synthetic example screenshot](screenshot.png). Run `make test` for the repeatable processing and server suite. Use the checklist above to repeat the browser workflows with the built-in synthetic example. Compare reports and pixel bytes rather than whole exported DICOM files, because new instance identifiers are intentional.
 
 Safari, Firefox, a screen reader, and physical touch devices were not tested. The 200% check uses CSS zoom rather than a browser-menu zoom setting. No DICOM processing, windowing calculations, API contracts or security policy changed; server changes only expose the three local font files.
 

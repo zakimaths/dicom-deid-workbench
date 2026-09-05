@@ -1,6 +1,6 @@
 # Bundled fonts
 
-Self-hosted assets: no Google Fonts requests are made at runtime.
+The app serves these font files itself. It does not contact Google Fonts when you open the local app or public demo.
 
 - **JetBrains Mono**, regular and semibold. Copyright and SIL Open Font License: `JetBrainsMono-OFL.txt`.
 - **Press Start 2P**, regular. Copyright and SIL Open Font License: `PressStart2P-OFL.txt`.

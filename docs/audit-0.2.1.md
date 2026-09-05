@@ -1,6 +1,6 @@
-# Adversarial audit and regression evidence — 0.2.1
+# What the 0.2.1 audit found
 
-5 September 2026. Scope: the local, single-frame, 16-bit educational importer, metadata scrubber, rectangle editor and viewer. This records tested behaviour and known limits; it does not establish that every error has been found or that an output is anonymous.
+On 5 September 2026, the local importer, metadata scrubber, rectangle editor and viewer were checked with malformed inputs, public fixtures and browser workflows. The results below apply to the supported single-frame, 16-bit format. They show which problems were found and fixed, not that every bug has been found or every output is anonymous.
 
 ## Findings fixed
 
@@ -44,7 +44,7 @@ Linux browser installation may need `npx playwright install --with-deps chromium
 
 The reproduction manifest includes the six upstream public-fixture hashes and preserved pixel hashes, plus synthetic fixture, edited-pixel and semantic-report digests. Random output UIDs intentionally prevent identical whole-file hashes between runs.
 
-## Remaining holes and limits
+## What remains unverified
 
 1. Manual rectangles can miss text. There is no validated OCR, whole-image review gate, automatic text cleaning or evidence of text-detection sensitivity.
 2. Recognisable facial anatomy and other identifying structures are unassessed. There is no volume defacing or clinical-utility evaluation.
