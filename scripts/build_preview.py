@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import shutil
 
+from dicom_workbench import __version__
 from dicom_workbench.core import transform
 from dicom_workbench.fixtures import synthetic_dicom
 from dicom_workbench.samples import SAMPLES, sample_dicom
@@ -170,7 +171,7 @@ def build():
     (OUT / "build-info.js").write_text(
         "export const BUILD = Object.freeze("
         + json.dumps(
-            {"version": "0.4.0", "revision": "sha256:" + code_hash, "report_schema": 3},
+            {"version": __version__, "revision": "sha256:" + code_hash, "report_schema": 3},
             sort_keys=True,
         )
         + ");\n"
