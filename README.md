@@ -18,6 +18,7 @@ Browse 50 larger, labelled MRI, CT and X-ray images. Choose **Open in workbench*
 | --- | --- | --- |
 | Where it runs | Static frontend on GitHub Pages | On your computer; macOS setup below |
 | Images | 50 teaching pictures, two synthetic examples and six DICOM test fixtures | The same collection, supported DICOM files, reports and PNG/JPEG pictures |
+| 3D volumes | Public brain MRI and an orientation fixture | Same samples, plus supported NIfTI-1 files and verified header cleaning |
 | Metadata | Live fake PNG metadata scrubbing; DICOM sample reports are prepared during build | Same PNG exercise, plus live supported DICOM metadata scrubbing |
 | Editing | Replaces selected sample pixels in the browser | Replaces selected DICOM/picture pixels and selected report text |
 | Downloads | PNG preview and exercise report | DICOM, reviewed TXT/PNG and processing reports |

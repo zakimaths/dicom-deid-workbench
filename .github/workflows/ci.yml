@@ -54,17 +54,17 @@ jobs:
       - run: uv sync --locked
       - run: npm ci --ignore-scripts
       - run: npx playwright install --with-deps chromium firefox webkit
-      - run: xvfb-run -a env NIFTI_HEADED=1 LIBGL_ALWAYS_SOFTWARE=1 npm run test:nifti
+      - run: xvfb-run -a env NIFTI_HEADED=1 LIBGL_ALWAYS_SOFTWARE=1 WEBKIT_DISABLE_DMABUF_RENDERER=1 npm run test:nifti
         if: runner.os == 'Linux'
       - run: npm run test:nifti
         if: runner.os != 'Linux'
+      - run: npm run build:preview
+      - run: npm run test:accessibility
+      - run: npm run test:mobile
       - run: npm run test:records
       - run: npm run benchmark:records
       - run: npm run test:browser
-      - run: npm run build:preview
       - run: npm run test:exercise
-      - run: npm run test:accessibility
-      - run: npm run test:mobile
       - run: npm run benchmark:ocr
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()

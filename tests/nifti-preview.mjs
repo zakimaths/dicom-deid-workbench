@@ -4,7 +4,10 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { chromium, firefox, webkit } from "playwright";
 const server = createServer(async (req, res) => {
   try {
-    const p = new URL(req.url, "http://localhost").pathname;
+    const path = new URL(req.url, "http://localhost").pathname;
+    const prefix = "/dicom-deid-workbench/";
+    if (!path.startsWith(prefix)) throw Error();
+    const p = path.slice(prefix.length - 1);
     if (p.includes("..")) throw Error();
     const b = await readFile("output/pages" + (p === "/" ? "/index.html" : p));
     res.setHeader(
@@ -24,7 +27,8 @@ const server = createServer(async (req, res) => {
   }
 });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-const base = `http://127.0.0.1:${server.address().port}`;
+const origin = `http://127.0.0.1:${server.address().port}`;
+const base = origin + "/dicom-deid-workbench";
 let browser;
 const results = [];
 try {
@@ -45,7 +49,7 @@ try {
       await page.route("**/*", (r) => {
         const u = new URL(r.request().url());
         requests.push(u.href);
-        return u.origin === base ? r.continue() : r.abort();
+        return u.origin === origin ? r.continue() : r.abort();
       });
       console.log("Starting public NIfTI", name, width);
       await page.goto(base + "/");

@@ -1107,7 +1107,8 @@ footer p {
 }
 
 /* Keep the records entry usable beside the existing import controls. */
-#records-link {
+#records-link,
+#nifti-link {
   display: inline-flex;
   align-items: center;
   min-height: 44px;

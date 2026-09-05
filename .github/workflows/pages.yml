@@ -29,11 +29,19 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run build:preview
-      - run: xvfb-run -a env NIFTI_HEADED=1 LIBGL_ALWAYS_SOFTWARE=1 npm run test:nifti-preview
-      - run: npm run test:preview
-      - run: npm run test:exercise
+      - run: xvfb-run -a env NIFTI_HEADED=1 LIBGL_ALWAYS_SOFTWARE=1 WEBKIT_DISABLE_DMABUF_RENDERER=1 npm run test:nifti-preview
       - run: npm run test:accessibility
       - run: npm run test:mobile
+      - run: npm run test:preview
+      - run: npm run test:exercise
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: public-browser-evidence
+          path: |
+            output/nifti-preview/
+            output/accessibility/
+            output/mobile-audit/
       - run: npm run sbom
       - name: Package the tested allowlisted frontend
         run: tar -czf output/frontend.tar.gz -C output/pages .

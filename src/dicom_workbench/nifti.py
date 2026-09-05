@@ -155,12 +155,18 @@ def _inspect(raw):
         raise Unsupported("Saved intensity scaling did not match; export blocked.")
     if any(output[a:b].strip(b"\0") for a, b in TEXT.values()) or after.extensions:
         raise Unsupported("Header removal did not verify; export blocked.")
+    # NiiVue 0.69 chooses qform when its code is higher; otherwise it uses sform.
+    # Keep both original spaces in the export, and verify the displayed one too.
+    display_affine = header.get_qform() if qcode > scode else header.get_sform()
     summary = {
         "dimensions": list(dims[1:4]),
         "spacing": spacing.tolist(),
         "units": header.get_xyzt_units()[0],
         "datatype": str(header.get_data_dtype()),
-        "orientation": list(nib.aff2axcodes(header.get_best_affine())),
+        "orientation": list(nib.aff2axcodes(display_affine)),
+        "display_space": "qform" if qcode > scode else "sform",
+        "display_affine": display_affine.tolist(),
+        "display_scaling": [slope, intercept],
         "voxel_count": count,
         "voxel_bytes": size,
         "dual_spaces": bool(qcode and scode and not np.allclose(forms[0], forms[1])),

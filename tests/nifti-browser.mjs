@@ -73,6 +73,9 @@ try {
         .screenshot({
           path: `output/nifti-browser/${name}-${width}-orientation.png`,
         });
+      const bufferImage = await page.locator("#canvas-host canvas").evaluate((canvas) => canvas.toDataURL("image/png"));
+      await writeFile(`output/nifti-browser/${name}-${width}-buffer.png`,
+        Buffer.from(bufferImage.split(",")[1], "base64"));
       const before = await page.locator("#slice").inputValue();
       await page.locator("#next").click();
       assert.equal(
@@ -162,6 +165,25 @@ try {
       });
       await page.close();
     }
+    const mismatch = await browser.newPage();
+    for (const kind of ["display_affine", "display_scaling"]) {
+      await mismatch.route("**/api/nifti/inspect", async (route) => {
+        const response = await route.fetch();
+        const checked = await response.json();
+        if (kind === "display_affine") checked.summary[kind][0][3] += 10;
+        else checked.summary[kind][1] += 10;
+        await route.fulfill({ response, json: checked });
+      });
+      await mismatch.goto(base + "/nifti");
+      await mismatch.locator("#phantom").click();
+      await mismatch.waitForFunction(() =>
+        document.getElementById("status").textContent.includes("did not match the checked file"));
+      assert(await mismatch.locator("#volume-work").isHidden());
+      assert(await mismatch.locator("#save-volume").isDisabled());
+      await mismatch.unroute("**/api/nifti/inspect");
+    }
+    await mismatch.close();
+    console.log(name, "display geometry and scaling mismatches block viewing and export");
     const unavailable = await browser.newPage();
     const unavailableErrors = [];
     unavailable.on("pageerror", (e) => unavailableErrors.push(e.message));

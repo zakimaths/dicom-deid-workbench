@@ -62,6 +62,20 @@ def test_gzip_wrapper_padding_unused_and_trailing_bytes_are_not_copied():
     assert not result.data.startswith(b"\x1f\x8b")  # Export is a fresh, plain .nii.
 
 
+def test_display_geometry_follows_viewer_precedence_without_changing_saved_forms():
+    im = nib.Nifti1Image.from_bytes(phantom())
+    q = im.get_qform()
+    q[:2, :2] *= -1  # Change two axes while keeping handedness consistent.
+    im.set_qform(q, 4)
+    im.set_sform(im.get_sform(), 1)
+    result = inspect(im.to_bytes())
+    assert result.summary["display_space"] == "qform"
+    assert result.summary["orientation"] == ["L", "P", "S"]
+    assert np.allclose(result.summary["display_affine"], q)
+    assert result.summary["display_scaling"] == [1.0, 0.0]
+    assert np.array_equal(nib.Nifti1Image.from_bytes(result.data).get_sform(), im.get_sform())
+
+
 @pytest.mark.parametrize(
     "offset,fmt,value",
     [

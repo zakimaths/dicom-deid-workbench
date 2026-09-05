@@ -147,13 +147,26 @@ export async function show(buffer, info, g) {
       );
   });
   try {
-    graphics = canvas.getContext("webgl2", { alpha: true, antialias: false });
+    graphics = canvas.getContext("webgl2", {
+      alpha: true,
+      antialias: false,
+      preserveDrawingBuffer: true,
+    });
     if (!graphics) throw Error("WebGL2 unavailable");
     await viewer.attachToCanvas(canvas, false);
     if (!current(g)) return false;
     await viewer.loadFromArrayBuffer(buffer, "volume.nii");
     if (!current(g)) {
       viewer.volumes = [];
+      return false;
+    }
+    const header = viewer.volumes[0].hdr;
+    const close = (a, b) => Number.isFinite(a) && Math.abs(a - b) <= 1e-4 * Math.max(1, Math.abs(b));
+    if (!info.summary.display_affine.every((row, i) =>
+      row.every((value, j) => close(header.affine[i][j], value))) ||
+      ![header.scl_slope, header.scl_inter].every((value, i) =>
+        close(value, info.summary.display_scaling[i]))) {
+      clear("The viewer's orientation or brightness scaling did not match the checked file. This volume could not be displayed reliably; no export is enabled.");
       return false;
     }
     viewer.setSliceType(0);
