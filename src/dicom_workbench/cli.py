@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from .selection import load_selection
 from .core import MAX_BYTES, Unsupported, transform
 from .fixtures import synthetic_dicom
 from .server import serve
@@ -53,7 +54,7 @@ def main():
                     if len(raw) > 8192:
                         raise Unsupported("The region selection is too large.")
                     try:
-                        regions = json.loads(raw)
+                        regions = load_selection(raw)
                     except (ValueError, UnicodeError):
                         raise Unsupported("The region file must contain a JSON array.") from None
                     if regions is None:

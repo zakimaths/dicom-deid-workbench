@@ -19,7 +19,7 @@ uv sync --locked
 uv run --locked dicom-workbench serve
 ```
 
-Open **[http://127.0.0.1:8765](http://127.0.0.1:8765)** and select **Try synthetic example**. Or select **Browse public scans** for two local teaching slices from pydicom/NEMA. No separate DICOM download is needed. Hover over or focus on a button for a plain-language explanation; the **Button guide** also works on touch screens. See [sample sources and preparation](docs/public-samples.md). Stop with `Ctrl+C`.
+Open **[http://127.0.0.1:8765](http://127.0.0.1:8765)** and select **Try synthetic example**. Or select **Browse public scans** for six local public images from pydicom (NEMA and PCIR sources). No separate DICOM download is needed. Hover over or focus on a button for a plain-language explanation; the **Button guide** also works on touch screens. See [sample sources and preparation](docs/public-samples.md). Stop with `Ctrl+C`.
 
 uv installs the Python version specified in `.python-version`. The service runs natively; Docker and Node.js are not needed to use the app. Installation needs network access; the app itself uses only local assets and loopback requests. If port 8765 is occupied, use `serve --port 8766`.
 
@@ -64,7 +64,17 @@ For the frontend's small numerical test suite, install Node.js 22 or newer and r
 node --test tests/pixels.test.mjs
 ```
 
-CI runs Python checks on macOS arm64, macOS Intel and Linux, plus the JavaScript pixel tests. See [validation notes](docs/validation.md) for what was actually checked; a CI pass does not establish Safari rendering or privacy effectiveness.
+For repeatable whole-app checks in Chromium, Firefox and WebKit:
+
+```sh
+npm ci --ignore-scripts
+npx playwright install chromium firefox webkit
+npm run test:browser
+```
+
+Run `uv sync --locked` first; the browser suite starts and stops its own local server. It tests controls, six public samples, imports, redaction, downloads, response races and expiry, then independently compares exported pixels and preview values with pydicom/NumPy. Screenshots and the check list go to `output/browser/`. Browser tools are development dependencies; normal app use still needs no Node.js.
+
+CI runs Python checks on macOS arm64, macOS Intel and Linux, plus JavaScript pixel tests and browser flows on macOS arm64 and Linux. See [validation notes](docs/validation.md) and the [0.2.1 audit](docs/audit-0.2.1.md) for evidence and remaining limits. WebKit automation is not a certification of the installed Safari app or privacy effectiveness.
 
 ## Command-line usage
 

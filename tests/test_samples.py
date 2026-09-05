@@ -9,7 +9,7 @@ from dicom_workbench.core import Unsupported, transform
 from dicom_workbench.samples import SAMPLES, sample_dicom
 
 
-@pytest.mark.parametrize("key", ["ct", "mr"])
+@pytest.mark.parametrize("key", SAMPLES)
 def test_public_samples_reproducible_pixels_and_preparation(key):
     spec = SAMPLES[key]
     raw = (Path(pydicom.__file__).parent / "data/test_files" / spec["file"]).read_bytes()
@@ -18,9 +18,10 @@ def test_public_samples_reproducible_pixels_and_preparation(key):
     prepared = sample_dicom(key)
     assert prepared == sample_dicom(key)
     ds = pydicom.dcmread(BytesIO(prepared))
-    removed = "PixelPaddingValue" if key == "ct" else "EchoTrainLength"
-    assert removed not in ds and removed in original
-    assert len(ds) == len(original) - 1
+    removed = spec["remove"]
+    if removed:
+        assert removed not in ds and removed in original
+    assert len(ds) == len(original) - int(removed is not None)
     for element in ds:
         assert element == original[element.tag]
     result = transform(prepared)

@@ -5,6 +5,7 @@ import threading
 import pytest
 
 from dicom_workbench.server import WorkbenchServer
+from dicom_workbench.samples import SAMPLES
 
 
 @pytest.fixture
@@ -92,7 +93,7 @@ def test_expiry_and_oversized_request(local):
     assert req(local, "/api/process", "POST", {**headers, "Content-Length": "99999999"})[0] == 422
 
 
-@pytest.mark.parametrize("kind", ["ct", "mr"])
+@pytest.mark.parametrize("kind", SAMPLES)
 def test_public_sample_routes(local, kind):
     path = f"/api/samples/{kind}"
     assert req(local, path, "POST")[0] == 403
@@ -101,9 +102,9 @@ def test_public_sample_routes(local, kind):
     status, data, _ = req(local, path, "POST", headers)
     assert status == 200
     result = json.loads(data)
-    assert result["sample"]["file"] == f"{kind.upper()}_small.dcm"
+    assert result["sample"]["file"] == SAMPLES[kind]["file"]
     assert not result["synthetic"]
-    assert result["image"]["modality"] == kind.upper()
+    assert result["image"]["modality"] == kind.split("-")[0].upper()
     assert req(local, f"/api/jobs/{result['job']}/dicom", headers=headers)[0] == 200
     assert req(local, "/api/samples/unknown", "POST", headers)[0] == 404
     assert req(local, "/api/samples/../../secret", "POST", headers)[0] == 404
@@ -136,4 +137,40 @@ def test_invalid_redaction_discards_export(local, regions):
         req(local, "/api/redact", "POST", headers, json.dumps({"job": old, "regions": regions}))[0]
         == 422
     )
+    assert local.result is None
+
+
+@pytest.mark.parametrize("name", ["Host", "Origin", "X-Workbench-Token", "Content-Length"])
+def test_duplicate_security_headers_are_rejected(local, name):
+    connection = HTTPConnection("127.0.0.1", local.server_port, timeout=5)
+    connection.putrequest("POST", "/api/demo", skip_host=True)
+    values = {
+        "Host": f"127.0.0.1:{local.server_port}",
+        "Origin": f"http://127.0.0.1:{local.server_port}",
+        "X-Workbench-Token": local.token,
+        "Content-Length": "0",
+    }
+    for key, value in values.items():
+        connection.putheader(key, value)
+    connection.putheader(name, values[name])
+    connection.endheaders()
+    response = connection.getresponse()
+    assert response.status == 400
+    response.read()
+    connection.close()
+
+
+@pytest.mark.parametrize(
+    "selection",
+    [
+        '[{"x":0,"x":1,"y":0,"width":1,"height":1}]',
+        '[{"x":NaN,"y":0,"width":1,"height":1}]',
+        '[{"x":0,"y":0,"width":Infinity,"height":1}]',
+    ],
+)
+def test_ambiguous_json_invalidates_export(local, selection):
+    headers = {"X-Workbench-Token": local.token, "Content-Type": "application/json"}
+    job = json.loads(req(local, "/api/demo", "POST", headers)[1])["job"]
+    body = '{"job":' + json.dumps(job) + ',"regions":' + selection + "}"
+    assert req(local, "/api/redact", "POST", headers, body)[0] == 422
     assert local.result is None

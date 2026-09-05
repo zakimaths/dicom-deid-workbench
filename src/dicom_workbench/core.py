@@ -9,15 +9,17 @@ import warnings
 import pydicom
 from pydicom.dataset import FileDataset, FileMetaDataset
 from pydicom.multival import MultiValue
-from pydicom.datadict import dictionary_VR
+from pydicom.datadict import dictionary_VR, dictionary_VM
 
 from .redaction import replace_pixels, verify_pixels
+from .structure import preflight
 from .verification import NUMERIC_VRS, verify_metadata
 from pydicom.uid import CTImageStorage, MRImageStorage, ExplicitVRLittleEndian, generate_uid
 
 POLICY = "single-frame-metadata-v1"
 MAX_BYTES = 8 * 1024 * 1024
 MAX_DIMENSION = 1024
+IMPLEMENTATION_VERSION = "DEID_WB_021"
 IMPLEMENTATION_UID = "2.25.188025864089722936239435475126635725439"
 DISCLAIMER = (
     "Metadata only. Pixels and recognisable anatomy have not been assessed. Not for clinical use."
@@ -112,6 +114,7 @@ def read(data: bytes) -> FileDataset:
     if len(data) < 132 or data[128:132] != b"DICM":
         raise Unsupported("Choose a DICOM Part 10 file with a DICM header.")
     try:
+        preflight(data)
         with warnings.catch_warnings():
             warnings.simplefilter("error")
             ds = pydicom.dcmread(BytesIO(data))
@@ -154,6 +157,43 @@ def number(value):
 
 
 def validate(ds):
+    # Validate shapes before interpreting values: a list containing YES must never
+    # slip past a scalar equality check. Only the declared input envelope is accepted.
+    controls = (
+        *UID_FIELDS,
+        "SOPClassUID",
+        "Modality",
+        "PhotometricInterpretation",
+        "NumberOfFrames",
+        "VOILUTFunction",
+        "PresentationLUTShape",
+        "BurnedInAnnotation",
+        "RecognizableVisualFeatures",
+        "RescaleType",
+    )
+    for key in controls:
+        if key in ds:
+            element = ds[key]
+            if element.VR != dictionary_VR(element.tag) or element.VM != 1:
+                raise Unsupported(
+                    "An image control field has an unsupported representation or number of values."
+                )
+    for key in ("BurnedInAnnotation", "RecognizableVisualFeatures"):
+        if key in ds and ds.get(key) not in ("YES", "NO"):
+            raise Unsupported("An image identity declaration has an unsupported value.")
+    for key in KEEP_NUMERIC:
+        if key in ds:
+            element = ds[key]
+            if element.VR not in NUMERIC_VRS or element.VR != dictionary_VR(element.tag):
+                raise Unsupported("An imaging field has an unsupported value representation.")
+            vm = dictionary_VM(element.tag)
+            if not (element.VM >= 1 if vm == "1-n" else str(element.VM) == vm):
+                raise Unsupported("An imaging field has an unsupported number of values.")
+            values = element.value
+            for value in values if isinstance(values, (list, MultiValue)) else [values]:
+                number(value)
+    if "PixelData" not in ds or ds["PixelData"].VR != "OW":
+        raise Unsupported("This version requires 16-bit word pixel data.")
     if str(ds.file_meta.get("TransferSyntaxUID", "")) != str(ExplicitVRLittleEndian):
         raise Unsupported("Only uncompressed Explicit VR Little Endian files are supported.")
     sop = str(ds.get("SOPClassUID", ""))
@@ -203,20 +243,17 @@ def validate(ds):
         raise Unsupported("Rescale slope and intercept must be provided together.")
     if number(ds.get("RescaleSlope", 1)) == 0:
         raise Unsupported("Rescale slope must not be zero.")
-    for key in KEEP_NUMERIC:
-        if key in ds:
-            if ds[key].VR not in NUMERIC_VRS or ds[key].VR != dictionary_VR(ds[key].tag):
-                raise Unsupported("An imaging field has an unsupported value representation.")
-            values = ds[key].value
-            for value in values if isinstance(values, (list, MultiValue)) else [values]:
-                number(value)
     if "PixelSpacing" in ds:
         if len(ds.PixelSpacing) != 2 or not all(0.01 <= number(x) <= 100 for x in ds.PixelSpacing):
             raise Unsupported("Pixel spacing is outside the supported range.")
     if ("WindowCenter" in ds) != ("WindowWidth" in ds):
         raise Unsupported("Window center and width must be provided together.")
-    if "WindowWidth" in ds and number(first(ds.WindowWidth)) < 1:
-        raise Unsupported("Window width must be at least one.")
+    if "WindowWidth" in ds:
+        if ds["WindowCenter"].VM != ds["WindowWidth"].VM:
+            raise Unsupported("Window centers and widths must have matching numbers of values.")
+        widths = ds.WindowWidth if ds["WindowWidth"].VM > 1 else [ds.WindowWidth]
+        if any(number(width) < 1 for width in widths):
+            raise Unsupported("Every window width must be at least one.")
 
 
 def transform(data: bytes, regions=None) -> Result:
@@ -295,7 +332,7 @@ def _transform(data: bytes, regions=None) -> Result:
     output.file_meta.MediaStorageSOPInstanceUID = output.SOPInstanceUID
     output.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
     output.file_meta.ImplementationClassUID = IMPLEMENTATION_UID
-    output.file_meta.ImplementationVersionName = "DEID_WB_010"
+    output.file_meta.ImplementationVersionName = IMPLEMENTATION_VERSION
     buffer = BytesIO()
     pydicom.dcmwrite(buffer, output, enforce_file_format=True)
     encoded = buffer.getvalue()

@@ -70,11 +70,12 @@
         </div>
       </section>
       <div id="sample-library" class="sample-library" hidden>
-        <p><strong>Two small scans to learn with</strong></p>
+        <p><strong>Six public images to learn with</strong></p>
         <p>
-          Public test images from pydicom, originally from NEMA. These are
-          low-resolution teaching slices, not full scans for diagnosis. They
-          load from your computer without an internet request.
+          Public test images from pydicom, sourced from NEMA and PCIR. Two
+          teaching slices and four tiny 16 × 16 test images help you try
+          different inputs. They load from your computer without an internet
+          request.
         </p>
         <div class="sample-options">
           <button id="sample-ct" class="report-button">
@@ -83,10 +84,22 @@
           <button id="sample-mr" class="report-button">
             Load MRI slice · 64 × 64
           </button>
+          <button id="sample-ct-a" class="report-button">
+            CT test slice A · 16 × 16
+          </button>
+          <button id="sample-ct-b" class="report-button">
+            CT test slice B · 16 × 16
+          </button>
+          <button id="sample-mr-a" class="report-button">
+            MRI test slice A · 16 × 16
+          </button>
+          <button id="sample-mr-b" class="report-button">
+            MRI test slice B · 16 × 16
+          </button>
         </div>
         <p>
-          We prepare two small metadata adjustments for this viewer; the image
-          pixels stay unchanged.
+          We make documented metadata adjustments where needed; the image pixels
+          stay unchanged.
           <a
             href="https://github.com/zakimaths/dicom-deid-workbench/blob/main/docs/public-samples.md"
             target="_blank"
@@ -303,7 +316,7 @@
           One image at a time. Temporary results expire after 10 minutes or when
           cleared.
         </p>
-        <span>v0.2.0</span>
+        <span>v0.2.1</span>
       </footer>
     </main>
     <div id="button-help" class="button-help" role="tooltip" hidden></div>

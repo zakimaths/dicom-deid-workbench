@@ -10,6 +10,14 @@ let regions = [],
 let busy = false;
 let generation = 0;
 let expiry;
+let viewRevision = 0;
+const sampleKinds = ["ct", "mr", "ct-a", "ct-b", "mr-a", "mr-b"];
+const importControls = [
+  "demo",
+  "file",
+  "text-exercise",
+  ...sampleKinds.map((k) => `sample-${k}`),
+];
 
 function status(message, error = false) {
   $("status").textContent = message;
@@ -29,12 +37,13 @@ async function request(path, options = {}) {
     } catch {
       /* fixed fallback */
     }
-    throw new Error(message);
+    throw Object.assign(new Error(message), { status: response.status });
   }
   return response;
 }
 
 function clearView() {
+  ++viewRevision;
   clearTimeout(expiry);
   regions = [];
   dragStart = null;
@@ -107,6 +116,7 @@ function render() {
 }
 
 function present(result, buffer) {
+  ++viewRevision;
   clearTimeout(expiry);
   job = result.job;
   regions = [];
@@ -119,6 +129,20 @@ function present(result, buffer) {
     text_exercise: result.text_exercise,
   };
   image = result.image;
+  const defaults = result.text_exercise
+    ? { x: 16, y: 12, width: 132, height: 14 }
+    : {
+        x: 0,
+        y: 0,
+        width: Math.min(16, image.columns),
+        height: Math.min(16, image.rows),
+      };
+  for (const key of ["x", "y", "width", "height"]) {
+    $("region-" + key).value = defaults[key];
+    $("region-" + key).max = ["x", "width"].includes(key)
+      ? image.columns - (key === "x" ? 1 : 0)
+      : image.rows - (key === "y" ? 1 : 0);
+  }
   pixels = decode(buffer, image);
   let low = Infinity,
     high = -Infinity;
@@ -151,7 +175,7 @@ function present(result, buffer) {
   $("sample-badge").textContent = result.sample ? "PUBLIC SAMPLE" : "SYNTHETIC";
   $("sample-details").hidden = !result.sample;
   $("sample-details").textContent = result.sample
-    ? `Source: pydicom / NEMA · ${result.sample.file}. ${result.sample.preparation}`
+    ? `Source: ${result.sample.source}. ${result.sample.preparation}`
     : "";
   $("image-title").textContent = result.synthetic
     ? result.text_exercise
@@ -228,8 +252,7 @@ async function load(file, sample = null) {
   document.querySelector(".workbench").setAttribute("aria-busy", "true");
   const current = ++generation;
   clearView();
-  for (const id of ["demo", "file", "sample-ct", "sample-mr", "text-exercise"])
-    $(id).disabled = true;
+  for (const id of importControls) $(id).disabled = true;
   status(
     sample
       ? "Opening a public teaching scan and scrubbing its metadata…"
@@ -272,23 +295,30 @@ async function load(file, sample = null) {
   } finally {
     busy = false;
     document.querySelector(".workbench").setAttribute("aria-busy", "false");
-    for (const id of [
-      "demo",
-      "file",
-      "sample-ct",
-      "sample-mr",
-      "text-exercise",
-    ])
-      $(id).disabled = false;
+    for (const id of importControls) $(id).disabled = false;
     $("file").value = "";
     syncRegions();
   }
 }
 
 async function download(kind, name) {
-  if (!job || regions.length || busy) return;
+  if (!job || regions.length || busy || (kind === "dicom" && !$("ack").checked))
+    return;
+  const selectedJob = job,
+    revision = viewRevision;
   try {
-    const blob = await (await request(`/api/jobs/${job}/${kind}`)).blob();
+    const blob = await (
+      await request(`/api/jobs/${selectedJob}/${kind}`)
+    ).blob();
+    // A response may finish after an import, clear, selection or expiry.
+    if (
+      job !== selectedJob ||
+      revision !== viewRevision ||
+      busy ||
+      regions.length ||
+      (kind === "dicom" && !$("ack").checked)
+    )
+      return;
     const url = URL.createObjectURL(blob),
       link = document.createElement("a");
     link.href = url;
@@ -296,6 +326,8 @@ async function download(kind, name) {
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (error) {
+    if (job !== selectedJob || revision !== viewRevision) return;
+    if ([403, 404].includes(error.status)) clearView();
     status(error.message, true);
   }
 }
@@ -322,8 +354,11 @@ $("report").addEventListener("click", () =>
   download("report", "metadata-report.json"),
 );
 $("clear").addEventListener("click", async () => {
+  if (busy) return;
+  busy = true;
   ++generation;
   clearView();
+  for (const id of importControls) $(id).disabled = true;
   try {
     await request("/api/clear", { method: "POST" });
     status("Image cleared. Load another file or try the example.");
@@ -332,6 +367,9 @@ $("clear").addEventListener("click", async () => {
       "The local service could not confirm clearing. Stop it to release its temporary result.",
       true,
     );
+  } finally {
+    busy = false;
+    for (const id of importControls) $(id).disabled = false;
   }
 });
 for (const event of ["dragenter", "dragover"])
@@ -349,8 +387,7 @@ $("dropzone").addEventListener("drop", (e) => {
 });
 window.addEventListener("dragover", (e) => e.preventDefault());
 window.addEventListener("drop", (e) => e.preventDefault());
-for (const id of ["demo", "file", "sample-ct", "sample-mr", "text-exercise"])
-  $(id).disabled = true;
+for (const id of importControls) $(id).disabled = true;
 fetch("/api/session")
   .then((r) => {
     if (!r.ok) throw new Error();
@@ -358,14 +395,7 @@ fetch("/api/session")
   })
   .then((session) => {
     token = session.token;
-    for (const id of [
-      "demo",
-      "file",
-      "sample-ct",
-      "sample-mr",
-      "text-exercise",
-    ])
-      $(id).disabled = false;
+    for (const id of importControls) $(id).disabled = false;
   })
   .catch(() =>
     status(
@@ -379,7 +409,7 @@ $("browse-samples").addEventListener("click", () => {
   $("sample-library").hidden = !open;
   $("browse-samples").setAttribute("aria-expanded", String(open));
 });
-for (const kind of ["ct", "mr"])
+for (const kind of sampleKinds)
   $("sample-" + kind).addEventListener("click", () => load(null, kind));
 
 // The same explanations are available on hover, keyboard focus and in a touch-friendly guide.
@@ -411,6 +441,9 @@ const helpText = {
   report:
     "Saves a list of which information fields were removed, emptied or replaced. It leaves out the original values, so you can review the changes without copying those details.",
 };
+for (const kind of sampleKinds.filter((k) => k.includes("-")))
+  helpText["sample-" + kind] =
+    "Opens a tiny public test picture with only 16 rows and 16 columns. It helps you check small-image controls and erasing at the edges. Its detail is too limited for diagnosis.";
 const tip = $("button-help");
 let helpOwner = null,
   hideHelpTimer;
@@ -504,7 +537,12 @@ $("dropzone").append(guide);
 tip.addEventListener("pointerenter", () => clearTimeout(hideHelpTimer));
 tip.addEventListener("pointerleave", hideHelp);
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") hideHelp();
+  if (event.key === "Escape") {
+    hideHelp();
+    dragStart = null;
+    marking = false;
+    syncRegions();
+  }
 });
 window.addEventListener("resize", hideHelp);
 window.addEventListener(
@@ -538,7 +576,9 @@ function syncRegions() {
     ? "Selected regions erased and verified. Reimport the image to make a different selection."
     : regions.length
       ? `${regions.length} rectangle(s) selected. Exports are paused until you erase these pixels or discard the selection.`
-      : "Select an area. Exercise coordinates: left 16, top 12, width 132, height 14.";
+      : sourceLabel.text_exercise
+        ? "Select an area. Exercise coordinates: left 16, top 12, width 132, height 14."
+        : "Select an area using the numbers or draw a rectangle. Coordinates start at zero.";
   if (regions.length) {
     $("ack").checked = false;
     $("download").disabled = $("report").disabled = true;
@@ -562,12 +602,14 @@ function addRegion(box) {
     );
     return;
   }
+  ++viewRevision;
   regions.push(box);
   syncRegions();
   render();
 }
 $("mark-region").addEventListener("click", () => {
   marking = !marking;
+  dragStart = null;
   syncRegions();
 });
 $("add-region").addEventListener("click", () =>
@@ -575,12 +617,17 @@ $("add-region").addEventListener("click", () =>
     Object.fromEntries(
       ["x", "y", "width", "height"].map((k) => [
         k,
-        Number($("region-" + k).value),
+        $("region-" + k).value.trim() === ""
+          ? NaN
+          : Number($("region-" + k).value),
       ]),
     ),
   ),
 );
 $("undo-regions").addEventListener("click", () => {
+  ++viewRevision;
+  $("ack").checked = false;
+  $("download").disabled = true;
   regions = [];
   syncRegions();
   render();
@@ -605,13 +652,13 @@ function imagePoint(event) {
   };
 }
 $("canvas").addEventListener("pointerdown", (event) => {
-  if (!marking || busy || !image || event.button !== 0) return;
-  dragStart = imagePoint(event);
+  if (!marking || busy || !image || event.button !== 0 || dragStart) return;
+  dragStart = { ...imagePoint(event), pointerId: event.pointerId };
   $("canvas").setPointerCapture(event.pointerId);
   event.preventDefault();
 });
 $("canvas").addEventListener("pointerup", (event) => {
-  if (!dragStart || !image) return;
+  if (!dragStart || !image || event.pointerId !== dragStart.pointerId) return;
   const end = imagePoint(event),
     start = dragStart;
   dragStart = null;
@@ -622,9 +669,10 @@ $("canvas").addEventListener("pointerup", (event) => {
     height: Math.abs(start.y - end.y) + 1,
   });
 });
-$("canvas").addEventListener("pointercancel", () => {
-  dragStart = null;
-});
+for (const name of ["pointercancel", "lostpointercapture"])
+  $("canvas").addEventListener(name, (event) => {
+    if (event.pointerId === dragStart?.pointerId) dragStart = null;
+  });
 $("apply-regions").addEventListener("click", async () => {
   if (busy || !job || !regions.length) return;
   const selection = { job, regions },
@@ -632,17 +680,7 @@ $("apply-regions").addEventListener("click", async () => {
   busy = true;
   $("ack").checked = false;
   syncRegions();
-  for (const id of [
-    "demo",
-    "file",
-    "sample-ct",
-    "sample-mr",
-    "text-exercise",
-    "clear",
-    "download",
-    "report",
-    "ack",
-  ])
+  for (const id of [...importControls, "clear", "download", "report", "ack"])
     $(id).disabled = true;
   document.querySelector(".workbench").setAttribute("aria-busy", "true");
   status("Erasing selected pixels and checking the saved result…");
@@ -672,13 +710,6 @@ $("apply-regions").addEventListener("click", async () => {
     busy = false;
     syncRegions();
     document.querySelector(".workbench").setAttribute("aria-busy", "false");
-    for (const id of [
-      "demo",
-      "file",
-      "sample-ct",
-      "sample-mr",
-      "text-exercise",
-    ])
-      $(id).disabled = false;
+    for (const id of importControls) $(id).disabled = false;
   }
 });

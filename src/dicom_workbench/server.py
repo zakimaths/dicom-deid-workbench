@@ -9,6 +9,7 @@ import time
 from .core import MAX_BYTES, Unsupported, transform
 from .fixtures import synthetic_dicom
 from .samples import SAMPLES, sample_dicom
+from .selection import load_selection
 
 STATIC = Path(__file__).parent / "web"
 TTL_SECONDS = 600
@@ -68,6 +69,18 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def trusted(self, token=False):
+        for name in (
+            "Host",
+            "Origin",
+            "Sec-Fetch-Site",
+            "X-Workbench-Token",
+            "Content-Length",
+            "Content-Type",
+            "Transfer-Encoding",
+        ):
+            if len(self.headers.get_all(name, [])) > 1:
+                self.respond(400, {"error": "Ambiguous request headers are not accepted."})
+                return False
         port = self.server.server_port
         hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
         host = self.headers.get("Host", "")
@@ -201,7 +214,7 @@ class Handler(BaseHTTPRequestHandler):
             raw = self.rfile.read(length)
             if len(raw) != length:
                 raise Unsupported("The region selection was incomplete.")
-            selection = json.loads(raw)
+            selection = load_selection(raw)
             if not isinstance(selection, dict) or set(selection) != {"job", "regions"}:
                 raise Unsupported("Choose regions for the current image.")
             if not isinstance(selection["regions"], list) or not selection["regions"]:

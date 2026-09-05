@@ -11,6 +11,7 @@ import pydicom
 from dicom_workbench import __version__
 from dicom_workbench.core import read, transform
 from dicom_workbench.fixtures import synthetic_dicom
+from dicom_workbench.samples import SAMPLES, sample_dicom
 
 
 def main():
@@ -30,7 +31,17 @@ def main():
     erased = transform(challenge, regions=[{"x": 16, "y": 12, "width": 132, "height": 14}])
     assert erased.report["redaction"]["selected_pixels"] == 1848
     assert erased.report["redaction"]["outside_regions_unchanged"]
+    public_digests = {}
+    for key, spec in SAMPLES.items():
+        prepared = sample_dicom(key)
+        sample_result = transform(prepared)
+        assert sample_result.pixels == read(prepared).PixelData
+        public_digests[key] = {
+            "upstream_sha256": spec["sha256"],
+            "preserved_pixel_sha256": sha256(sample_result.pixels).hexdigest(),
+        }
     manifest = {
+        "public_samples": public_digests,
         "app_version": __version__,
         "python": platform.python_version(),
         "platform": platform.platform(),
@@ -50,7 +61,7 @@ def main():
             "new_instance_id": True,
             "fixture_repeatable": True,
         },
-        "limits": "Synthetic fixture only. Pixel identity, full IOD validity and clinical use not validated.",
+        "limits": "Synthetic and pinned public fixtures only. Pixel identity, full IOD validity and clinical use not validated.",
     }
     out = Path("output/reproduction.json")
     out.parent.mkdir(parents=True, exist_ok=True)

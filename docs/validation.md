@@ -1,6 +1,6 @@
-# Validation of v0.1
+# Validation history
 
-Tests are evidence for the declared narrow scope, not a certification. All test and screenshot data comes from generated geometry with fake identifiers.
+Tests are evidence for the declared narrow scope, not a certification. Test and screenshot data is synthetic or drawn from the pinned public fixtures. Earlier sections record the scope at that version.
 
 ## Automated checks
 
@@ -38,3 +38,7 @@ Chromium end-to-end checks exercised numeric and pointer selection, pending expo
 The research PDF was structurally checked for all 96 action IDs and hyperlinks, and all ten rendered pages were visually inspected. The companion roadmap, agent prompts and assurance matrix identify implemented scope and remaining work.
 
 The first 0.2.0 implementation also passed [CI on macOS ARM, macOS Intel and Linux](https://github.com/zakimaths/dicom-deid-workbench/actions/runs/33948284304). All five fixture/semantic digests matched across those platforms. A follow-up browser check confirms that an applied edit receives a fresh expiry timer and is not cleared by the original image's timer.
+
+## Adversarial audit (version 0.2.1)
+
+117 Python and 7 JavaScript numerical tests pass locally. A checked-in Playwright suite now covers Chromium, Firefox and WebKit: 42 workflow groups, 21 independently decoded downloads and 18 independent full-canvas numerical comparisons. See the [complete audit record](audit-0.2.1.md) for reproduced findings, fixes, test commands, source provenance and residual limitations. Browser CI is configured for macOS ARM and Linux in addition to the existing three-platform Python matrix.

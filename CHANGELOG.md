@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 - 5 September 2026
+
+- Reject ambiguous identity flags, incorrect value counts/representations, duplicate DICOM attributes, unsupported compression before parsing, and ambiguous HTTP/JSON selections.
+- Verify retained field presence and rebuilt file-metadata values after writing.
+- Add four pinned public CT/MRI test fixtures, with accurate sources, sizes, preparation and student-friendly help.
+- Fit selection defaults to each image; reject blank coordinates, cancel incomplete drawing with Escape, and discard delayed downloads when the image or selection has changed.
+- Add checked-in Chromium/Firefox/WebKit flows, independently verified downloads and canvas values, seeded NumPy redaction cases, structural negative tests and maximum-size coverage.
+
 ## 0.2.0 - 5 September 2026
 
 - Add permanent rectangular stored-pixel erasure with separately indexed post-write verification and outside-selection preservation checks.

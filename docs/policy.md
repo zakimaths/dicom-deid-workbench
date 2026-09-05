@@ -36,3 +36,7 @@ Processing each file separately creates separate study/series pseudonyms. This v
 The metadata subset itself remains v1. Retained numeric fields now require their expected dictionary VR, and a post-write assertion layer checks that the custom output contract held. This layer uses pydicom and the declared policy; it is not independent IOD certification.
 
 Optional `stored-rectangles-v1` replaces a bounded set of source-coordinate rectangles with a constant stored endpoint selected for pixel polarity and rescale sign. It independently decodes the saved samples and checks every inside/outside pixel. Report schema 2 records the selection, fill value, selected/changed counts, output digest and residual assessment. No whole-image-clean DICOM marker is added. Existing positive identifying-pixel flags still cause rejection.
+
+## Version 0.2.1 input and output hardening
+
+Before parsing, a bounded Explicit VR Little Endian structural check rejects repeated/out-of-order attributes, malformed lengths/delimiters and unsupported transfer syntax. Numeric multiplicities and image-control representations are validated before interpreting them. Identity declarations must be scalar YES or NO when present; absent declarations remain unassessed. Window centers and widths must pair up, and every width must be valid. Output verification requires all retained fields and the expected rebuilt file-meta values. These checks strengthen the same limited policy; they do not add full IOD or PS3.15 conformance.
