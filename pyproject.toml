@@ -4,12 +4,16 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dicom-deid-workbench"
-version = "0.3.0"
-description = "A small local DICOM metadata scrubber and 2D viewer, with synthetic fixtures and reproducible tests."
+version = "0.4.0"
+description = "Local medical-image and hospital-record review tools with reproducible de-identification checks."
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
 license = "MIT"
-dependencies = ["pydicom==3.0.2"]
+dependencies = [
+    "pillow==12.3.0",
+    "pydicom==3.0.2",
+    "pypdf==6.17.0",
+]
 
 [project.scripts]
 dicom-workbench = "dicom_workbench.cli:main"

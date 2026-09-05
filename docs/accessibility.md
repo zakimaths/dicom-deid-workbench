@@ -23,3 +23,7 @@ npm run test:accessibility
 ```
 
 Results and screenshots are saved under `output/accessibility/`. Remaining work: actual VoiceOver/screen-reader listening, installed Safari and physical touch-device testing, 200–400% text/zoom review, and sessions with disabled learners. Browser-engine tests do not substitute for those. Use the scoped review template in GitHub to record actual findings; do not mark them completed in advance.
+
+## Local hospital-record workspace (0.4.0)
+
+The new `/records` route was tested in Chromium, Firefox and WebKit at 1440 px and 390 px, with reduced motion. Eighteen automated axe states (empty, reviewed text and reviewed image) produced no WCAG A/AA violations. Full flows cover file import, manual text selection retained after re-suggesting, actual downloaded TXT/PNG contents, full-size image inspection, OCR worker termination, acknowledgement invalidation and malformed-import recovery. Numbered outlines distinguish proposed image selections from applied erasure. No new screen-reader/VoiceOver or physical-touch testing is claimed.

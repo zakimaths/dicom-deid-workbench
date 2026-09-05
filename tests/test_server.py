@@ -203,3 +203,48 @@ def test_exercise_scripts_keep_local_security(local, asset):
     assert headers["Cache-Control"] == "no-store"
     assert "text/javascript" in headers["Content-Type"]
     assert req(local, "/" + asset, headers={"Origin": "https://attacker.example"})[0] == 403
+
+
+def test_records_api_same_origin_token_and_no_cache(local):
+    assert req(local, "/records")[0] == 200
+    body = json.dumps({"text": "Patient: PRIVATE_NAME", "known": []})
+    assert (
+        req(local, "/api/records/detect", "POST", {"Content-Type": "application/json"}, body)[0]
+        == 403
+    )
+    headers = {"Content-Type": "application/json", "X-Workbench-Token": local.token}
+    status, raw, response_headers = req(local, "/api/records/detect", "POST", headers, body)
+    assert status == 200 and b"PRIVATE_NAME" not in raw
+    assert response_headers["Cache-Control"] == "no-store"
+    assert (
+        req(
+            local,
+            "/api/records/detect",
+            "POST",
+            {**headers, "Origin": "https://attacker.example"},
+            body,
+        )[0]
+        == 403
+    )
+    assert local.result is None
+    status, raw, _ = req(
+        local,
+        "/api/records/scrub",
+        "POST",
+        headers,
+        json.dumps(
+            {
+                "text": "Patient: PRIVATE_NAME",
+                "spans": [{"start": 9, "end": 21, "category": "name"}],
+            }
+        ),
+    )
+    assert status == 200 and "PRIVATE_NAME" not in raw.decode()
+    assert local.result is None
+
+
+def test_records_bad_inputs_cannot_become_an_export(local):
+    headers = {"Content-Type": "application/json", "X-Workbench-Token": local.token}
+    for body in ("null", "[]", "{}", '{"text":"PRIVATE_NAME","spans":[{}]}'):
+        status, raw, _ = req(local, "/api/records/scrub", "POST", headers, body)
+        assert status == 422 and b"PRIVATE_NAME" not in raw

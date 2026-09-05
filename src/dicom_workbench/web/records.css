@@ -1,0 +1,153 @@
+main {
+  max-width: 1120px;
+  padding: 32px 24px 64px;
+  margin: auto;
+}
+h1 {
+  font-size: clamp(1.45rem, 3vw, 2.3rem);
+  line-height: 1.55;
+}
+h2 {
+  font: 600 1.3rem/1.5 var(--font-body);
+  margin: 0 0 16px;
+}
+p {
+  max-width: 76ch;
+}
+section {
+  padding: 28px 0;
+  border-bottom: 1px solid var(--divider);
+}
+label {
+  display: block;
+  margin: 12px 0 8px;
+}
+textarea {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  font: inherit;
+  line-height: 1.6;
+  padding: 12px;
+  color: var(--text);
+  background: var(--screen);
+  border: 1px solid var(--boundary);
+  border-radius: 0;
+}
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+input[type="file"] {
+  max-width: 100%;
+  padding: 10px 0;
+}
+button {
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--boundary);
+  color: var(--text);
+  background: var(--raised);
+}
+button:hover:not(:disabled) {
+  color: var(--accent);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0;
+}
+fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  border: 1px solid var(--boundary);
+  padding: 12px;
+}
+fieldset label {
+  flex: 1 1 100px;
+  margin: 0;
+}
+input[type="number"] {
+  width: 100%;
+  display: block;
+  color: var(--text);
+  background: var(--screen);
+  border: 1px solid var(--boundary);
+  padding: 8px;
+}
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+}
+.check input {
+  margin-top: 5px;
+  min-width: 20px;
+  min-height: 20px;
+  accent-color: var(--accent);
+}
+#record-status {
+  padding: 16px 0;
+  color: var(--warning);
+}
+#record-notices p {
+  color: var(--warning);
+}
+.image-scroll {
+  overflow: auto;
+  max-height: 650px;
+  border: 1px solid var(--boundary);
+}
+#image-stage {
+  position: relative;
+  max-width: 100%;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+#record-overlays {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.selection-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.selection-row span {
+  flex: 1;
+  min-width: 160px;
+}
+summary {
+  cursor: pointer;
+  padding: 14px 0;
+}
+footer {
+  padding: 24px;
+  color: var(--secondary);
+}
+[hidden] {
+  display: none !important;
+}
+@media (max-width: 480px) {
+  main {
+    padding: 24px 16px;
+  }
+  .topbar {
+    padding: 16px;
+    flex-wrap: wrap;
+  }
+  .actions button {
+    flex: 1 1 100%;
+  }
+}

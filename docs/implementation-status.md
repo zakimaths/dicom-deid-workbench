@@ -1,6 +1,6 @@
 # Research recommendations: implementation status
 
-The 0.3.0 work incorporates the research into working features, checks and explicit follow-up requirements.
+Version 0.4.0 adds a local hospital-record review workspace and annotated text evaluation; see [scope and measured limits](hospital-records.md). The 0.3.0 work incorporates the research into working features, checks and explicit follow-up requirements.
 
 | Recommendation | Delivered | Remaining evidence or scope |
 | --- | --- | --- |

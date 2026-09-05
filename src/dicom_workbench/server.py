@@ -6,6 +6,8 @@ from pathlib import Path
 import secrets
 import time
 
+from .documents import extract_isolated
+from .records import detect, scrub_text
 from .core import MAX_BYTES, Unsupported, transform
 from .fixtures import synthetic_dicom
 from .samples import SAMPLES, sample_dicom
@@ -78,6 +80,7 @@ class Handler(BaseHTTPRequestHandler):
             "Origin",
             "Sec-Fetch-Site",
             "X-Workbench-Token",
+            "X-Record-Kind",
             "Content-Length",
             "Content-Type",
             "Transfer-Encoding",
@@ -107,6 +110,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         assets = {
             "/": ("index.html", "text/html; charset=utf-8"),
+            "/records": ("records.html", "text/html; charset=utf-8"),
+            "/records.js": ("records.js", "text/javascript; charset=utf-8"),
+            "/records.css": ("records.css", "text/css; charset=utf-8"),
             "/app.js": ("app.js", "text/javascript; charset=utf-8"),
             "/pixels.js": ("pixels.js", "text/javascript; charset=utf-8"),
             "/style.css": ("style.css", "text/css; charset=utf-8"),
@@ -164,6 +170,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.trusted(token=True):
             return
+        if self.path in ("/api/records/import", "/api/records/detect", "/api/records/scrub"):
+            return self.records()
         sample_key = self.path.removeprefix("/api/samples/")
         if self.path not in (
             "/api/demo",
@@ -218,6 +226,38 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(
                 422, {"error": "The file could not be processed. Try the synthetic example."}
             )
+
+    def records(self):
+        # Stateless: source text and exports stay in the caller, never a server job/cache.
+        try:
+            if self.headers.get("Transfer-Encoding"):
+                raise Unsupported("Streaming uploads are not supported.")
+            length = int(self.headers.get("Content-Length", "0"))
+            if not 0 < length <= MAX_BYTES:
+                raise Unsupported("Choose a file or request up to 8 MiB.")
+            raw = self.rfile.read(length)
+            if len(raw) != length:
+                raise Unsupported("The upload was incomplete.")
+            if self.path == "/api/records/import":
+                if self.headers.get("Content-Type") != "application/octet-stream":
+                    raise Unsupported("Send a supported file for local review.")
+                result = extract_isolated(raw, self.headers.get("X-Record-Kind", ""))
+            else:
+                if self.headers.get("Content-Type") != "application/json":
+                    raise Unsupported("Send a JSON text selection.")
+                body = json.loads(raw)
+                if not isinstance(body, dict):
+                    raise Unsupported("Send a text review object.")
+                if self.path.endswith("detect"):
+                    result = {"spans": detect(body.get("text"), body.get("known", []))}
+                else:
+                    clean, report = scrub_text(body.get("text"), body.get("spans"))
+                    result = {"text": clean, "report": report}
+            self.respond(200, result)
+        except Unsupported as error:
+            self.respond(422, {"error": str(error)})
+        except Exception:
+            self.respond(422, {"error": "Could not read this record. Check the file or selection."})
 
     def redact(self):
         previous, previous_job = self.server.result, self.server.job
@@ -275,7 +315,7 @@ class Handler(BaseHTTPRequestHandler):
 def serve(port=8765):
     server = WorkbenchServer(("127.0.0.1", port))
     print(f"DICOM Workbench: http://127.0.0.1:{server.server_port}")
-    print("Local educational prototype. Use synthetic or already-public data. Ctrl+C to stop.")
+    print("Local review prototype. Process only authorised data. Ctrl+C to stop.")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

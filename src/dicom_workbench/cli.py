@@ -7,7 +7,7 @@ from pathlib import Path
 from .selection import load_selection
 from .core import MAX_BYTES, Unsupported, transform
 from .fixtures import synthetic_dicom
-from .collection import transform_collection
+from .collection import transform_collection, MAX_FILES, MAX_COLLECTION_BYTES
 from .server import serve
 
 
@@ -34,7 +34,7 @@ def main():
     )
     collection = commands.add_parser(
         "scrub-collection",
-        help="Scrub up to 16 supported files from one study with consistent identifiers",
+        help="Scrub up to 512 supported files (128 MiB total) from one study with consistent identifiers",
     )
     collection.add_argument("output_directory", type=Path)
     collection.add_argument("inputs", type=Path, nargs="+")
@@ -46,12 +46,19 @@ def main():
             write_new(args.output, synthetic_dicom(with_text=args.with_text))
             print("Synthetic fixture created.")
         elif args.command == "scrub-collection":
-            if args.output_directory.exists() or not 1 <= len(args.inputs) <= 16:
-                raise Unsupported("Choose a new output directory and 1 to 16 source files.")
+            if args.output_directory.exists() or not 1 <= len(args.inputs) <= MAX_FILES:
+                raise Unsupported("Choose a new output directory and 1 to 512 source files.")
             files = []
+            total = 0
             for path in args.inputs:
                 with path.open("rb") as source:
-                    files.append(source.read(MAX_BYTES + 1))
+                    data = source.read(MAX_BYTES + 1)
+                    total += len(data)
+                    if len(data) > MAX_BYTES or total > MAX_COLLECTION_BYTES:
+                        raise Unsupported(
+                            "Each file must be at most 8 MiB; the study at most 128 MiB."
+                        )
+                    files.append(data)
             results = transform_collection(files)
             args.output_directory.mkdir()
             for index, result in enumerate(results, 1):

@@ -54,6 +54,8 @@ jobs:
       - run: uv sync --locked
       - run: npm ci --ignore-scripts
       - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run test:records
+      - run: npm run benchmark:records
       - run: npm run test:browser
       - run: npm run build:preview
       - run: npm run test:exercise
@@ -68,6 +70,8 @@ jobs:
             output/browser/*.png
             output/accessibility/
             output/benchmarks/
+            output/records-browser/
+            output/records-evaluation.json
 
   dependencies:
     name: Dependency advisories

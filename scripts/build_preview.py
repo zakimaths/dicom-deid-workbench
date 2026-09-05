@@ -34,6 +34,7 @@ def build():
         '<script type="module" src="./app.js"></script>',
         '<script type="module" src="./preview.js"></script>',
     )
+    html = html.replace('href="./records"', 'href="https://github.com/zakimaths/dicom-deid-workbench#hospital-records-local-only"').replace("Review reports, records &amp; image files ↗", "Hospital records · local setup ↗")
     html = html.replace(
         "<title>DICOM Workbench</title>", "<title>DICOM Workbench · browser demo</title>"
     )
@@ -165,7 +166,7 @@ def build():
     (OUT / "build-info.js").write_text(
         "export const BUILD = Object.freeze("
         + json.dumps(
-            {"version": "0.3.0", "revision": "sha256:" + code_hash, "report_schema": 3},
+            {"version": "0.4.0", "revision": "sha256:" + code_hash, "report_schema": 3},
             sort_keys=True,
         )
         + ");\n"

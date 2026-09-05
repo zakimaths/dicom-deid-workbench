@@ -1,0 +1,513 @@
+{
+  "schema": 1,
+  "policy": "hospital-text-review-v1",
+  "app_version": "0.4.0",
+  "python": "3.12.11",
+  "detector_sha256": "99f2c8b30ff5e2402efdf14ff0c7a90b19d7045cc56d3a2e2ca9e0840bad3510",
+  "corpus_sha256": "2208e04e664db5712ef1dd81a7be8c88beb5d3da24e9c972e5a7251d20850381",
+  "assistance": "none",
+  "reports": [
+    {
+      "split": "validation",
+      "records": 240,
+      "subject_groups": 76,
+      "origin_counts": {
+        "synthetic": 240
+      },
+      "processing_errors": 0,
+      "identifier_recall": {
+        "numerator": 180,
+        "denominator": 210,
+        "rate": 0.8571428571428571,
+        "wilson_95": [
+          0.803389599368722,
+          0.8980646500889328
+        ]
+      },
+      "suggestion_overlap_precision": {
+        "numerator": 180,
+        "denominator": 180,
+        "rate": 1.0,
+        "wilson_95": [
+          0.9791045020783868,
+          1.0
+        ]
+      },
+      "record_failure_rate": {
+        "numerator": 30,
+        "denominator": 240,
+        "rate": 0.125,
+        "wilson_95": [
+          0.08897937456656785,
+          0.17283606538960128
+        ]
+      },
+      "subject_failure_rate": {
+        "numerator": 3,
+        "denominator": 76,
+        "rate": 0.039473684210526314,
+        "wilson_95": [
+          0.013514635094539595,
+          0.10974787746545532
+        ]
+      },
+      "negative_record_false_positive_rate": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.11351339317396876
+        ]
+      },
+      "character_recall": {
+        "numerator": 2040,
+        "denominator": 2390,
+        "rate": 0.8535564853556485,
+        "wilson_95": [
+          0.8388148836531089,
+          0.8671633647278696
+        ]
+      },
+      "character_precision": {
+        "numerator": 2040,
+        "denominator": 2040,
+        "rate": 1.0,
+        "wilson_95": [
+          0.9981204712312125,
+          1.0
+        ]
+      },
+      "character_f1": 0.9209932279909706,
+      "non_phi_character_change_rate": {
+        "numerator": 0,
+        "denominator": 18970,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.00020246078418180736
+        ]
+      },
+      "categories": {
+        "name": {
+          "numerator": 10,
+          "denominator": 40,
+          "rate": 0.25,
+          "wilson_95": [
+            0.14187118639096302,
+            0.40193961420768026
+          ]
+        },
+        "geography": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "date_age": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "phone": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "fax": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "email": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "ssn": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "medical_record": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "health_plan": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "account": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "licence": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "vehicle": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "device": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "url": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "ip": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "biometric": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "face": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        },
+        "other_identifier": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1.0,
+          "wilson_95": [
+            0.7224672001371107,
+            1.0
+          ]
+        }
+      },
+      "latency_ms": {
+        "median": 1.031,
+        "p95": 1.126
+      }
+    },
+    {
+      "split": "test",
+      "records": 600,
+      "subject_groups": 76,
+      "origin_counts": {
+        "synthetic": 600
+      },
+      "processing_errors": 0,
+      "identifier_recall": {
+        "numerator": 540,
+        "denominator": 570,
+        "rate": 0.9473684210526315,
+        "wilson_95": [
+          0.9258599379830166,
+          0.9628872798428001
+        ]
+      },
+      "suggestion_overlap_precision": {
+        "numerator": 540,
+        "denominator": 540,
+        "rate": 1.0,
+        "wilson_95": [
+          0.9929364362381928,
+          1.0
+        ]
+      },
+      "record_failure_rate": {
+        "numerator": 30,
+        "denominator": 600,
+        "rate": 0.05,
+        "wilson_95": [
+          0.03524526778459468,
+          0.07048026312773596
+        ]
+      },
+      "subject_failure_rate": {
+        "numerator": 3,
+        "denominator": 76,
+        "rate": 0.039473684210526314,
+        "wilson_95": [
+          0.013514635094539595,
+          0.10974787746545532
+        ]
+      },
+      "negative_record_false_positive_rate": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.11351339317396876
+        ]
+      },
+      "character_recall": {
+        "numerator": 6120,
+        "denominator": 6470,
+        "rate": 0.9459041731066461,
+        "wilson_95": [
+          0.9401229674834752,
+          0.9511561960089054
+        ]
+      },
+      "character_precision": {
+        "numerator": 6120,
+        "denominator": 6120,
+        "rate": 1.0,
+        "wilson_95": [
+          0.9993727043969828,
+          1.0
+        ]
+      },
+      "character_f1": 0.9722001588562351,
+      "non_phi_character_change_rate": {
+        "numerator": 0,
+        "denominator": 45340,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          8.471842475417022e-05
+        ]
+      },
+      "categories": {
+        "name": {
+          "numerator": 30,
+          "denominator": 60,
+          "rate": 0.5,
+          "wilson_95": [
+            0.3773502424155577,
+            0.6226497575844423
+          ]
+        },
+        "geography": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "date_age": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "phone": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "fax": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "email": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "ssn": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "medical_record": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "health_plan": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "account": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "licence": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "vehicle": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "device": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "url": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "ip": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "biometric": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "face": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        },
+        "other_identifier": {
+          "numerator": 30,
+          "denominator": 30,
+          "rate": 1.0,
+          "wilson_95": [
+            0.8864866068260312,
+            1.0
+          ]
+        }
+      },
+      "latency_ms": {
+        "median": 1.044,
+        "p95": 1.111
+      }
+    }
+  ],
+  "interpretation": "Wilson intervals are descriptive. Identifier and character observations within a record are correlated. Subject intervals require independently sampled subjects; template variants are not independent patients. No significance or hospital-readiness claim.",
+  "visual_biometrics": "not_evaluated; text references to images do not test faces or fingerprints"
+}

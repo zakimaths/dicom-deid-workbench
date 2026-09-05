@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "Please cite the release and commit used in your experiment."
 title: "DICOM Workbench"
-version: 0.3.0
+version: 0.4.0
 date-released: 2026-09-05
 type: software
 authors:

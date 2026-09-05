@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Hospital records · Local workbench</title>
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/records.css" />
+  </head>
+  <!-- Surface: Operate. Purpose: local import, removal, review, export.
+Inherited direction: Arcade Terminal tokens and sequential workbench controls.
+Hierarchy: original evidence, proposed changes, verified copy, human acknowledgements.
+Interaction: keyboard/text selection, numbered image outlines, fit/native zoom.
+Boundary: local-only parsers; sample-only public site; no anonymity certification. -->
+  <body>
+    <a class="skip-link" href="#main">Skip to records</a>
+    <header class="topbar">
+      <a class="brand" href="/">← DICOM Workbench</a
+      ><span class="local">Local processing</span>
+    </header>
+    <main id="main" tabindex="-1">
+      <h1>Hospital records</h1>
+      <p class="lede">
+        Remove identifying details from reports and pictures on this computer.
+        Review the result before saving a copy.
+      </p>
+      <p>
+        Use only records you are authorised to process. This is a review tool;
+        passing its checks does not establish anonymity.
+        <a href="/">Open the DICOM image workbench</a> for supported CT and MRI
+        files.
+      </p>
+      <section aria-labelledby="open-title">
+        <h2 id="open-title">Open a record</h2>
+        <label for="record-file"
+          >TXT, CSV, JSON, PDF, DOCX, PNG or JPEG · up to 8 MiB</label
+        ><input
+          id="record-file"
+          type="file"
+          accept=".txt,.csv,.json,.pdf,.docx,.png,.jpg,.jpeg"
+          aria-describedby="import-help"
+        />
+        <p id="import-help">
+          PDF and Word files become plain text. Images and attachments inside
+          documents are omitted. PNG and JPEG pictures keep their dimensions;
+          large or animated pictures are rejected.
+        </p>
+        <div class="actions">
+          <button
+            id="record-example"
+            title="Load a made-up discharge note to practise removing details."
+          >
+            Try a made-up report</button
+          ><button
+            id="record-clear"
+            title="Forget this record, all edits and review ticks in this tab."
+          >
+            Clear record
+          </button>
+        </div>
+      </section>
+      <p id="record-status" role="status" aria-live="polite">
+        Choose a record to begin. Nothing is saved automatically.
+      </p>
+      <div id="record-notices"></div>
+      <section id="text-work" hidden aria-labelledby="text-title">
+        <h2 id="text-title">Find and remove details</h2>
+        <label for="source-text"
+          >Original extracted text — select a passage to remove it</label
+        ><textarea
+          id="source-text"
+          readonly
+          spellcheck="false"
+          autocomplete="off"
+          rows="12"
+        ></textarea
+        ><label for="known-values"
+          >Known names or identifiers, one per line (optional)</label
+        ><textarea
+          id="known-values"
+          spellcheck="false"
+          autocomplete="off"
+          rows="3"
+          aria-describedby="known-help"
+        ></textarea>
+        <p id="known-help">
+          Add details you already know must be removed, including relatives’
+          names. Automatic rules can miss unlabelled names, unusual identifiers
+          and other languages.
+        </p>
+        <div class="actions">
+          <button
+            id="record-detect"
+            title="Suggest labelled details, common contact details and the known identifiers you entered. Suggestions can be wrong."
+          >
+            Suggest removals</button
+          ><button
+            id="record-select"
+            title="Add the passage selected in the original text to the removal list."
+          >
+            Remove selected passage</button
+          ><button
+            id="record-reset"
+            title="Remove all proposed selections so you can start reviewing again."
+          >
+            Reset selections
+          </button>
+        </div>
+        <p id="selection-summary"></p>
+        <details id="text-removal-list">
+          <summary>Review and edit proposed text removals</summary>
+          <div id="record-selections"></div>
+        </details>
+        <button
+          id="record-apply"
+          title="Replace the selected characters in a new plain-text copy, then check that other characters did not change."
+        >
+          Apply text removals</button
+        ><label for="clean-text"
+          >Result to review — original characters are replaced, not
+          hidden</label
+        ><textarea
+          id="clean-text"
+          readonly
+          spellcheck="false"
+          autocomplete="off"
+          rows="12"
+        ></textarea>
+      </section>
+      <section id="image-work" hidden aria-labelledby="image-title">
+        <h2 id="image-title">Remove visible labels</h2>
+        <p>
+          Inspect the whole picture, including corners and faces. Text search is
+          a suggestion tool and can miss labels. Enter a rectangle in image
+          pixels; everything inside it will become black.
+        </p>
+        <button
+          id="image-zoom"
+          aria-pressed="false"
+          title="Switch between fitting the picture on screen and showing each image pixel at its full size. Scroll to inspect the whole picture."
+        >
+          Show full-size image
+        </button>
+        <p id="image-view-help">
+          Numbered outlines show proposed removals. Applied removals become
+          black.
+        </p>
+        <div
+          class="image-scroll"
+          tabindex="0"
+          role="region"
+          aria-label="Scrollable picture review"
+        >
+          <div id="image-stage">
+            <canvas
+              id="record-canvas"
+              role="img"
+              aria-label="Current image for visual review"
+            ></canvas
+            ><canvas id="record-overlays" aria-hidden="true"></canvas>
+          </div>
+        </div>
+        <div class="actions">
+          <button
+            id="image-ocr"
+            title="Look for printed text using an offline English text reader. No result does not mean no identifying text."
+          >
+            Suggest text boxes</button
+          ><button
+            id="image-stop"
+            title="Stop the text search and release its memory."
+          >
+            Stop text search
+          </button>
+        </div>
+        <fieldset>
+          <legend>Rectangle to remove</legend>
+          <label for="box-x"
+            >Left<input id="box-x" type="number" min="0" value="0" /></label
+          ><label for="box-y"
+            >Top<input id="box-y" type="number" min="0" value="0" /></label
+          ><label for="box-w"
+            >Width<input id="box-w" type="number" min="1" value="100" /></label
+          ><label for="box-h"
+            >Height<input id="box-h" type="number" min="1" value="30"
+          /></label>
+        </fieldset>
+        <div class="actions">
+          <button
+            id="image-add"
+            title="Add the rectangle above to the list. You can remove it from the list before applying."
+          >
+            Add rectangle</button
+          ><button
+            id="image-apply"
+            title="Replace every pixel in the listed rectangles with opaque black, then verify those pixels and the rest of the picture."
+          >
+            Apply rectangles</button
+          ><button
+            id="image-reset"
+            title="Restore the imported picture and forget all rectangles and review ticks."
+          >
+            Restore image
+          </button>
+        </div>
+        <div id="image-boxes"></div>
+      </section>
+      <section id="record-export" hidden aria-labelledby="export-title">
+        <h2 id="export-title">Review and save</h2>
+        <p>
+          Only the new TXT or PNG is saved. Original document containers,
+          metadata, filenames and attachments are never included. A review tick
+          records your acknowledgement, not a clinical privacy approval.
+        </p>
+        <label class="check"
+          ><input type="checkbox" id="review-privacy" />I checked the complete
+          result for missed names, labels and other identifying details.</label
+        ><label class="check"
+          ><input type="checkbox" id="review-utility" />I checked that the
+          result still contains the information I need.</label
+        >
+        <div class="actions">
+          <button
+            id="record-save"
+            disabled
+            title="Save the reviewed copy after both checks are ticked."
+          >
+            Save reviewed copy</button
+          ><button
+            id="record-report"
+            disabled
+            title="Save counts, checks and output fingerprint. The report excludes original text, filenames and identifier values."
+          >
+            Save processing report
+          </button>
+        </div>
+        <p id="record-measures"></p>
+      </section>
+      <details>
+        <summary>What the checks can and cannot tell you</summary>
+        <p>
+          Processing counts measure changes. Accuracy needs a separate answer
+          key listing every identifier. Use the repository’s annotated-corpus
+          evaluator for identifier recall, missed-record rate, collateral text
+          changes, category results and 95% confidence intervals. Images, faces
+          and document attachments require separate assessment.
+        </p>
+      </details>
+    </main>
+    <footer>
+      Local session · no account, analytics or automatic saving · cleared after
+      10 minutes of inactivity
+    </footer>
+    <script type="module" src="/records.js"></script>
+  </body>
+</html>

@@ -1,5 +1,9 @@
 # Benchmarks and their limits
 
+## Hospital-record text evaluation
+
+Version 0.4.0 adds `npm run benchmark:records` and an annotated clinical-text corpus schema. See [the results, categories and statistical interpretation](hospital-records.md). The default 840-record corpus is synthetic; no clinical-text accuracy claim is made.
+
 ## Synthetic text detection
 
 ```sh

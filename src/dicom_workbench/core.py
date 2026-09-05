@@ -20,7 +20,7 @@ from pydicom.uid import CTImageStorage, MRImageStorage, ExplicitVRLittleEndian, 
 POLICY = "single-frame-metadata-v2"
 MAX_BYTES = 8 * 1024 * 1024
 MAX_DIMENSION = 1024
-IMPLEMENTATION_VERSION = "DEID_WB_030"
+IMPLEMENTATION_VERSION = "DEID_WB_040"
 IMPLEMENTATION_UID = "2.25.188025864089722936239435475126635725439"
 DISCLAIMER = (
     "Metadata only. Pixels and recognisable anatomy have not been assessed. Not for clinical use."

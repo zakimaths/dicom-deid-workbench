@@ -13,14 +13,14 @@ Browse 50 larger, labelled MRI, CT and X-ray images. Choose **Open in workbench*
 | | Browser demo | Local tool |
 | --- | --- | --- |
 | Where it runs | Static frontend on GitHub Pages | On your computer; macOS setup below |
-| Images | 50 teaching pictures, two synthetic examples and six DICOM test fixtures | The same collection, plus supported DICOM files |
+| Images | 50 teaching pictures, two synthetic examples and six DICOM test fixtures | The same collection, supported DICOM files, reports and PNG/JPEG pictures |
 | Metadata | Live fake PNG metadata scrubbing; DICOM sample reports are prepared during build | Same PNG exercise, plus live supported DICOM metadata scrubbing |
-| Editing | Replaces selected sample pixels in the browser | Replaces selected pixels in a new DICOM file |
-| Downloads | PNG preview and exercise report | DICOM file and processing report |
+| Editing | Replaces selected sample pixels in the browser | Replaces selected DICOM/picture pixels and selected report text |
+| Downloads | PNG preview and exercise report | DICOM, reviewed TXT/PNG and processing reports |
 
 The public site has no processing backend, file-upload control, API keys or analytics code. It fetches its own sample assets; edits stay in the tab. GitHub provides the hosting and keeps ordinary access logs. See [how the preview is built](docs/preview.md).
 
-**This is a learning project, not a clinical anonymiser.** Erasing a rectangle does not find every name or remove recognisable anatomy. The local tool uses a limited metadata policy and does not establish complete DICOM conformance or anonymity. Use synthetic or explicitly permitted public images; an exported file is not automatically safe to publish.
+**This is a learning project, not a clinical anonymiser.** Erasing a rectangle does not find every name or remove recognisable anatomy. The local tool uses a limited metadata policy and does not establish complete DICOM conformance or anonymity. Process only data you are authorised to handle, in an environment approved for that data. An exported file is not automatically safe to publish.
 
 ## Run the local tool
 
@@ -36,6 +36,19 @@ uv run --locked dicom-workbench serve
 Open [localhost:8765](http://127.0.0.1:8765) and choose **Try synthetic example** or **Browse 50 teaching scans**. If that port is busy, add `--port 8766` to the serve command. Press `Ctrl+C` in the terminal to stop the app.
 
 The setup installs the pinned Python version and dependencies. Normal use needs no Docker, Node.js or cloud account. After installation, the local tool uses local assets and loopback requests only. Button explanations are available on hover, keyboard focus and in the expandable guide.
+
+## Hospital records (local only)
+
+After starting the local tool, open [Hospital records](http://127.0.0.1:8765/records), or select **Review reports, records & image files** on the home page.
+
+- Open TXT, CSV, JSON, PDF or DOCX. The reader makes a plain-text copy for review. PDF/Word images, attachments and layout are omitted; the original document is never exported.
+- Ask for suggested removals, add known identifiers, or select a missed passage yourself. Review the proposed removals and apply them. The saved TXT contains replacement characters, not a hidden original.
+- Open PNG or JPEG pictures, ask for text boxes or enter rectangles, and inspect the outlines at full size. Applied regions become opaque black. The saved PNG is reopened and checked, and its metadata is removed.
+- Check the complete result and its usefulness before saving. Processing reports record counts and verification results without original names, values or filenames.
+
+The text suggestions use transparent rules and optional known values. They do not reliably find names in ordinary sentences. In the new **600-record synthetic test partition**, all **540 labelled identifiers** were removed, but **30 unlabelled names were missed**. That is 540/570 identifiers (94.7%) and 30/600 records with a miss. These template variants are software regression cases, not independent patients or a hospital accuracy estimate. [Results and statistical methods](docs/hospital-records.md).
+
+Use the [annotated-corpus evaluator](docs/hospital-records.md#evaluate-your-own-authorised-corpus) to measure independent, authorised clinical data locally. It records every test identifier, category recall, record and subject failure rates, collateral changes, processing failures, timings and descriptive 95% confidence intervals. Missing categories stay untested, rather than counting as perfect scores.
 
 ## Try a challenge
 
@@ -99,7 +112,7 @@ uv run --locked dicom-workbench scrub /tmp/synthetic.dcm /tmp/scrubbed.dcm --rep
 
 Add `--with-text` when generating a fixture to include the fake text. Pass a JSON array of `{x, y, width, height}` rectangles with `scrub --regions /path/to/regions.json` to erase selected pixels. Choose new output paths each time: existing files are never overwritten.
 
-For a supported single study (up to 16 files), choose a new output directory:
+For a supported single study (up to 512 files, 128 MiB total), choose a new output directory:
 
 ```sh
 uv run --locked dicom-workbench scrub-collection /tmp/new-study /path/to/slice1.dcm /path/to/slice2.dcm
