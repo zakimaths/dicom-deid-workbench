@@ -12,6 +12,7 @@ let token,
   epoch = 0,
   busy = false,
   text = "",
+  lineEndingsNormalised = false,
   spans = [],
   manualSpans = [],
   manualBoxes = [],
@@ -46,6 +47,7 @@ function clear() {
   cancelOCR();
   busy = false;
   text = "";
+  lineEndingsNormalised = false;
   spans = [];
   manualSpans = [];
   manualBoxes = [];
@@ -204,7 +206,10 @@ async function load(result, ticket) {
   }
   $("record-export").hidden = false;
   if (result.kind === "text") {
-    text = result.text;
+    // Textareas normalise CRLF/CR to LF. Share that exact coordinate space with
+    // the API and manual selection mapping before proposing any replacements.
+    text = result.text.replace(/\r\n?/g, "\n");
+    lineEndingsNormalised = text !== result.text;
     $("source-text").value = text;
     $("text-work").hidden = false;
     listSpans();
@@ -322,6 +327,7 @@ $("record-apply").onclick = () =>
       ...result.report,
       mode: "text",
       manual_selections: manualSpans.length,
+      line_endings_normalised: lineEndingsNormalised,
       known_identifiers_supplied: $("known-values")
         .value.split("\n")
         .filter((s) => s.trim()).length,

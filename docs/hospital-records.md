@@ -4,7 +4,7 @@ Version 0.4.0 adds real file imports to a local review workflow. The importer do
 
 ## What you can use now
 
-Start the local tool and open `/records`. Text suggestions use explicit patterns for labelled identifiers and common contact/date formats. Add known identifiers or select missed text yourself. Suggestions can be removed individually. Re-running suggestions preserves manual selections. Applying the selection produces a new plain-text copy and verifies that selected non-whitespace characters were replaced and everything else stayed unchanged.
+Start the local tool and open `/records`. Text suggestions use explicit patterns for labelled identifiers and common contact/date formats. Add known identifiers or select missed text yourself. Suggestions can be removed individually. Re-running suggestions preserves manual selections. Applying the selection produces a new plain-text copy and verifies that selected non-whitespace characters were replaced and everything else stayed unchanged relative to the extracted review text. The browser first normalises Windows/old-Mac line endings to LF so text selection positions agree; the processing report records this normalisation.
 
 | Input | Local result | Important restriction |
 | --- | --- | --- |

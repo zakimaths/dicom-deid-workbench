@@ -77,12 +77,12 @@ try {
         );
       }
       await audit("empty");
-      await page.locator("#record-file").setInputFiles({name:"note.txt",mimeType:"text/plain",buffer:Buffer.from("😀 Discussed care with Robin Sample today.")});
+      await page.locator("#record-file").setInputFiles({name:"note.txt",mimeType:"text/plain",buffer:Buffer.from("😀 First line\r\nDiscussed care with Robin Sample today.\r\n")});
       await page.waitForFunction(()=>document.getElementById("record-status").textContent.startsWith("Text loaded"));
       await page.locator("#source-text").evaluate(el=>{const start=el.value.indexOf("Robin Sample");el.focus();el.setSelectionRange(start,start+12);});
       await page.locator("#record-select").click();await page.locator("#record-apply").click();
       await page.waitForFunction(()=>document.getElementById("record-status").textContent.startsWith("Text replacements checked"));
-      assert.equal(await page.locator("#clean-text").inputValue(),"😀 Discussed care with █████ ██████ today.");
+      assert.equal(await page.locator("#clean-text").inputValue(),"😀 First line\nDiscussed care with █████ ██████ today.\n");
       await page.locator("#record-example").click();
       // Add the deliberately missed name manually, then rerun suggestions; it must remain.
       await page.locator("#source-text").evaluate((el) => {
