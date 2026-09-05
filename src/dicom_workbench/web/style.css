@@ -156,12 +156,28 @@ button:not(:disabled):active,
   font-weight: 400;
   color: var(--secondary);
 }
-.topbar > a:last-child {
-  margin-left: var(--space-6);
-  min-height: 40px;
+.social-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.social-link {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--secondary);
+}
+.social-link:hover,
+.social-link:focus-visible {
+  color: var(--accent);
+  background: var(--background);
+}
+.social-link svg {
+  display: block;
 }
 .local {
   margin-left: auto;
@@ -714,7 +730,7 @@ footer > span > span {
   color: var(--boundary);
   padding: 0 var(--space-2);
 }
-footer > span:last-child {
+footer .version {
   margin-left: auto;
   white-space: nowrap;
 }
@@ -767,6 +783,11 @@ footer p {
     flex-wrap: wrap;
     gap: var(--space-3) var(--space-6);
   }
+  footer .social-links {
+    order: 4;
+    flex-basis: 100%;
+    justify-content: flex-end;
+  }
   footer p {
     order: 3;
     max-width: none;
@@ -799,9 +820,6 @@ footer p {
   .local {
     display: none;
   }
-  .topbar > a:last-child {
-    margin-left: auto;
-  }
   .counts > div {
     align-items: baseline;
   }
@@ -825,9 +843,6 @@ footer p {
   .brand strong {
     display: block;
     font-size: 12px;
-  }
-  .topbar > a:last-child {
-    font-size: 14px;
   }
   .intro {
     gap: var(--space-6);
