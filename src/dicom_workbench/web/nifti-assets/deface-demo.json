@@ -1,0 +1,541 @@
+{
+  "title": "MNI average head \u00b7 prepared defacing comparison",
+  "notes": "Population-average T1 anatomy, not an individual patient. A 2 mm teaching copy with non-negative intensities rounded to 0.1 units. The supplied atlas brain mask guides an experimental removal; inspect every direction for remaining facial anatomy and unwanted changes.",
+  "source": "https://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009",
+  "license": "MNI permission notice",
+  "credit": "Fonov et al.; McGill / MNI",
+  "archive_sha256": "804382e5d68a42ff8096ee845a7600b6658434da762fa67840a149eb25d48bd4",
+  "preparation": [
+    "Take every second voxel in each axis; update affine (no interpolation).",
+    "Clip negative T1 values to zero, multiply by ten and round to uint16.",
+    "Threshold supplied brain/face/eye masks at 0.5 on the same sampled grid.",
+    "Write fresh valid NIfTI-1 headers; slope 1, intercept 0.",
+    "Apply quickshear-physical-v1 with a 5 mm margin."
+  ],
+  "files": {
+    "before": {
+      "file": "deface-before.nii.gz",
+      "sha256": "56158b2d2d170cc21026bdd76dd07b4f5a2cdde37f21911ca8886bae40bb3c99",
+      "summary": {
+        "dimensions": [
+          97,
+          115,
+          97
+        ],
+        "spacing": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "units": "mm",
+        "datatype": "uint16",
+        "orientation": [
+          "R",
+          "A",
+          "S"
+        ],
+        "display_space": "sform",
+        "display_affine": [
+          [
+            2.0,
+            0.0,
+            0.0,
+            -96.0
+          ],
+          [
+            0.0,
+            2.0,
+            0.0,
+            -132.0
+          ],
+          [
+            0.0,
+            0.0,
+            2.0,
+            -78.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "display_scaling": [
+          1.0,
+          0.0
+        ],
+        "voxel_count": 1082035,
+        "voxel_bytes": 2164070,
+        "dual_spaces": false
+      }
+    },
+    "after": {
+      "file": "deface-after.nii.gz",
+      "sha256": "5739bb11edf2af621426221e3b624c4691a49979b9e5861d7c731a1b047e3618",
+      "summary": {
+        "dimensions": [
+          97,
+          115,
+          97
+        ],
+        "spacing": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "units": "mm",
+        "datatype": "uint16",
+        "orientation": [
+          "R",
+          "A",
+          "S"
+        ],
+        "display_space": "sform",
+        "display_affine": [
+          [
+            2.0,
+            0.0,
+            0.0,
+            -96.0
+          ],
+          [
+            0.0,
+            2.0,
+            0.0,
+            -132.0
+          ],
+          [
+            0.0,
+            0.0,
+            2.0,
+            -78.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "display_scaling": [
+          1.0,
+          0.0
+        ],
+        "voxel_count": 1082035,
+        "voxel_bytes": 2164070,
+        "dual_spaces": false
+      }
+    },
+    "removal": {
+      "file": "deface-removal.nii.gz",
+      "sha256": "ab567c7193358b58dc5b75a5a0814f322ea43188ae4d4deadb64f53fd67441ab",
+      "summary": {
+        "dimensions": [
+          97,
+          115,
+          97
+        ],
+        "spacing": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "units": "mm",
+        "datatype": "uint8",
+        "orientation": [
+          "R",
+          "A",
+          "S"
+        ],
+        "display_space": "sform",
+        "display_affine": [
+          [
+            2.0,
+            0.0,
+            0.0,
+            -96.0
+          ],
+          [
+            0.0,
+            2.0,
+            0.0,
+            -132.0
+          ],
+          [
+            0.0,
+            0.0,
+            2.0,
+            -78.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "display_scaling": [
+          1.0,
+          0.0
+        ],
+        "voxel_count": 1082035,
+        "voxel_bytes": 1082035,
+        "dual_spaces": false
+      }
+    },
+    "brain": {
+      "file": "deface-brain.nii.gz",
+      "sha256": "31e717f7a7b0fece4975babdb9fdff06300685b9dbb2ac9f429c83743a01bc8c",
+      "summary": {
+        "dimensions": [
+          97,
+          115,
+          97
+        ],
+        "spacing": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "units": "mm",
+        "datatype": "uint8",
+        "orientation": [
+          "R",
+          "A",
+          "S"
+        ],
+        "display_space": "sform",
+        "display_affine": [
+          [
+            2.0,
+            0.0,
+            0.0,
+            -96.0
+          ],
+          [
+            0.0,
+            2.0,
+            0.0,
+            -132.0
+          ],
+          [
+            0.0,
+            0.0,
+            2.0,
+            -78.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "display_scaling": [
+          1.0,
+          0.0
+        ],
+        "voxel_count": 1082035,
+        "voxel_bytes": 1082035,
+        "dual_spaces": false
+      }
+    }
+  },
+  "report": {
+    "policy": "quickshear-physical-v1",
+    "operation": "mask_guided_volume_shear",
+    "status": "manual_review_required",
+    "margin_mm": 5.0,
+    "voxel_count": 1082035,
+    "selected_voxels": 67221,
+    "changed_voxels": 67221,
+    "changed_mm3": 537767.9999999999,
+    "brain_mask_voxels": 235840,
+    "brain_mask_voxels_changed": 0,
+    "outside_selection_voxels_changed": 0,
+    "changed_slices_by_storage_axis": [
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96
+      ],
+      [
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62
+      ]
+    ],
+    "output_sha256": "c9943d30414a582d6f5db842ceb311fe425d12cc7fbc4d3ed6d87c8dea45d2e2",
+    "removal_mask_sha256": "f04b21d2b4c2b695e034715df80407fcc0b11434caba35c13a4dbbb9b8a8119b",
+    "checks": {
+      "output_reopened": true,
+      "geometry_unchanged": true,
+      "outside_selection_unchanged": true,
+      "inside_selection_zero": true,
+      "provided_brain_mask_preserved": true,
+      "header_cleaned": true
+    },
+    "header": {
+      "policy": "nifti1-scalar3d-header-v1",
+      "operation": "header_only",
+      "summary": {
+        "dimensions": [
+          97,
+          115,
+          97
+        ],
+        "spacing": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "units": "mm",
+        "datatype": "uint16",
+        "orientation": [
+          "R",
+          "A",
+          "S"
+        ],
+        "display_space": "sform",
+        "display_affine": [
+          [
+            2.0,
+            0.0,
+            0.0,
+            -96.0
+          ],
+          [
+            0.0,
+            2.0,
+            0.0,
+            -132.0
+          ],
+          [
+            0.0,
+            0.0,
+            2.0,
+            -78.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "display_scaling": [
+          1.0,
+          0.0
+        ],
+        "voxel_count": 1082035,
+        "voxel_bytes": 2164070,
+        "dual_spaces": false
+      },
+      "text_fields_present": [],
+      "extensions_removed": 0,
+      "discarded_nonvoxel_bytes": 0,
+      "checks": {
+        "raw_voxels_unchanged": true,
+        "scaling_unchanged": true,
+        "geometry_unchanged": true,
+        "output_reopened": true,
+        "free_text_removed": true,
+        "extensions_removed": true
+      },
+      "privacy": "Facial anatomy, visible labels and accompanying files remain unassessed.",
+      "output_sha256": "a9b6bd87173f19ffeba254d9745f594c528f58970c7105691fa1c47bde395c98"
+    },
+    "privacy": "The supplied mask may miss brain tissue. Remaining face, ears, eyes, labels and re-identification risk require independent review. No anonymity certification."
+  },
+  "atlas_region_overlap": {
+    "face": {
+      "atlas_region_voxels": 62236,
+      "selected_for_zeroing": 45724,
+      "outside_removal": 16512
+    },
+    "eye": {
+      "atlas_region_voxels": 149166,
+      "selected_for_zeroing": 51410,
+      "outside_removal": 97756
+    }
+  },
+  "evaluation_limit": "One population-average template. Atlas-region overlap is not face-recognition accuracy, privacy recall, or validation on independent patients. The eye mask is a broad atlas region, not a precise eyeball segmentation."
+}

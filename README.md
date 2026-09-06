@@ -10,7 +10,7 @@ Browse 50 larger, labelled MRI, CT and X-ray images. Choose **Open in workbench*
 
 ## NIfTI volumes
 
-[Open the volume viewer](https://zakimaths.github.io/dicom-deid-workbench/nifti.html) to explore a real 3D brain MRI or an orientation test. The local tool also opens supported `.nii` and `.nii.gz` files and removes header text and extensions while verifying voxel values and orientation. This is header cleaning, not defacing. [Supported files, credits and repeatable checks](docs/nifti.md).
+[Open the volume viewer](https://zakimaths.github.io/dicom-deid-workbench/nifti.html) to explore a real 3D brain MRI or an orientation test. The local tool also opens supported `.nii` and `.nii.gz` files and removes header text and extensions while verifying voxel values and orientation. An experimental mask-guided removal workflow now adds linked before/after views, a removal map and reopened-output checks. It requires a reviewed brain mask and does not certify anonymity. [Defacing scope and limitations](docs/nifti-defacing.md). [Supported files, credits and repeatable checks](docs/nifti.md).
 
 ## Two ways to try it
 
@@ -18,7 +18,7 @@ Browse 50 larger, labelled MRI, CT and X-ray images. Choose **Open in workbench*
 | --- | --- | --- |
 | Where it runs | Static frontend on GitHub Pages | On your computer; macOS setup below |
 | Images | 50 teaching pictures, two synthetic examples and six DICOM test fixtures | The same collection, supported DICOM files, reports and PNG/JPEG pictures |
-| 3D volumes | Public brain MRI and an orientation fixture | Same samples, plus supported NIfTI-1 files and verified header cleaning |
+| 3D volumes | Brain MRI, orientation fixture and prepared defacing comparison | Supported NIfTI-1 imports, header cleaning and experimental mask-guided removal |
 | Metadata | Live fake PNG metadata scrubbing; DICOM sample reports are prepared during build | Same PNG exercise, plus live supported DICOM metadata scrubbing |
 | Editing | Replaces selected sample pixels in the browser | Replaces selected DICOM/picture pixels and selected report text |
 | Downloads | PNG preview and exercise report | DICOM, reviewed TXT/PNG and processing reports |
@@ -131,9 +131,9 @@ The local tool uses Python and [pydicom](https://pydicom.github.io/) for DICOM p
 
 Text suggestions use pinned, self-hosted Tesseract.js 7 and English model assets. Images and recognised strings never go to a cloud OCR service. The worker is terminated after each run; no recognised strings enter reports or persistent storage.
 
-The public demo shares the visual design and pixel-display functions. A build step prepares the known examples, then publishes only HTML, CSS, JavaScript, fonts, sample JSON, two curated NIfTI volumes and the teaching pictures. Python runs during the build and in the optional local tool; it is not deployed as a web service.
+The public demo shares the visual design and pixel-display functions. A build step prepares the known examples, then publishes only HTML, CSS, JavaScript, fonts, sample JSON, curated NIfTI teaching assets and the teaching pictures. Python runs during the build and in the optional local tool; it is not deployed as a web service.
 
-The next support decisions are native X-ray/compressed DICOM, reference-bearing collections and independently reviewed real-world text datasets. Full-volume defacing remains a separate research task. The [research roadmap](docs/anonymisation-roadmap.md) and [implementation prompts](docs/prompts/README.md) break that work into smaller tasks.
+The next support decisions are native X-ray/compressed DICOM, reference-bearing collections and independently reviewed real-world text datasets. Automatic brain segmentation, independently evaluated defacing and broader NIfTI support remain research tasks. The [research roadmap](docs/anonymisation-roadmap.md) and [implementation prompts](docs/prompts/README.md) break that work into smaller tasks.
 
 ## Sources and contributing
 

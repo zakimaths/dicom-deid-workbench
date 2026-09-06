@@ -60,7 +60,10 @@ def inspect(raw: bytes) -> NiftiResult:
 
 
 def _inspect(raw):
-    data = decode(raw)
+    return _inspect_decoded(decode(raw))
+
+
+def _inspect_decoded(data):
     if len(data) < 352 or len(data) > MAX_DECODED:
         raise Unsupported("The volume is incomplete or exceeds the unpacked limit.")
     endian = "<" if struct.unpack_from("<i", data)[0] == 348 else ">"

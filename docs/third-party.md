@@ -15,3 +15,5 @@ The locked local Python tool adds pypdf 6.17.0 (BSD-3-Clause) for text extractio
 ## NIfTI viewer and volume
 
 NiiVue 0.69.0 (BSD-2-Clause), commit `53d450fe2e43c40c0d4ad6a2d8dc08ee37575f8c`, is self-hosted. Its dependency notices are bundled in `src/dicom_workbench/web/nifti-assets/LICENSES.txt`; `vendor.json` pins the shipped module hash. NiBabel 5.3.2 is MIT-licensed and runs in the local Python tool. The brain teaching volume is a prepared CC0 OpenNeuro ds000114 v1.0.2 file; [credits and transformation](nifti.md). The synthetic block fixture is project code (MIT).
+
+The prepared defacing comparison uses the MNI ICBM152 nonlinear asymmetric 2009c average-head template and its supplied brain mask. The original MNI permission notice ships as `nifti-assets/MNI-LICENSE.txt`. The local lower-hull method adapts Quickshear (Schimke & Hale); its BSD-3-Clause notice is retained in [licenses/quickshear.txt](licenses/quickshear.txt). No Quickshear or FSL binary/package is added. The implemented policy, source hashes, atlas publications and preparation steps are recorded in [nifti-defacing.md](nifti-defacing.md).

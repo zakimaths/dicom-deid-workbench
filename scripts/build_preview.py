@@ -246,6 +246,12 @@ def build():
         "brain-t1.nii.gz",
         "phantom.nii.gz",
         "samples.json",
+        "deface-demo.json",
+        "deface-before.nii.gz",
+        "deface-after.nii.gz",
+        "deface-removal.nii.gz",
+        "deface-brain.nii.gz",
+        "MNI-LICENSE.txt",
         "LICENSES.txt",
         "vendor.json",
     ]

@@ -8,10 +8,13 @@
     <link rel="stylesheet" href="./style.css" />
     <link rel="stylesheet" href="./nifti.css" />
   </head>
-  <!-- Operate: extend the existing Arcade Terminal workbench. A large single plane,
-ordinary labelled controls and a separate metadata review keep the scan primary.
-Students load, navigate, review, then explicitly save. Public assets remain curated;
-local header cleaning leaves facial anatomy and accompanying files unresolved. -->
+  <!-- THESIS: Make a volume and its proposed changes inspectable one slice at a time.
+OWN-WORLD: Inherit Arcade Terminal colours, bordered panels and labelled native controls.
+STORY: Open, explore, compare, review limits, then explicitly save a separate local copy.
+FIRST VIEWPORT: Sample actions lead to one large scan beside direction and slice controls;
+comparison choices sit above it, with local review and saving below.
+FORM: A local extension of the existing Operate workspace; no new-world concept roll.
+Public assets are curated. Mask preservation does not certify anatomical privacy. -->
   <body>
     <a class="skip-link" href="#main">Skip to volume viewer</a>
     <header class="topbar">
@@ -37,6 +40,8 @@ local header cleaning leaves facial anatomy and accompanying files unresolved. -
             title="Open made-up blocks with a brighter right side to check directions and practise header cleaning."
           >
             Try orientation test</button
+          ><button id="deface-demo" title="Open an average head and its supplied brain mask to see exactly where a proposed removal changes the volume.">
+            Try defacing comparison</button
           ><button
             id="clear"
             title="Cancel loading and forget the scan, output and review ticks in this tab."
@@ -72,6 +77,20 @@ local header cleaning leaves facial anatomy and accompanying files unresolved. -
         </div>
         <p id="volume-notes"></p>
         <p id="credit"></p>
+        <section id="comparison" hidden aria-labelledby="compare-title">
+          <h3 id="compare-title">Inspect the proposed removal</h3>
+          <label for="compare-view">Picture to show · slice position stays the same</label>
+          <select id="compare-view">
+            <option value="before">Original anatomy</option>
+            <option value="after">After removal</option>
+            <option value="removal">Removal area</option>
+            <option value="brain">Supplied brain mask</option>
+          </select>
+          <p id="compare-help"></p>
+          <p id="compare-context"></p>
+          <p id="compare-counts" role="status"></p>
+          <p>Inspect all three directions and move through the slices. The brain mask is a guide supplied with the scan; the program cannot tell whether it correctly includes all brain tissue.</p>
+        </section>
         <div class="volume-layout">
           <div class="volume-picture">
             <div id="canvas-host"></div>
@@ -117,6 +136,14 @@ local header cleaning leaves facial anatomy and accompanying files unresolved. -
             >
               Fit whole slice
             </button>
+            <details class="pan-controls">
+              <summary title="Move an enlarged picture to inspect details near its edges. This changes only the view.">Reposition enlarged picture</summary>
+              <label for="pan-x">Horizontal pan <output id="pan-x-number">0%</output></label>
+              <input id="pan-x" type="range" min="-100" max="100" value="0" />
+              <label for="pan-y">Vertical pan <output id="pan-y-number">0%</output></label>
+              <input id="pan-y" type="range" min="-100" max="100" value="0" />
+              <p>Move the picture sideways or vertically to inspect its edges. Fit whole slice centres it again.</p>
+            </details>
             <label for="contrast"
               >Contrast <output id="contrast-number">100%</output></label
             ><input
@@ -141,9 +168,31 @@ local header cleaning leaves facial anatomy and accompanying files unresolved. -
         <p class="volume-boundary">
           <strong>Facial privacy unresolved.</strong> Header cleaning leaves
           anatomy and visible labels unchanged. Accompanying files are not
-          assessed. This version does not deface scans or establish anonymity.
+          assessed. Experimental mask-guided removal also needs independent
+          review of remaining facial features and possible tissue loss; it does not establish anonymity.
         </p>
         <!-- local:start -->
+        <section id="deface-review" aria-labelledby="deface-title">
+          <h2 id="deface-title">Prepare a face-region removal</h2>
+          <p>Use a structural brain MRI and an independently reviewed brain mask on exactly the same grid. White (1) marks brain tissue to protect; black (0) marks everything else. This first profile accepts axis-aligned, non-negative, unscaled 3D volumes. It does not create a brain mask.</p>
+          <label for="brain-mask">Matching binary brain mask (.nii or .nii.gz) · up to 32 MiB</label>
+          <input id="brain-mask" type="file" accept=".nii,.gz" />
+          <p id="mask-status">No brain mask loaded.</p>
+          <label for="margin">Extra distance from the supplied brain mask (mm)</label>
+          <input id="margin" type="number" min="2" max="20" step="1" value="5" aria-describedby="margin-help" />
+          <p id="margin-help">2–20 mm. A larger distance protects more surrounding tissue but can leave more facial features.</p>
+          <p>For your own mask, first inspect its full coverage against the MRI in a segmentation viewer. Loading a file here does not check brain anatomy. <a href="https://github.com/zakimaths/dicom-deid-workbench/blob/main/docs/nifti-defacing.md">Mask-review requirements ↗</a></p>
+          <label class="review-line"><input id="review-mask" type="checkbox" /> I have checked that this is a structural brain MRI and that the mask correctly covers its brain on the same grid.</label>
+          <button id="deface-run" disabled title="Use the mask to propose a whole-volume removal, make a separate copy, then reopen it and check every voxel inside and outside the selected area.">Prepare removal &amp; verify</button>
+          <p id="deface-status" role="status"></p>
+          <a id="inspect-comparison" href="#compare-view" hidden>Inspect comparison ↑</a>
+          <label class="review-line"><input id="review-deface" type="checkbox" disabled /> I have compared the before, after and mask views in all three directions, checked for unwanted tissue loss and remaining facial features, and understand that further review may be needed.</label>
+          <div class="volume-actions">
+            <button id="save-defaced" disabled title="Save the reviewed proposal as a new NIfTI file. The original stays unchanged; this is not a certificate of anonymity.">Save removal proposal</button>
+            <button id="save-removal" disabled title="Save the binary map showing every voxel selected for zeroing.">Save removal mask</button>
+            <button id="save-deface-report" disabled title="Save voxel counts, output fingerprints and the limits of these checks without patient text or filenames.">Save removal report</button>
+          </div>
+        </section>
         <section id="header-review" aria-labelledby="header-title">
           <h2 id="header-title">Review header cleaning</h2>
           <p>

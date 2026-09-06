@@ -76,6 +76,7 @@ jobs:
             output/accessibility/
             output/mobile-audit/
             output/benchmarks/
+            output/nifti-deface/
             output/nifti-browser/
             output/records-browser/
             output/records-evaluation.json

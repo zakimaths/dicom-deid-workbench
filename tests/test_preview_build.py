@@ -23,10 +23,11 @@ def test_preview_is_repeatable_and_excludes_backend_and_source_values():
     first = hashes()
     preview.build()
     assert hashes() == first
-    assert len(first) == 145
+    assert len(first) == 151
     assert "nifti-local.js" not in first
     volume_html = (preview.OUT / "nifti.html").read_text()
     assert 'type="file"' not in volume_html and 'id="save-volume"' not in volume_html
+    assert 'id="deface-review"' not in volume_html and 'id="save-defaced"' not in volume_html
     assert "Content-Security-Policy" in volume_html and "unsafe-inline" not in volume_html
     assert "/api/" not in (preview.OUT / "nifti.js").read_text()
     assert not any(

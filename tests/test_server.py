@@ -269,3 +269,27 @@ def test_nifti_routes_are_local_bounded_and_stateless(local):
     assert response["Cache-Control"] == "no-store" and local.result is None
     assert response["Content-Disposition"] == 'attachment; filename="header-cleaned.nii"'
     assert req(local, "/nifti-assets/../../server.py")[0] == 404
+
+
+def test_defacing_endpoint_is_bounded_authenticated_and_stateless(local):
+    import struct
+    from pathlib import Path
+
+    root = Path("src/dicom_workbench/web/nifti-assets")
+    a, b = [(root / f"deface-{name}.nii.gz").read_bytes() for name in ("before", "brain")]
+    body = struct.pack("<4sIIf", b"NDF1", len(a), len(b), 5) + a + b
+    route = "/api/nifti/deface"
+    headers = {"X-Workbench-Token": local.token, "Content-Type": "application/octet-stream"}
+    assert req(local, route, "POST", body=b"invalid")[0] == 403
+    assert (
+        req(local, route, "POST", {**headers, "Origin": "https://example.org"}, b"invalid")[0]
+        == 403
+    )
+    assert (
+        req(local, route, "POST", {**headers, "Content-Type": "application/json"}, b"invalid")[0]
+        == 422
+    )
+    assert req(local, route, "POST", headers, body[:-1])[0] == 422
+    code, result, response = req(local, route, "POST", headers, body)
+    assert code == 200 and result[:4] == b"NDR1"
+    assert response["Cache-Control"] == "no-store" and local.result is None

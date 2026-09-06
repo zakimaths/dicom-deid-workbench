@@ -1,10 +1,10 @@
 # Security and intended use
 
-DICOM Workbench is a learning project for synthetic or explicitly permitted public images. It is not intended for patient care or preparing real patient data for publication.
+DICOM Workbench is a learning and local review project. Its public examples are synthetic or explicitly permitted public images. It is not validated for patient care or preparing real patient data for publication.
 
 ## Public browser demo
 
-GitHub Pages serves static frontend files only. The published folder contains the page, styles, scripts, fonts, eight exercise sample assets, and 50 teaching images with thumbnails and a source catalogue. It contains no Python service, DICOM containers, credentials or environment files.
+GitHub Pages serves static frontend files only. The published folder contains pages, styles, scripts, fonts, eight exercise sample assets, 50 teaching images with thumbnails and a source catalogue, and curated NIfTI teaching assets. It contains no Python service, private input files, DICOM containers, credentials or environment files.
 
 The demo has no file picker, upload endpoint, login, analytics, service worker or browser-storage feature. Dropped files are refused without reading them. It fetches samples from the same site and performs display and rectangle edits in the tab. Downloads are PNG previews and exercise reports, not anonymised DICOM files.
 
@@ -17,6 +17,8 @@ The Python app binds to loopback only. It checks Host and Origin headers, requir
 Keep this service local. It is a single-user development server and must not be exposed through a tunnel or reverse proxy. Other local processes, browser extensions, swap and downloaded files are outside its protection boundary. Clearing an object is not secure memory erasure.
 
 Metadata checks and pixel comparisons test specific behaviour. They do not prove that all identifying content has been removed or that no software defects remain. The [audit](docs/audit-0.2.1.md) and [risk record](docs/assurance.md) describe the known gaps.
+
+NIfTI inspection, header cleaning and experimental mask-guided removal are stateless endpoints: unlike the existing single-result DICOM workflow, they do not retain server jobs. Paired removal inputs are bounded and require the same session/origin checks. A reviewed supplied brain mask is mandatory; preserving it does not prove that all brain tissue is protected or that facial recognition is prevented. Public Pages includes a prepared average-head comparison only. [Exact profile and limits](docs/nifti-defacing.md).
 
 ## Report a security issue
 

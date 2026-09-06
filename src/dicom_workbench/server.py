@@ -7,6 +7,7 @@ import secrets
 import time
 
 from .nifti import MAX_INPUT as NIFTI_MAX_INPUT, inspect as inspect_nifti
+from .nifti_deface import process_request as deface_request
 from .documents import extract_isolated
 from .records import detect, scrub_text
 from .core import MAX_BYTES, Unsupported, transform
@@ -148,6 +149,12 @@ class Handler(BaseHTTPRequestHandler):
                         "samples.json": "application/json",
                         "brain-t1.nii.gz": "application/octet-stream",
                         "phantom.nii.gz": "application/octet-stream",
+                        "deface-demo.json": "application/json",
+                        "deface-before.nii.gz": "application/octet-stream",
+                        "deface-after.nii.gz": "application/octet-stream",
+                        "deface-removal.nii.gz": "application/octet-stream",
+                        "deface-brain.nii.gz": "application/octet-stream",
+                        "MNI-LICENSE.txt": "text/plain",
                     }.items()
                 },
             }
@@ -194,6 +201,8 @@ class Handler(BaseHTTPRequestHandler):
             return
         if self.path in ("/api/nifti/inspect", "/api/nifti/clean"):
             return self.nifti()
+        if self.path == "/api/nifti/deface":
+            return self.nifti_deface()
         if self.path in ("/api/records/import", "/api/records/detect", "/api/records/scrub"):
             return self.records()
         sample_key = self.path.removeprefix("/api/samples/")
@@ -250,6 +259,25 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(
                 422, {"error": "The file could not be processed. Try the synthetic example."}
             )
+
+    def nifti_deface(self):
+        try:
+            if (
+                self.headers.get("Transfer-Encoding")
+                or self.headers.get("Content-Type") != "application/octet-stream"
+            ):
+                raise Unsupported("Send a complete volume and brain mask.")
+            length = int(self.headers.get("Content-Length", "0"))
+            if not 16 < length <= 2 * NIFTI_MAX_INPUT + 16:
+                raise Unsupported("Each input may be at most 32 MiB.")
+            raw = self.rfile.read(length)
+            if len(raw) != length:
+                raise Unsupported("The upload was incomplete.")
+            self.respond(200, deface_request(raw), "application/octet-stream")
+        except Unsupported as error:
+            self.respond(422, {"error": str(error)})
+        except Exception:
+            self.respond(422, {"error": "Defacing could not be verified. No export was created."})
 
     def nifti(self):
         # Stateless, bounded input; no patient filenames or original values in reports.

@@ -1,3 +1,4 @@
+import { defaceFlow } from "./deface-flow.mjs";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
@@ -27,7 +28,7 @@ try {
   await mkdir("output/nifti-browser", { recursive: true });
   const axe = await readFile("node_modules/axe-core/axe.min.js", "utf8");
   for (const [name, engine] of Object.entries(
-    process.env.SMOKE ? { chromium } : { chromium, firefox, webkit },
+    process.env.NIFTI_BROWSER ? { [process.env.NIFTI_BROWSER]: { chromium, firefox, webkit }[process.env.NIFTI_BROWSER] } : process.env.SMOKE ? { chromium } : { chromium, firefox, webkit },
   )) {
     browser = await engine.launch({
       headless: process.env.NIFTI_HEADED !== "1",
@@ -35,7 +36,7 @@ try {
         ? { firefoxUserPrefs: { "webgl.force-enabled": true } }
         : {}),
     });
-    for (const width of process.env.SMOKE ? [1280] : [1280, 390, 320]) {
+    for (const width of process.env.NIFTI_WIDTH ? [Number(process.env.NIFTI_WIDTH)] : process.env.SMOKE ? [1280] : [1280, 390, 320]) {
       const page = await browser.newPage({
         viewport: { width, height: 950 },
         acceptDownloads: true,
@@ -125,6 +126,7 @@ try {
           () => document.documentElement.scrollWidth <= innerWidth + 1,
         ),
       );
+      await defaceFlow(page, { local: true, name, width });
       await page.locator("#brain").click();
       await page.waitForFunction(
         () =>

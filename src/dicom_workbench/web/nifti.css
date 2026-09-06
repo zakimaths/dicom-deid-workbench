@@ -18,6 +18,8 @@ h3 {
   margin: 0 0 16px;
 }
 .volume-open,
+#comparison,
+#deface-review,
 #header-review {
   padding: 24px;
   background: var(--panel);
@@ -43,7 +45,15 @@ select {
 }
 select {
   width: 100%;
+  appearance: none;
+  padding-right: 32px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 19px) 50%, calc(100% - 13px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+  white-space: normal;
 }
+input[type="number"] { min-height: 44px; max-width: 100%; width: 120px; font: inherit; color: var(--text); background: var(--screen); border: 1px solid var(--boundary); padding: 8px; }
 button:hover {
   background: var(--raised);
 }
@@ -101,6 +111,9 @@ input[type="range"] {
 .volume-controls button {
   width: 100%;
 }
+.pan-controls { margin: 16px 0; }
+.pan-controls summary { min-height: 44px; padding: 10px 0; cursor: pointer; }
+#inspect-comparison { display: inline-block; min-height: 44px; padding: 10px 0; }
 .control-help,
 .volume-footnote,
 #credit,
@@ -153,6 +166,8 @@ footer {
     padding: 16px;
   }
   .volume-open,
+  #comparison,
+  #deface-review,
   #header-review {
     padding: 16px;
   }

@@ -39,6 +39,7 @@ jobs:
         with:
           name: public-browser-evidence
           path: |
+            output/nifti-deface/
             output/nifti-preview/
             output/accessibility/
             output/mobile-audit/

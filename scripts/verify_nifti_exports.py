@@ -1,5 +1,7 @@
 """Check actual browser downloads with independent byte-level header and NumPy payload expectations."""
 
+import gzip
+from hashlib import sha256
 import json
 from pathlib import Path
 import struct
@@ -55,3 +57,45 @@ for path in sorted(ROOT.glob("*-orientation.png")):
 assert len(orientation) == 9
 (ROOT / "orientation-verification.json").write_text(json.dumps(orientation, indent=2) + "\n")
 print("9 rendered left/right orientation fixtures verified")
+
+# Independently parse actual removal downloads without calling the defacer or NiBabel.
+
+assets = Path("src/dicom_workbench/web/nifti-assets")
+before = gzip.decompress((assets / "deface-before.nii.gz").read_bytes())
+brain = gzip.decompress((assets / "deface-brain.nii.gz").read_bytes())
+original_values = np.frombuffer(before, dtype="<u2", offset=352)
+protected = np.frombuffer(brain, dtype="u1", offset=352).astype(bool)
+deface_results = []
+for path in sorted(Path("output/nifti-deface").glob("local-*.nii")):
+    if path.name.endswith(".mask.nii"):
+        continue
+    saved = path.read_bytes()
+    selected_file = path.with_suffix(".mask.nii").read_bytes()
+    selected = np.frombuffer(selected_file, dtype="u1", offset=352).astype(bool)
+    after_values = np.frombuffer(saved, dtype="<u2", offset=352)
+    report = json.loads(path.with_suffix(".json").read_text())
+    assert len(saved) == len(before) and saved[:352] == before[:352]
+    assert selected_file[40:56] == before[40:56]
+    assert selected_file[252:328] == before[252:328]
+    assert not (selected & protected).any()
+    assert np.array_equal(after_values[~selected], original_values[~selected])
+    assert np.array_equal(after_values[protected], original_values[protected])
+    assert not after_values[selected].any()
+    changed = int(np.count_nonzero(original_values != after_values))
+    assert changed == report["changed_voxels"] == 67221
+    assert sha256(saved).hexdigest() == report["output_sha256"]
+    assert sha256(selected_file).hexdigest() == report["removal_mask_sha256"]
+    deface_results.append(
+        {
+            "file": path.name,
+            "changed_voxels": changed,
+            "provided_mask_preserved": True,
+            "outside_removal_unchanged": True,
+            "geometry_equal": True,
+        }
+    )
+assert len(deface_results) == 9, "Expected nine actual local removal downloads"
+Path("output/nifti-deface/export-verification.json").write_text(
+    json.dumps(deface_results, indent=2) + "\n"
+)
+print("9 actual removal downloads independently verified against source voxels and supplied mask")

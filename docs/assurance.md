@@ -27,7 +27,7 @@ The main outputs to check are the exported DICOM and its report. The browser sho
 | Risk | Priority | Mitigation / evidence | Remaining decision |
 | --- | --- | --- | --- |
 | Text outside user rectangles survives | High | Explicit selected-region-only wording and fake-text exercise | Evaluated detector plus human review, A041-A048 |
-| Recognisable anatomy survives | High | Kept unassessed; no defacing claims | Full-volume privacy/utility study, A049-A056 |
+| Recognisable anatomy survives | High | Experimental NIfTI mask-guided proposal with residual-region counts; no anonymity claim; other anatomy remains unassessed | Independent full-volume privacy/utility study, A049-A056; [scope](nifti-defacing.md) |
 | Required MR fields removed | High | Explicit custom-policy / no IOD claim | External baseline and coded-field repair, A065-A067 |
 | Unknown flag values treated as clean | High | No clean-status marker; positive, multi-valued and unknown declarations are rejected | Quarantined review workflow, A032 |
 | Wrong coordinates erase useful anatomy | High | Source-coordinate validation, pending outlines, post-write outside-mask checks | Human selection remains fallible; no diagnostic use |

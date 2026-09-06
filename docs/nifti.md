@@ -4,6 +4,10 @@
 
 The public viewer includes a real brain MRI and an asymmetric block fixture. Choose axial, coronal or sagittal slices, move one slice at a time, zoom out or in, fit the whole slice, and adjust contrast. Directions are written beside the picture and in the controls. Radiological views put the person's right on the picture's left; the sagittal view puts the front of the person on the left. Viewing controls do not change exported voxels.
 
+## Experimental mask-guided removal
+
+The local page can propose removal across an entire supported structural MRI using a separately reviewed binary brain mask. The public page offers a prepared MNI average-head comparison. Both show original anatomy, the proposal, selected removal area and supplied brain mask at linked slice positions. The example deliberately records remaining atlas face-region voxels; it is not privacy certification. See [the method, limits, sources and repeatable checks](nifti-defacing.md).
+
 ## Local header cleaning
 
 Import a file, inspect the header findings, then choose **Clean header & verify**. Saving requires acknowledging that anatomy, visible labels and accompanying files remain unassessed, and that removing extensions is appropriate. The result is a new uncompressed `header-cleaned.nii`, plus an optional value-free JSON check report. The source is never overwritten.
@@ -24,7 +28,7 @@ The actual serialised output is reopened with NiBabel. Raw voxel values, scaling
 
 The local endpoints require the existing same-origin and session-token checks. Processing is stateless: source bytes are not placed in server jobs, logs or disk caches. The browser releases its volume and output on Clear, cancellation, page exit or ten minutes without interaction. JavaScript cannot guarantee forensic erasure of browser or operating-system memory.
 
-The Pages build removes file import and cleaning controls and does not ship the local controller or Python service. Only the two curated, checksum-verified volumes can be selected. NiiVue 0.69.0 is vendored as a pinned, self-contained module; no CDN is used. Its embedded font images require `data:` image permission on the volume page. No external requests or API calls are needed by the public NIfTI viewer after the same-origin assets load.
+The Pages build removes file import and cleaning controls and does not ship the local controller or Python service. Only curated, checksum-verified teaching volumes and a prepared average-head defacing comparison can be selected. NiiVue 0.69.0 is vendored as a pinned, self-contained module; no CDN is used. Its embedded font images require `data:` image permission on the volume page. No external requests or API calls are needed by the public NIfTI viewer after the same-origin assets load.
 
 ## Teaching sources
 
@@ -51,4 +55,4 @@ Rebuild the viewer with `node scripts/vendor_nifti.mjs` after installing the exa
 
 ## Remaining work
 
-Defacing, BIDS collection review, 4D, complete-series conversion and independent clinical/privacy evaluation remain separate stages. Automated accessibility and browser emulation do not replace installed Safari, physical iPhone/iPad, VoiceOver/TalkBack or usability review. WebGL2 is required; unavailable graphics produce a recoverable error instead of an export. See the [supported-format contract](supported-formats.md).
+Automatic brain segmentation, independently evaluated defacing, BIDS collection review, 4D, complete-series conversion and independent clinical/privacy evaluation remain separate stages. Automated accessibility and browser emulation do not replace installed Safari, physical iPhone/iPad, VoiceOver/TalkBack or usability review. WebGL2 is required; unavailable graphics produce a recoverable error instead of an export. See the [supported-format contract](supported-formats.md).

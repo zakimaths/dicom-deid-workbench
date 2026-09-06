@@ -1,3 +1,4 @@
+import { defaceFlow } from "./deface-flow.mjs";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
@@ -88,6 +89,7 @@ try {
         path: `output/nifti-preview/${name}-${width}.png`,
         fullPage: true,
       });
+      await defaceFlow(page, { local: false, name, width });
       await page.route("**/nifti-assets/phantom.nii.gz", (r) =>
         r.fulfill({ body: "corrupt sample" }),
       );
